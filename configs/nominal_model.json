@@ -1,0 +1,13 @@
+{
+  "model_version": "nominal-linear-v1",
+  "source": "Schneider, Stenger and Goeke (2014) instance parameters",
+  "distance": "euclidean_as_defined_by_the_deposited_readme",
+  "travel_time": "distance / v",
+  "arc_energy": "r * distance",
+  "payload_dependence": "none",
+  "recharge": "full_to_Q_with_duration_g_times_energy",
+  "partial_recharge": "available_as_a_separate_policy_using_the_same_linear_rate",
+  "station_queue": "not_in_the_benchmark",
+  "units": "benchmark units, not claimed as measured kWh",
+  "uncertainty_bounds": "design assumptions until an evidence file is attached"
+}

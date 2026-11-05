@@ -1,0 +1,11 @@
+{
+  "scenario_version": "development-v1",
+  "instance": "c101C5",
+  "mechanism": "indexed_stagger",
+  "step": 40.0,
+  "fleet_size": 2,
+  "horizon": 1236.0,
+  "max_replan_interval": 200.0,
+  "seed": 1,
+  "note": "Release times are an arithmetic stagger of sorted customer ids. They are not conditioned on a reference route."
+}
