@@ -5,7 +5,7 @@ This file separates what is proved from what was only run. The plant is the line
 ## Assumptions
 
 - **A1.** Every arc travel time lies in \([\alpha_\tau \tau, \beta_\tau \tau]\) and every arc energy lies in \([\alpha_e e, \beta_e e]\), independently.
-- **A2.** The visit sequence and the charge targets are fixed. A full charge targets the battery capacity. A partial charge uses the target written on the visit.
+- **A2.** The visit sequence is fixed. A full charge targets the battery capacity. Fixed-target partial charging is **not** covered by Proposition 1 when the energy interval has positive width (see Counterexample P below).
 - **A3.** Travel time and energy do not depend on state of charge or payload.
 - **A4.** Charge duration is \(g\) times the energy added, so it grows as the arrival state of charge falls.
 - **A5.** The vehicle may wait until a window opens. Service must start by the due time. The depot must be reached by its due time.
@@ -14,17 +14,26 @@ This file separates what is proved from what was only run. The plant is the line
 
 If any of A1–A7 fails, the implementation returns `unknown` or the claim is withdrawn. A3 and A7 are properties of this plant, not facts about electric vehicles in general.
 
-## Lemma 1 (upper corner)
+## Counterexample P (fixed-target partial charging) — Proposition 1 withdrawn for that policy
 
-Under A1–A7, the latest clock time and the lowest state of charge along a fixed sequence are attained when every arc uses \(\beta_\tau\) and \(\beta_e\).
+Battery capacity 10, initial SOC 10, charger at distance 2 with nominal energy 2, fixed partial target 8, energy factors \([0.5, 2]\), wide windows, then return to the depot.
 
-**Proof.** Proceed along the sequence. Increasing the travel time on the current arc cannot decrease the arrival time. Increasing the energy cannot increase the arrival state of charge. A later arrival can miss a window or wait; it cannot make a due time easier. A lower arrival state of charge lengthens a fixed-target charge, which can only delay the departure. After a charge the state of charge equals the target, so the battery coupling resets, but the clock coupling does not: the longest charge is the one from the lowest arrival state of charge. Payload does not depend on the factors. Therefore any other realization arrives no later and, before each charge, no lower in state of charge than the upper corner. \(\square\)
+- Upper energy factor 2: arrival SOC \(= 6\), charge to 8 is allowed, return is feasible. The old upper-corner certificate would return `certified_feasible`.
+- Lower energy factor 0.5: arrival SOC \(= 9\), the implemented plant rejects charge-to-8 as `impossible_charge` because the target is below the arrival SOC.
 
-## Proposition 1 (exact rectangle)
+Therefore the upper corner is **not** necessary and sufficient for fixed-target partial charging under a non-degenerate energy rectangle. The implementation now returns `UNKNOWN` with `fixed_partial_target_not_monotone` for that combination. An adaptive “charge at least to the target” plant was **not** adopted; plant, replay and certificate stay on the existing fixed-target rule.
 
-Under A1–A7, a fixed sequence is feasible for every realization in the rectangle if and only if it is feasible at the upper corner. The implementation's verdict `certified_feasible` or `certified_infeasible` follows that simulation. `certified_infeasible` exhibits the failing corner, which is inside the rectangle, or a missing arc or a missing commitment, which fails for every realization.
+## Lemma 1 (upper corner for full recharge)
 
-**Proof.** Lemma 1 gives necessity of the corner: if the corner is infeasible, that realization is a counterexample, so the sequence is not robustly feasible. If the corner is feasible, every other realization has an earlier or equal clock at each service start and a higher or equal state of charge before each charge, so every window, battery floor, payload check, and depot deadline that holds at the corner holds for that realization. \(\square\)
+Under A1–A7 with **full** recharge (or with a degenerate energy interval \(\alpha_e=\beta_e\)), the latest clock time and the lowest state of charge along a fixed sequence are attained when every arc uses \(\beta_\tau\) and \(\beta_e\).
+
+**Proof.** Proceed along the sequence. Increasing the travel time on the current arc cannot decrease the arrival time. Increasing the energy cannot increase the arrival state of charge. A later arrival can miss a window or wait; it cannot make a due time easier. Under full recharge the target is always the capacity \(Q\), and arrival SOC never exceeds \(Q\), so the charge action is never rejected for “target below SOC”. A lower arrival state of charge lengthens the charge and can only delay the departure. After a full charge the state of charge equals \(Q\). Payload does not depend on the factors. Therefore any other realization arrives no later and, before each charge, no lower in state of charge than the upper corner. \(\square\)
+
+## Proposition 1 (exact rectangle, narrowed)
+
+Under A1–A7 and **full recharge** (or degenerate energy bounds), a fixed sequence is feasible for every realization in the rectangle if and only if it is feasible at the upper corner. The implementation's verdict `certified_feasible` or `certified_infeasible` follows that simulation for that supported class. Fixed-target partial charging with \(\alpha_e < \beta_e\) returns `UNKNOWN` and is outside this proposition.
+
+**Proof.** Lemma 1 (narrowed) gives necessity of the corner: if the corner is infeasible, that realization is a counterexample. If the corner is feasible, every other realization has an earlier or equal clock at each service start and a higher or equal state of charge before each full charge, so every window, battery floor, payload check, and depot deadline that holds at the corner holds for that realization. \(\square\)
 
 The inflation mode multiplies \(\beta_e\) by a constant greater than one. Proposition 1 does not apply to it. That mode can reject a corner that is feasible. Case E records one such route. The verdict is then a sufficient condition for a tighter rectangle, not a proof about the original one.
 

@@ -1,8 +1,10 @@
 """Closed loop with an explicit compute-time model.
 
-Wall-clock solver time is plant time. A candidate is committed only when no
-physical event falls inside that interval and the certificate still holds at the
-later clock. Otherwise the previous backup is executed.
+Wall-clock solver time is plant time only when no physical event falls inside the
+interval. If a scheduled event occurs during optimization, the candidate is stale:
+it is discarded, plant time does not jump past the event, and no new control action
+is applied until after that event is processed. Noninterruptible actions already
+dispatched continue under the plant's event queue.
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ from safe_time_evrp.environment.energy import EPS
 from safe_time_evrp.environment.simulator import FleetSimulator
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision
-from safe_time_evrp.robust.backup import action_id
+from safe_time_evrp.robust.backup import observation_version
 from safe_time_evrp.robust.controller import SafeTimeController
 
 _TRIGGERS = {
@@ -39,6 +41,7 @@ class RobustEpisode:
     stale_count: int
     commitment_failures: int
     records: list[dict] = field(default_factory=list)
+    log: list = field(default_factory=list)
 
 
 def run_robust_episode(
@@ -51,8 +54,10 @@ def run_robust_episode(
     replan_interval: float,
     advance_plant: bool = True,
     max_events: int = 5_000,
+    disturbance=None,
+    energy=None,
 ) -> RobustEpisode:
-    simulator = FleetSimulator(instance, fleet_size)
+    simulator = FleetSimulator(instance, fleet_size, energy=energy, disturbance=disturbance)
     for customer_id, release_time in releases:
         simulator.schedule_release(customer_id, release_time)
     decisions: list[Decision] = []
@@ -71,38 +76,56 @@ def run_robust_episode(
             last_time = simulator.time
         if same_time > 32:
             raise RuntimeError("decision loop did not advance time")
-        before = action_id(simulator.observation())
-        proposal = controller.propose(simulator.observation(), trigger)
-        elapsed = proposal.optimize_seconds
+        start_time = simulator.time
+        observation = simulator.observation()
+        before = observation_version(observation, controller.uncertainty)
+        proposal = controller.propose(observation, trigger)
+        elapsed = max(0.0, proposal.optimize_seconds)
         nxt = simulator.next_event_time()
-        crosses = advance_plant and nxt is not None and simulator.time + elapsed > nxt + EPS
-        if crosses and proposal.audit and proposal.audit.get("replaced_backup"):
+        crosses = advance_plant and nxt is not None and start_time + elapsed > nxt + EPS
+        if crosses:
+            # Physical or information event is due before the solve finishes.
+            # Do not move the clock past that event and do not apply a stale action.
             controller.discard()
-            proposal = controller.fallback_decision(simulator.observation(), "stale_physical_event")
             stale_count += 1
-            if proposal.audit is not None:
-                proposal.audit["stale"] = True
-        elif advance_plant and not crosses:
-            simulator.time += elapsed
-            if proposal.audit and proposal.audit.get("replaced_backup"):
-                if action_id(simulator.observation()) != before or not controller.holds(simulator.observation()):
-                    controller.discard()
-                    proposal = controller.fallback_decision(simulator.observation(), "revalidation_failed")
-                    stale_count += 1
-                else:
-                    controller.commit(simulator.observation())
-            elif proposal.audit and proposal.audit.get("replaced_backup") is False:
+            record = dict(proposal.audit or {})
+            record["stale"] = True
+            record["applied"] = False
+            record["intervening_event_at"] = nxt
+            record["optimize_started_at"] = start_time
+            record["optimize_seconds"] = elapsed
+            record["plant_time_after_decide"] = simulator.time
+            records.append(record)
+            if abs(simulator.time - start_time) > EPS:
+                raise RuntimeError("plant time moved during a stale discard")
+            return
+
+        if advance_plant and elapsed > 0:
+            simulator.time = start_time + elapsed
+            if simulator.time + EPS < start_time:
+                raise RuntimeError("plant time moved backward")
+
+        if proposal.audit and proposal.audit.get("replaced_backup"):
+            current = observation_version(simulator.observation(), controller.uncertainty)
+            if current != before or not controller.holds(simulator.observation()):
                 controller.discard()
-        else:
-            if proposal.audit and proposal.audit.get("replaced_backup"):
-                if controller.holds(simulator.observation()):
-                    controller.commit(simulator.observation())
-                else:
-                    controller.discard()
-                    proposal = controller.fallback_decision(simulator.observation(), "revalidation_failed")
-        decisions.append(proposal)
+                proposal = controller.fallback_decision(simulator.observation(), "revalidation_failed")
+                stale_count += 1
+                if proposal.audit is not None:
+                    proposal.audit["stale"] = True
+            else:
+                if not controller.commit(simulator.observation()):
+                    proposal = controller.fallback_decision(simulator.observation(), "commit_failed")
+                    stale_count += 1
+        elif proposal.audit and proposal.audit.get("replaced_backup") is False:
+            controller.discard()
+
         if proposal.audit is not None:
+            proposal.audit["applied"] = True
+            proposal.audit["optimize_started_at"] = start_time
+            proposal.audit["plant_time_after_decide"] = simulator.time
             records.append(dict(proposal.audit))
+        decisions.append(proposal)
         simulator.apply_decision(proposal)
         if replan_id is not None:
             simulator.cancel(replan_id)
@@ -136,6 +159,7 @@ def run_robust_episode(
         stale_count=stale_count,
         commitment_failures=failures,
         records=records,
+        log=list(simulator.log),
     )
 
 

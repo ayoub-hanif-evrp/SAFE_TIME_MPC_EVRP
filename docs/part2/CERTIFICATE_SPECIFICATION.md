@@ -27,7 +27,7 @@ certificate = certify(
 | `witness` | Node, time, state of charge, or the missing customer |
 | `model` | `schneider_linear_rectangle`, or `tightened_rectangle` if an inflation factor above 1 is applied |
 
-`certified_infeasible` is used only when the upper-corner simulation itself fails, when an arc does not exist, or when an accepted customer is absent from the sequences. A search that finds no insertion returns no verdict of infeasibility. The controller then keeps the backup and, if the backup does not cover the commitments, reports `no_feasible_continuation`.
+`certified_infeasible` is used only when the upper-corner simulation itself fails (in the supported full-charge / degenerate-energy class), when an arc does not exist, when an accepted customer is absent, when service is duplicated, or when a route names an unknown vehicle. Fixed-target partial charging with a wide energy interval returns `UNKNOWN` (`fixed_partial_target_not_monotone`); see Part 2.5 Counterexample P. A search that finds no insertion returns no verdict of infeasibility. The controller then keeps the backup and, if the backup does not cover the commitments, reports `no_feasible_continuation`.
 
 ## Supported check
 

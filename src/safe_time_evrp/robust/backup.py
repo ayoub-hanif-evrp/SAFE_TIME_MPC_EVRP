@@ -78,6 +78,27 @@ def action_id(observation: Observation) -> str:
     return f"{';'.join(parts)}#{commitments}"
 
 
+def observation_version(observation: Observation, uncertainty=None) -> str:
+    """Version covering physical state, request status and uncertainty hypotheses."""
+    base = action_id(observation)
+    requests = (
+        f"open={','.join(observation.released_open)}"
+        f"|acc={','.join(observation.accepted)}"
+        f"|done={','.join(observation.completed)}"
+        f"|rej={','.join(observation.rejected)}"
+        f"|svc={','.join(observation.in_service)}"
+        f"|def={','.join(observation.deferred)}"
+    )
+    if uncertainty is None:
+        return f"{base}|{requests}"
+    bounds = (
+        f"t[{uncertainty.time_lower},{uncertainty.time_upper}]"
+        f"e[{uncertainty.energy_lower},{uncertainty.energy_upper}]"
+        f"floor={uncertainty.soc_floor}"
+    )
+    return f"{base}|{requests}|{bounds}"
+
+
 @dataclass
 class BackupStore:
     routes: dict[str, list[Visit]] = field(default_factory=dict)

@@ -10,7 +10,7 @@ from time import perf_counter
 
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
-from safe_time_evrp.robust.backup import BackupStore, action_id, dispatch_suffix
+from safe_time_evrp.robust.backup import BackupStore, dispatch_suffix, observation_version
 from safe_time_evrp.robust.certificate import Certificate, Verdict, certify_routes
 from safe_time_evrp.robust.supervisor import SolverSupervisor
 from safe_time_evrp.robust.triggers import TriggerDecision, TriggerPolicy, classify
@@ -55,7 +55,7 @@ class SafeTimeController:
 
     def propose(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
-        state = action_id(observation)
+        state = observation_version(observation, self.uncertainty)
         choice = classify(
             self.policy,
             trigger,
@@ -117,12 +117,14 @@ class SafeTimeController:
                 rejected += 1
                 validation_time += perf_counter() - t0
                 return None
+            newly = tuple(candidate.get("newly_accepted", []))
+            required = tuple(observation.accepted) + newly
             certificate = certify_routes(
                 self.instance,
                 observation,
                 candidate["routes"],
                 self.uncertainty,
-                required=tuple(observation.accepted),
+                required=required,
             )
             validation_time += perf_counter() - t0
             if certificate.verdict is not Verdict.CERTIFIED_FEASIBLE:
@@ -177,7 +179,7 @@ class SafeTimeController:
         return decision
 
     def commit(self, observation: Observation) -> bool:
-        return self.backup.commit(action_id(observation))
+        return self.backup.commit(observation_version(observation, self.uncertainty))
 
     def discard(self) -> None:
         self.backup.discard()

@@ -169,8 +169,13 @@ def _replay(instance: Instance, log: list[LogRecord], scale: float) -> ReplayRep
             destination = record.data["destination"]
             if current["node"] != origin:
                 raise ReplayRejection("wrong_location", f"{record.vehicle_id} left from {origin}")
-            energy = _expected_energy(instance, origin, destination, scale)
-            travel = instance.arc(origin, destination).travel_time
+            energy_factor = float(record.data.get("energy_factor", scale))
+            time_factor = float(record.data.get("time_factor", 1.0))
+            if "energy_factor" in record.data:
+                energy = _expected_energy(instance, origin, destination, energy_factor)
+            else:
+                energy = _expected_energy(instance, origin, destination, scale)
+            travel = time_factor * instance.arc(origin, destination).travel_time
             if abs(record.data["energy"] - energy) > EPS:
                 raise ReplayRejection("travel_energy", f"{origin}->{destination}")
             if abs(record.data["travel_time"] - travel) > EPS:

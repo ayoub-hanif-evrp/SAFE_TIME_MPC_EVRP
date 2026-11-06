@@ -61,11 +61,13 @@ class FleetSimulator:
         instance: Instance,
         fleet_size: int,
         energy: NominalLinearEnergy | None = None,
+        disturbance=None,
     ) -> None:
         if fleet_size < 1:
             raise SimulatorError("fleet size must be positive")
         self.instance = instance
         self.energy = energy or NominalLinearEnergy()
+        self.disturbance = disturbance
         self.time = 0.0
         self.vehicles = {
             f"v{i + 1}": _Vehicle(
@@ -302,12 +304,18 @@ class FleetSimulator:
 
     def _start_travel(self, vehicle: _Vehicle, destination: str) -> None:
         arc = self.instance.arc(vehicle.node, destination)
-        energy = self.energy.travel_energy(self.instance, arc, soc=vehicle.soc, load=vehicle.load)
+        base_energy = self.energy.travel_energy(self.instance, arc, soc=vehicle.soc, load=vehicle.load)
+        if self.disturbance is None:
+            time_factor, energy_factor = 1.0, 1.0
+        else:
+            time_factor, energy_factor = self.disturbance.factors(vehicle.node, destination)
+        energy = energy_factor * base_energy
+        travel_time = time_factor * arc.travel_time
         if vehicle.soc - energy < -EPS:
             raise SimulatorError(f"{vehicle.id} cannot travel {vehicle.node}->{destination}: battery")
         start_soc = vehicle.soc
         end_soc = start_soc - energy
-        end_time = self.time + arc.travel_time
+        end_time = self.time + travel_time
         vehicle.status = VehicleStatus.TRAVELING
         vehicle.locked_destination = destination
         event_id = self._push(
@@ -319,8 +327,10 @@ class FleetSimulator:
                 "origin": vehicle.node,
                 "destination": destination,
                 "energy": energy,
-                "travel_time": arc.travel_time,
+                "travel_time": travel_time,
                 "soc_before": start_soc,
+                "time_factor": time_factor,
+                "energy_factor": energy_factor,
             },
         )
         vehicle.action = {"kind": "travel", "event_id": event_id, "destination": destination}
@@ -340,8 +350,12 @@ class FleetSimulator:
                 "soc": start_soc,
                 "load": vehicle.load,
                 "onboard": sorted(vehicle.onboard),
-                "travel_time": arc.travel_time,
+                "travel_time": travel_time,
                 "energy": energy,
+                "time_factor": time_factor,
+                "energy_factor": energy_factor,
+                "nominal_travel_time": arc.travel_time,
+                "nominal_energy": base_energy,
             },
         )
 
