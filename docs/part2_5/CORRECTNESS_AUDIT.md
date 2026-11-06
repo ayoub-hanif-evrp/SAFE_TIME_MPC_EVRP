@@ -2,7 +2,8 @@
 
 Base revision audited: `4beb9163471a7f45fe933ed3fe969c9390d55b0b`.  
 Formatting repair pushed as `ef3ba74894254b0034373c5b9252b0897008fa24` (GitHub Actions run 42298760659: **success**).  
-Local verification before further edits: `ruff format` / `ruff check` / `ruff format --check` clean; `pytest` 28 passed; Schneider verify 92 / 5960; smoke `c101C5` completed C100, C12, C85.
+Correctness repair commit: `b366853ca43a5d899d7bd0e48d643020307b3e7c` (plus follow-up rejection/service repair on the same branch).  
+Local verification: `ruff format` / `ruff check` / `ruff format --check` clean; Schneider verify 92 / 5960; smoke `c101C5` completed C100, C12, C85.
 
 ## CI restoration
 
@@ -44,3 +45,5 @@ Recorded after the certificate/runtime repairs and before or with the developmen
 ```text
 python -m pytest -q   # 38 passed (Part 1 + Part 2 + Part 2.5 correctness)
 ```
+
+Development study after the repairs: 39 rows on `c101C5`, `r104C5`, `rc105C5`; see `DEVELOPMENT_RESULTS.md`.

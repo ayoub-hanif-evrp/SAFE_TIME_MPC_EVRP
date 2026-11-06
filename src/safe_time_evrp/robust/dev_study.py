@@ -19,7 +19,7 @@ from safe_time_evrp.robust.uncertainty import RectangularUncertainty
 from safe_time_evrp.validation.replay import validate_log
 
 # Distinct small Schneider parents. Not a holdout set.
-_PARENTS = ("c101C5", "r101C5", "rc101C5")
+_PARENTS = ("c101C5", "r104C5", "rc105C5")
 _DEADLINE = 1.0
 _FACTORS = (0.95, 1.05)
 

@@ -281,13 +281,19 @@ class SafeTimeController:
     ) -> Decision:
         accepted = list(observation.accepted) + [cid for cid in newly if cid not in observation.accepted]
         planned = [visit.node_id for visits in routes.values() for visit in visits if visit.purpose == "service"]
+        protected = set(observation.completed) | set(observation.in_service) | set(planned) | set(accepted)
+        for vehicle in observation.vehicles:
+            protected.update(vehicle.onboard)
+            if vehicle.locked_destination:
+                protected.add(vehicle.locked_destination)
+        clean_rejected = [cid for cid in rejected if cid not in protected]
         locked = {vehicle.id: vehicle.locked_destination for vehicle in observation.vehicles}
         return Decision(
             time=observation.time,
             routes={vid: list(visits) for vid, visits in routes.items()},
             accepted=accepted,
             newly_accepted=list(newly),
-            rejected=list(rejected),
+            rejected=clean_rejected,
             deferred=[],
             fallback_used=fallback,
             no_feasible_continuation=no_continuation,

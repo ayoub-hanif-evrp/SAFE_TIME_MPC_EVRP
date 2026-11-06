@@ -179,7 +179,12 @@ class FleetSimulator:
                 self.requests[customer_id] = RequestStatus.DEFERRED
         for customer_id in decision.rejected:
             status = self.requests.get(customer_id)
+            # Do not reject a customer already being served or already completed.
             if status in {RequestStatus.ANNOUNCED, RequestStatus.DEFERRED}:
+                onboard_somewhere = any(customer_id in vehicle.onboard for vehicle in self.vehicles.values())
+                locked = any(vehicle.locked_destination == customer_id for vehicle in self.vehicles.values())
+                if onboard_somewhere or locked:
+                    continue
                 self.requests[customer_id] = RequestStatus.REJECTED
         self._record(
             "decision",
@@ -363,6 +368,14 @@ class FleetSimulator:
         node = self.instance.node(customer_id)
         if vehicle.node != customer_id:
             raise SimulatorError("service started away from the customer")
+        status = self.requests.get(customer_id)
+        if status not in {
+            RequestStatus.ACCEPTED,
+            RequestStatus.IN_SERVICE,
+            RequestStatus.ANNOUNCED,
+            RequestStatus.DEFERRED,
+        }:
+            raise SimulatorError(f"service of {customer_id} with status {status}")
         if self.time > node.window.due + EPS:
             raise SimulatorError(f"service of {customer_id} misses the hard window")
         if customer_id not in vehicle.onboard:
@@ -370,6 +383,8 @@ class FleetSimulator:
         release = self.release_time.get(customer_id)
         if release is None or self.time + EPS < release:
             raise SimulatorError(f"service of {customer_id} before release")
+        if status in {RequestStatus.ANNOUNCED, RequestStatus.DEFERRED}:
+            self.requests[customer_id] = RequestStatus.ACCEPTED
         if self.time + EPS < node.window.ready:
             event_id = self._push(
                 node.window.ready,
