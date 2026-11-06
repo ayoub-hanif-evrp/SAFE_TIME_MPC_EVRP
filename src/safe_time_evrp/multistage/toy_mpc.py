@@ -74,7 +74,7 @@ def _feedback_from_state(inst: TinyInstance, state: State) -> Status:
     return Status.PROVEN_FEASIBLE if win(state_key(state)) else Status.PROVEN_INFEASIBLE
 
 
-def _pick_feedback_action_exact(inst: TinyInstance, state: State) -> tuple[str, object] | None:
+def pick_feedback_action(inst: TinyInstance, state: State) -> tuple[str, object] | None:
     if terminal_ok(inst, state):
         return None
     if state.node in inst.chargers and state.soc < inst.battery:
@@ -202,7 +202,7 @@ def run_feedback_mpc(inst: TinyInstance, scenario: dict[tuple[str, str], ArcMode
     for _ in range(inst.max_depth * 3):
         if terminal_ok(inst, state):
             return RunResult("feedback_mpc", True, steps)
-        action = _pick_feedback_action_exact(inst, state)
+        action = pick_feedback_action(inst, state)
         if action is None:
             return RunResult("feedback_mpc", False, steps, note="no winning action")
         kind, arg = action

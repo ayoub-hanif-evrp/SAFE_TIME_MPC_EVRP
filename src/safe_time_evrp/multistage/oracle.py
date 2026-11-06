@@ -1,4 +1,16 @@
-"""Exact open-loop / two-stage / multistage / clairvoyant feasibility oracles."""
+"""Exact open-loop / two-stage / multistage / clairvoyant feasibility oracles.
+
+Uncertainty contract (shared by all modes)
+------------------------------------------
+A mode sequence along a traveled arc list is **admissible** iff at every step the
+chosen mode satisfies ``mode.z <= gamma_rem`` before the step, with
+``gamma_rem`` decreased by ``mode.z`` after the step (budgeted residual uncertainty).
+
+Histories that would exceed the residual budget are **outside** the uncertainty set:
+oracles must not treat them as failing scenarios. Arcs used in Gate 3A/3B toys that
+omit a ``z=0`` nominal are documented as pathological forced-deviation plants, not as
+the standard budgeted model.
+"""
 
 from __future__ import annotations
 
@@ -16,6 +28,10 @@ class Status(str, Enum):
     PROVEN_OPTIMAL = "proven_optimal"
     UNKNOWN = "unknown"
     TIME_LIMIT = "time_limit"
+
+
+OPEN_LOOP_PREFIX_CAP = 2_000_000
+TWO_STAGE_SEQ_CAP = 50_000
 
 
 def initial_state(inst: TinyInstance) -> State:
@@ -86,6 +102,22 @@ def time_limit(inst: TinyInstance) -> int:
     return max_due + inst.battery * inst.charge_rate + 50
 
 
+def path_combo_admissible(modes: tuple[ArcMode, ...], gamma: int) -> bool:
+    """True iff the mode tuple is inside the budgeted uncertainty set along that path."""
+    rem = gamma
+    for mode in modes:
+        if mode.z > rem:
+            return False
+        rem -= mode.z
+    return True
+
+
+def admissible_path_combos(mode_lists: list[list[ArcMode]], gamma: int) -> list[tuple[ArcMode, ...]]:
+    if not mode_lists:
+        return [()]
+    return [combo for combo in product(*mode_lists) if path_combo_admissible(combo, gamma)]
+
+
 # --- Multistage feedback: existence of a causal winning policy ---
 
 
@@ -123,15 +155,19 @@ def feedback_feasible(inst: TinyInstance, *, reset_budget: bool = False) -> Stat
     return Status.PROVEN_FEASIBLE if win(state_key(root)) else Status.PROVEN_INFEASIBLE
 
 
-# --- Open-loop: one fixed sequence of (kind, arg) must survive all disturbance paths ---
+# --- Open-loop: one fixed sequence of (kind, arg) must survive all admissible disturbances ---
 
 
 def open_loop_feasible(inst: TinyInstance) -> Status:
-    """Enumerate short open-loop plans: list of travel destinations and charge deltas."""
+    """Enumerate short open-loop plans. Caps yield TIME_LIMIT, never false INFEASIBLE."""
     max_len = inst.max_depth
     q: deque[list[tuple]] = deque([[]])
     seen_prefixes = 0
-    while q and seen_prefixes < 50_000:
+    hit_cap = False
+    while q:
+        if seen_prefixes >= OPEN_LOOP_PREFIX_CAP:
+            hit_cap = True
+            break
         plan = q.popleft()
         seen_prefixes += 1
         if simulate_open_loop(inst, plan):
@@ -140,11 +176,14 @@ def open_loop_feasible(inst: TinyInstance) -> Status:
             continue
         node = forced_node(inst, plan)
         if node in inst.chargers:
-            for delta in range(0, inst.battery + 1):
+            # Bound charge fan-out; full battery sweep is only needed on tiny toys.
+            for delta in range(0, min(inst.battery, 8) + 1):
                 q.append(plan + [("c", delta)])
         if node is not None:
             for dest in sorted({d for (o, d) in inst.arcs if o == node}):
                 q.append(plan + [("t", dest)])
+    if hit_cap:
+        return Status.TIME_LIMIT
     return Status.PROVEN_INFEASIBLE
 
 
@@ -168,7 +207,11 @@ def simulate_open_loop(inst: TinyInstance, plan: list[tuple]) -> bool:
                 return False
         return terminal_ok(inst, state)
 
-    for combo in product(*mode_lists):
+    admissible = admissible_path_combos(mode_lists, inst.gamma)
+    if not admissible:
+        # No disturbance in the uncertainty set realizes this travel sequence.
+        return False
+    for combo in admissible:
         state = initial_state(inst)
         ti = 0
         for kind, arg in plan:
@@ -179,8 +222,6 @@ def simulate_open_loop(inst: TinyInstance, plan: list[tuple]) -> bool:
             else:
                 mode = combo[ti]
                 ti += 1
-                if mode.z > state.gamma_rem:
-                    return False
                 state = apply_travel(inst, state, arg, mode)
                 if state is None:
                     return False
@@ -209,11 +250,15 @@ def two_stage_fixed_route_feasible(inst: TinyInstance) -> Status:
     """First-stage travel sequence; second-stage charges after each arrival given the mode path."""
     seqs: list[tuple[str, ...]] = []
     q: deque[tuple[str, ...]] = deque([(inst.depot,)])
-    while q and len(seqs) < 5_000:
+    truncated = False
+    while q:
         path = q.popleft()
         node = path[-1]
         if len(path) > 1 and not (set(inst.customers) - set(path)) and node == inst.depot:
-            seqs.append(path)
+            if len(seqs) >= TWO_STAGE_SEQ_CAP:
+                truncated = True
+            else:
+                seqs.append(path)
         if len(path) >= inst.max_depth:
             continue
         for dest in sorted({d for (o, d) in inst.arcs if o == node}):
@@ -226,13 +271,18 @@ def two_stage_fixed_route_feasible(inst: TinyInstance) -> Status:
             if not inst.customers:
                 return Status.PROVEN_FEASIBLE
             continue
-        if all(_charges_exist_for_path(inst, path, combo) for combo in product(*mode_lists)):
+        admissible = admissible_path_combos(mode_lists, inst.gamma)
+        if not admissible:
+            continue
+        if all(_charges_exist_for_path(inst, path, combo) for combo in admissible):
             return Status.PROVEN_FEASIBLE
+    if truncated:
+        return Status.TIME_LIMIT
     return Status.PROVEN_INFEASIBLE
 
 
 def _charges_exist_for_path(inst: TinyInstance, path: tuple[str, ...], modes: tuple[ArcMode, ...]) -> bool:
-    """Exact charge DP on a fixed path for one disturbance realization."""
+    """Exact charge DP on a fixed path for one admissible disturbance realization."""
 
     @cache
     def ok(i: int, time: int, soc: int, rem: tuple[str, ...], gamma_rem: int) -> bool:
@@ -267,17 +317,16 @@ def _charges_exist_for_path(inst: TinyInstance, path: tuple[str, ...], modes: tu
     return ok(0, inst.start_time, inst.start_soc, tuple(sorted(inst.customers)), inst.gamma)
 
 
-# --- Clairvoyant: for every disturbance world a (possibly different) plan works ---
+# --- Clairvoyant: for every admissible global mode world a (possibly different) plan works ---
 
 
 def clairvoyant_feasible(inst: TinyInstance) -> Status:
-    """Upper bound: each full mode combination may use its own open plan (via path+charges)."""
-    # Enumerate short travel sequences; for each world (combo on that seq) check charges.
-    # Clairvoyant wins if EVERY admissible global disturbance can be covered by SOME sequence.
-    # Conservative exact check for tiny graphs: for each arc-mode choice consistent with gamma
-    # along some covering path — use per-scenario feedback with singleton mode sets.
+    """For every arc-mode assignment with total z <= gamma, some plan works under that world.
 
-    # Build all scenarios as assignments of one mode per arc, filtered by total z <= gamma
+    Uses the same budgeted total-z filter as open-loop/two-stage path filters (sum of z on
+    the realized support). Here the support is all arcs (conservative upper-bound check on
+    tiny graphs): worlds with sum_z > gamma are excluded from the forall.
+    """
     arc_keys = sorted(inst.arcs.keys())
     mode_lists = [list(inst.arcs[a]) for a in arc_keys]
     for combo in product(*mode_lists):

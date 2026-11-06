@@ -46,13 +46,20 @@ def routing_fork_commitment() -> TinyInstance:
 
 
 def budget_reset_sensitive() -> TinyInstance:
-    """Illegal residual-budget reset creates a false feasible certificate.
+    """WITHDRAWN as a standard budgeted-uncertainty counterexample (Gate 3B).
 
-    Both mandatory arcs spend z=1. With Gamma=1, true feedback cannot traverse both.
-    Resetting Gamma after the first arc makes the same policy look feasible.
+    Historical Gate 3A toy used z=1-only arcs (no nominal). That plant is a
+    **pathological forced-deviation** model: when residual budget is 0 the arc has
+    no admissible mode. Under the shared Gate 3B contract (budgeted residual with
+    histories exceeding Gamma outside the uncertainty set), this is not a valid
+    Bertsimas-Sim-style budgeted set.
+
+    Kept only as a regression probe for the illegal ``reset_budget`` flag on that
+    pathological plant. Do not cite as evidence that residual tracking is required
+    under standard budgeted uncertainty — see ``standard_budgeted_has_nominal``.
     """
     return TinyInstance(
-        name="budget_reset_sensitive",
+        name="budget_reset_sensitive_pathological",
         nodes=("D", "A", "B"),
         depot="D",
         chargers=frozenset(),
@@ -62,6 +69,29 @@ def budget_reset_sensitive() -> TinyInstance:
         arcs={
             ("D", "A"): (ArcMode(1, 1, 1, "high"),),
             ("A", "B"): (ArcMode(1, 1, 1, "high"),),
+            ("B", "D"): (ArcMode(1, 1, 0, "nom"),),
+        },
+        battery=10,
+        charge_rate=1,
+        gamma=1,
+        start_soc=10,
+        max_depth=6,
+    )
+
+
+def standard_budgeted_has_nominal() -> TinyInstance:
+    """Standard budgeted arcs always expose a z=0 nominal; one high is admissible."""
+    return TinyInstance(
+        name="standard_budgeted_has_nominal",
+        nodes=("D", "A", "B"),
+        depot="D",
+        chargers=frozenset(),
+        customers=frozenset({"A", "B"}),
+        windows={"A": (0, 20), "B": (0, 20)},
+        service={"A": 0, "B": 0},
+        arcs={
+            ("D", "A"): (ArcMode(1, 1, 0, "low"), ArcMode(1, 1, 1, "high")),
+            ("A", "B"): (ArcMode(1, 1, 0, "low"), ArcMode(1, 1, 1, "high")),
             ("B", "D"): (ArcMode(1, 1, 0, "nom"),),
         },
         battery=10,

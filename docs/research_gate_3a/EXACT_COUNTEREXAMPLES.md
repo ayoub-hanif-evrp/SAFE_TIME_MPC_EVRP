@@ -23,17 +23,20 @@ No single fixed travel sequence covers both worlds, so Han-style adjustable char
 fixed first-stage route cannot recover the feedback outcome. This is the Gate B gap versus
 Han on the **routing** axis (not merely charge recourse).
 
-## CEX-2: Residual-budget reset harm (`budget_reset_sensitive`)
+## CEX-2: Residual-budget reset harm (`budget_reset_sensitive`) — WITHDRAWN (Gate 3B)
 
-**Claim.**
+**Gate 3A claim (historical).**
 
 | Mode | Status |
 | --- | --- |
 | Feedback with correct residual \(\Gamma_{\mathrm{rem}}\) | PROVEN_INFEASIBLE |
 | Feedback with illegal full \(\Gamma\) reset after each arc | PROVEN_FEASIBLE |
 
-Both mandatory arcs spend \(z=1\) with \(\Gamma=1\). Resetting the budget manufactures a
-false feasible certificate. Controllers must carry residual budget in the information state.
+**Withdrawal.** The toy used `z=1`-only arcs with no nominal. That is not a valid
+standard budgeted uncertainty set. Status under the pathological plant is still
+reproduced as a regression probe (`budget_reset_sensitive_pathological`), but it is
+**not** evidence for residual-budget necessity under Bertsimas–Sim budgets. See
+`docs/research_gate_3b/ORACLE_CORRECTIONS.md`.
 
 ## Negative control N1: Feedback useless (`feedback_useless`)
 
