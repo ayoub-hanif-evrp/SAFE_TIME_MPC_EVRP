@@ -2,9 +2,9 @@
 
 **Decision: REVISE**
 
-Git revision at decision time: branch `research/realdata-mpc-gate` (see tip commit after
-this file lands). CI: formatting failures on the prior research branch repaired; full
-pytest green locally before push.
+Git revision at decision time: `6daaffd` on branch `research/realdata-mpc-gate`.
+CI: formatting failures on the prior research branch repaired; full pytest green
+locally (60 tests) before push.
 
 ## What was established
 
