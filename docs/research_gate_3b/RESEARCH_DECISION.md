@@ -2,7 +2,7 @@
 
 **Decision: REVISE**
 
-Git revision at decision time: `6daaffd` on branch `research/realdata-mpc-gate`.
+Git revision at decision time: `b0ef7e7` on branch `research/realdata-mpc-gate`.
 CI: formatting failures on the prior research branch repaired; full pytest green
 locally (60 tests) before push.
 
