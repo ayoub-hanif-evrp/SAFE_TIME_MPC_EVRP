@@ -199,6 +199,7 @@ class FleetSimulator:
                     for vid, visits in decision.routes.items()
                 },
                 "notes": list(decision.notes),
+                "audit": dict(decision.audit or {}),
             },
         )
         for vehicle in self.vehicles.values():
@@ -430,6 +431,15 @@ class FleetSimulator:
         if target > self.instance.vehicle_type.battery_capacity + EPS or target < vehicle.soc - EPS:
             raise SimulatorError("impossible charge target")
         duration = self.energy.charge_duration(vehicle.soc, target, self.instance.vehicle_type.inverse_recharge_rate)
+        if duration <= EPS:
+            vehicle.soc = target
+            self._record(
+                "charge_skip",
+                vehicle.id,
+                {"station": visit.node_id, "soc": vehicle.soc, "reason": "already_at_target"},
+            )
+            self._start_suffix(vehicle, vehicle.suffix)
+            return
         end_time = self.time + duration
         event_id = self._push(
             end_time,

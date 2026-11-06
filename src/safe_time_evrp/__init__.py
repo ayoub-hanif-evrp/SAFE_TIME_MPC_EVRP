@@ -1,3 +1,3 @@
-"""SAFE-TIME MPC for dynamic electric vehicle routing. Part 1 foundation."""
+"""SAFE-TIME MPC for dynamic electric vehicle routing."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

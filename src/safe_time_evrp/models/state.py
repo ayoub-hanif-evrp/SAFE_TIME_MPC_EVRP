@@ -100,3 +100,4 @@ class Decision:
     trigger: str
     locked_destinations: dict[str, str | None]
     notes: list[str] = field(default_factory=list)
+    audit: dict | None = None

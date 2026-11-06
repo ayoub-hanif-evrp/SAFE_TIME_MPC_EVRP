@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "safe-time-evrp"
-version = "0.1.0"
-description = "Feasibility-preserving MPC foundations for dynamic electric vehicle routing."
+version = "0.2.0"
+description = "Feasibility-preserving, deadline-aware MPC for dynamic electric vehicle routing."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
