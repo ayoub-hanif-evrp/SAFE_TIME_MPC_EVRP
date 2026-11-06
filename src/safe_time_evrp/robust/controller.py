@@ -93,6 +93,9 @@ class SafeTimeController:
             self.last_record = record
             decision.audit = record
             return decision
+        allowed = frozenset(observation.released_open) | frozenset(observation.accepted) | frozenset(
+            observation.in_service
+        ) | frozenset(observation.completed)
         payload = {
             "op": "improve",
             "instance": self.instance,
@@ -101,6 +104,8 @@ class SafeTimeController:
             "uncertainty": self.uncertainty,
             "steps": self.anytime_steps,
             "horizon": self.horizon,
+            # Hidden future releases are not listed. The network tables remain static.
+            "allowed_customers": allowed,
         }
         validation_time = 0.0
         rejected = 0

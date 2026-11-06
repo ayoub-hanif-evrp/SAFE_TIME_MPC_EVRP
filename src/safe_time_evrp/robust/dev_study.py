@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime
 
@@ -26,6 +27,12 @@ _FACTORS = (0.95, 1.05)
 
 def _releases(instance, step: float = 40.0):
     return list(indexed_stagger(instance, step=step).releases)
+
+
+def stable_seed(*parts: str, modulus: int = 10_000) -> int:
+    """Policy-independent deterministic seed. Do not use process-randomized hash()."""
+    digest = hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % modulus
 
 
 def _service_rate(final_requests: dict[str, str]) -> dict[str, float]:
@@ -106,7 +113,7 @@ def main() -> None:
                         _FACTORS[1],
                         _FACTORS[0],
                         _FACTORS[1],
-                        seed=abs(hash((parent, mode, policy.value))) % 10_000,
+                        seed=stable_seed(parent, mode),
                         mode=mode,
                     )
                     controller = SafeTimeController(
@@ -141,7 +148,9 @@ def main() -> None:
                             "deadline": _DEADLINE,
                             "replay_ok": replay.ok,
                             "replay_code": replay.code,
-                            "false_certificate": False,
+                            # Exact false-feasible measurement requires the Gate 3A oracle.
+                            "false_certificate": None,
+                            "false_certificate_note": "not_applicable_without_exact_oracle",
                         }
                     )
     finally:

@@ -24,9 +24,23 @@ def improve(
     *,
     steps: int,
     horizon: float,
+    allowed_customers: frozenset[str] | None = None,
 ):
-    """Yield certified fleet plans. At most ``steps`` insertion attempts are made."""
-    del horizon
+    """Yield certified fleet plans. At most ``steps`` insertion attempts are made.
+
+    ``horizon`` is accepted for API compatibility with the supervisor payload. This
+    legacy insertion loop does not implement a multi-stage predictive horizon; Gate 3A
+    moves true multistage planning into ``safe_time_evrp.multistage``.
+    """
+    _ = horizon  # intentionally unused by this constructive baseline
+    visible = allowed_customers
+    if visible is None:
+        visible = (
+            frozenset(observation.released_open)
+            | frozenset(observation.accepted)
+            | frozenset(observation.in_service)
+            | frozenset(observation.completed)
+        )
     routes = {}
     for vehicle in observation.vehicles:
         routes[vehicle.id] = _strip_return(
@@ -40,11 +54,14 @@ def improve(
             ),
         )
     covered = {visit.node_id for visits in routes.values() for visit in visits if visit.purpose == "service"}
-    mandatory = [cid for cid in observation.accepted if cid not in covered]
+    mandatory = [cid for cid in observation.accepted if cid not in covered and cid in visible]
     optional = [
         cid
         for cid in observation.released_open
-        if cid not in observation.accepted and cid not in observation.completed and cid not in covered
+        if cid in visible
+        and cid not in observation.accepted
+        and cid not in observation.completed
+        and cid not in covered
     ]
     queue = mandatory + optional
     examined = 0

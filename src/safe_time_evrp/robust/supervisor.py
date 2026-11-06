@@ -48,6 +48,7 @@ def _serve(conn) -> None:
                     message["uncertainty"],
                     steps=int(message["steps"]),
                     horizon=float(message["horizon"]),
+                    allowed_customers=message.get("allowed_customers"),
                 ):
                     produced = True
                     conn.send({"state_id": state_id, "final": False, "ok": True, "candidate": item})
