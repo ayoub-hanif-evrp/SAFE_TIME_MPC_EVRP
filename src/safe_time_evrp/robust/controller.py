@@ -93,9 +93,12 @@ class SafeTimeController:
             self.last_record = record
             decision.audit = record
             return decision
-        allowed = frozenset(observation.released_open) | frozenset(observation.accepted) | frozenset(
-            observation.in_service
-        ) | frozenset(observation.completed)
+        allowed = (
+            frozenset(observation.released_open)
+            | frozenset(observation.accepted)
+            | frozenset(observation.in_service)
+            | frozenset(observation.completed)
+        )
         payload = {
             "op": "improve",
             "instance": self.instance,

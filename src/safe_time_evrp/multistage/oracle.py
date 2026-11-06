@@ -283,10 +283,7 @@ def clairvoyant_feasible(inst: TinyInstance) -> Status:
     for combo in product(*mode_lists):
         if sum(m.z for m in combo) > inst.gamma:
             continue
-        single = {
-            arc: (mode,)
-            for arc, mode in zip(arc_keys, combo, strict=True)
-        }
+        single = {arc: (mode,) for arc, mode in zip(arc_keys, combo, strict=True)}
         scen = TinyInstance(
             name=inst.name + "-scen",
             nodes=inst.nodes,

@@ -73,10 +73,7 @@ def test_allowed_customers_blocks_hidden_ids():
         )
     )
     served = {
-        visit.node_id
-        for visits in plans[-1]["routes"].values()
-        for visit in visits
-        if visit.purpose == "service"
+        visit.node_id for visits in plans[-1]["routes"].values() for visit in visits if visit.purpose == "service"
     }
     assert "C2" not in served
 

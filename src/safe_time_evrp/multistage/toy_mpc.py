@@ -67,10 +67,7 @@ def _feedback_from_state(inst: TinyInstance, state: State) -> Status:
             adm = [m for m in inst.arcs[(st.node, dest)] if m.z <= st.gamma_rem]
             if not adm:
                 continue
-            if all(
-                (child := apply_travel(inst, st, dest, m)) is not None and win(state_key(child))
-                for m in adm
-            ):
+            if all((child := apply_travel(inst, st, dest, m)) is not None and win(state_key(child)) for m in adm):
                 return True
         return False
 
@@ -191,9 +188,7 @@ def run_open_loop(inst: TinyInstance, scenario: dict[tuple[str, str], ArcMode]) 
                 modes = inst.arcs[(state.node, arg)]
                 mode = next((m for m in modes if m.z <= state.gamma_rem), modes[0])
             nxt = apply_travel(inst, state, arg, mode)
-            steps.append(
-                StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{arg}", mode.name)
-            )
+            steps.append(StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{arg}", mode.name))
             if nxt is None:
                 return RunResult("open_loop", False, steps, note="travel failed")
             state = nxt
@@ -225,9 +220,7 @@ def run_feedback_mpc(inst: TinyInstance, scenario: dict[tuple[str, str], ArcMode
                 if not modes:
                     return RunResult("feedback_mpc", False, steps, note="no admissible mode")
                 mode = modes[0]
-            steps.append(
-                StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name)
-            )
+            steps.append(StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name))
             nxt = apply_travel(inst, state, dest, mode)
             if nxt is None:
                 return RunResult("feedback_mpc", False, steps, note="travel failed")
@@ -265,9 +258,7 @@ def run_two_stage_then_execute(inst: TinyInstance, scenario: dict[tuple[str, str
                         if nxt is not None:
                             if delta:
                                 steps.append(
-                                    StepRecord(
-                                        state.time, state.node, state.soc, state.gamma_rem, f"charge:{delta}"
-                                    )
+                                    StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"charge:{delta}")
                                 )
                             state = trial
                             charged = True
@@ -277,9 +268,7 @@ def run_two_stage_then_execute(inst: TinyInstance, scenario: dict[tuple[str, str
                         break
                 mode = modes[i]
                 steps.append(
-                    StepRecord(
-                        state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name
-                    )
+                    StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name)
                 )
                 nxt = apply_travel(inst, state, dest, mode)
                 if nxt is None:
@@ -320,9 +309,7 @@ def run_standard_rh_robust(inst: TinyInstance, scenario: dict[tuple[str, str], A
                 if not adm:
                     return RunResult("rh_open_loop", False, steps, note="no mode")
                 mode = adm[0]
-            steps.append(
-                StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name)
-            )
+            steps.append(StepRecord(state.time, state.node, state.soc, state.gamma_rem, f"travel:{dest}", mode.name))
             nxt = apply_travel(inst, state, dest, mode)
             if nxt is None:
                 return RunResult("rh_open_loop", False, steps, note="travel failed")
