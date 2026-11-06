@@ -116,9 +116,7 @@ def main() -> None:
             "evidence": uncertainty.evidence,
         },
         "rows": rows,
-        "interpretation": (
-            "Counts are one deterministic development run. They are not a statistical comparison."
-        ),
+        "interpretation": ("Counts are one deterministic development run. They are not a statistical comparison."),
     }
     (out / "pilot.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

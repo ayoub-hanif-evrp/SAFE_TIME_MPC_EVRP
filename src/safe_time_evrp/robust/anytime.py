@@ -39,12 +39,7 @@ def improve(
                 instance.vehicle_type.battery_capacity,
             ),
         )
-    covered = {
-        visit.node_id
-        for visits in routes.values()
-        for visit in visits
-        if visit.purpose == "service"
-    }
+    covered = {visit.node_id for visits in routes.values() for visit in visits if visit.purpose == "service"}
     mandatory = [cid for cid in observation.accepted if cid not in covered]
     optional = [
         cid

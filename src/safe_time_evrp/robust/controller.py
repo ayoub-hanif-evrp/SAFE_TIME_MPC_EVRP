@@ -278,12 +278,7 @@ class SafeTimeController:
         notes: list[str],
     ) -> Decision:
         accepted = list(observation.accepted) + [cid for cid in newly if cid not in observation.accepted]
-        planned = [
-            visit.node_id
-            for visits in routes.values()
-            for visit in visits
-            if visit.purpose == "service"
-        ]
+        planned = [visit.node_id for visits in routes.values() for visit in visits if visit.purpose == "service"]
         locked = {vehicle.id: vehicle.locked_destination for vehicle in observation.vehicles}
         return Decision(
             time=observation.time,
