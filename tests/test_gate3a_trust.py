@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import inspect
 
+from safe_time_evrp.models.state import Anchor, Observation, VehicleView
 from safe_time_evrp.optimization.exact_toy import make_reference_instance
 from safe_time_evrp.robust.anytime import improve
 from safe_time_evrp.robust.dev_study import stable_seed
 from safe_time_evrp.robust.uncertainty import RectangularUncertainty
-from safe_time_evrp.models.state import Anchor, Observation, VehicleView
 
 
 def test_stable_seed_is_policy_independent_and_deterministic():
@@ -79,3 +79,10 @@ def test_allowed_customers_blocks_hidden_ids():
         if visit.purpose == "service"
     }
     assert "C2" not in served
+
+
+def test_part25_intervening_event_regression_still_enforced():
+    """Gate 3A keeps Part 2.5 plant-time causality coverage in the suite."""
+    from tests.test_part2_5_correctness import test_intervening_event_blocks_stale_dispatch
+
+    test_intervening_event_blocks_stale_dispatch()
