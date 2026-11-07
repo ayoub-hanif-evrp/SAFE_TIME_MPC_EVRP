@@ -1,49 +1,55 @@
-# Generic time–energy–information resource bound
+# Generic resource bounds — proof status
 
 Implementation: `dr_dual/generic/general_bound.py`  
 Status API: `VALID_BOUND` | `UNSUPPORTED_BOUND` | `PROVEN_INFEASIBLE` | `UNKNOWN`
 
-## Declared model
+**Current research status:** the prior generic TEI construction is **QUARANTINED**. It must not prune candidates on the wider dynamic-request model.
 
-Finite road network with named segments; discrete θ support; controller belief; atomic travel/serve/charge/accept; observations only after completed travel; optional depot-return contract.
+## Counterexample (invalidates prior claim)
 
-## Construction
+On `make_tiny_generic_instance(n_customers=3)` after first travel `D_N0_exploit`, a feasible continuation serving later-announced cust_1 yields \(\mathbb E[R]\approx 14.625\).
 
-For first travel action \(a\):
+The legacy TEI pending set (post-travel announced/accepted only) produced \(\overline Q_{\mathrm{legacy}}=9.85 < 14.625\).
+
+Therefore the previous proposition “`VALID_BOUND` ⇒ \(Q^\star(a)\le \overline Q_{\mathrm{gen}}(a)\)” is **false** for the dynamic announcement model.
+
+Reproduction: `counterexamples.old_bound_undercounts_future_announcement`  
+Public API: `evaluate_generic_resource_bound` → `UNSUPPORTED_BOUND` (`QUARANTINED_...`).  
+Unsafe code path kept as `evaluate_generic_resource_bound_legacy_unsafe` for tests only.
+
+## Temporary certified baseline — trivial safe reward UB
 
 \[
-\overline Q_{\mathrm{gen}}(a)=\mathbb E_\theta\Big[r_{\mathrm{travel}}(a,\theta)+R_{\mathrm{opt}}(x_a(\theta),S_a(\theta))\Big]
+\overline Q_{\mathrm{triv}}(a)=\mathbb E_\theta\big[r_{\mathrm{travel}}(a,\theta)\big]+\sum_{c\in\mathcal E(H)}\mathrm{reward}_c
 \]
 
-where \(S_a(\theta)\) is the posterior support after \(a\), and \(R_{\mathrm{opt}}\) sums rewards of all pending announced/accepted customers that are **optimistically reachable** from the post-travel node under min segment energies/times over \(S_a(\theta)\), allowing at most one full charge.
+where \(\mathcal E(H)\) is the set of customers whose release time is ≤ declared horizon \(H\) (or already accepted), excluding completed, and future energy/time costs are ignored (nonnegative ⇒ optimistic).
 
-If an **accepted** commitment is not optimistically reachable → `PROVEN_INFEASIBLE`.
+**Proposition.** For the same objective, demand releases, and horizon as the oracle, \(Q^\star(a)\le \overline Q_{\mathrm{triv}}(a)\) whenever the bound returns `VALID_BOUND`.
 
-## Proposition
+**Proof.** Any feasible policy collects at most one service reward per eligible customer and pays nonnegative future energy costs. The travel term matches the oracle’s first-action reward. Hence the envelope dominates.
 
-**Claim.** Under the declared model and finite action class of the generic exact reference, \(Q^\star(a)\le \overline Q_{\mathrm{gen}}(a)\) whenever the bound returns `VALID_BOUND`.
+API: `evaluate_trivial_safe_reward_bound` (used by solver `bound_mode=generic`).
 
-**Proof sketch.**
+## Prior TEI construction (historical; not certified)
 
-1. The travel term equals the exact expected first-action reward used by \(Q^\star\).
-2. Any feasible causal continuation collects a subset of pending customer rewards (minus nonnegative energy costs). Ignoring future energy costs is optimistic.
-3. Counting **every** optimistically reachable pending customer (even if mutually exclusive in a single plan) only increases the envelope, so \(R_{\mathrm{opt}}\ge\) any single feasible continuation’s customer-reward total.
-4. Reachability uses min energy/time over the information set and an optional charge — if a true plan reaches a customer under some θ in the set with a common or contingent policy consistent with \(S\), the optimistic graph search also declares reachability.
-5. Therefore \(\overline Q_{\mathrm{gen}}(a)\ge Q^\star(a)\).
+For first travel \(a\), the old formula summed rewards of customers optimistically reachable from the post-travel node under min energy/time over the posterior support, with ≤1 full charge. Defects vs dynamic EVRP:
 
-## What is relaxed
+1. Pending set omitted future announcements inside the horizon.
+2. One-charge relaxation understates multi-stop charging needs for reachability certificates.
+3. State-search cutoffs could be misread as unreachability.
+4. Fleet commitments were checked from the acting vehicle only.
 
-- Future energy costs
-- Mutual exclusion among customers (sum vs sequence)
-- Exact charge timing beyond one full charge
-- Multi-vehicle coupling beyond the acting vehicle’s local envelope
+None of (2)–(4) are compatible with a general infeasibility certificate unless the policy class is restricted accordingly — and (1) alone already falsifies validity.
 
-## What is not claimed
+## What remains to rebuild (P2 — after oracle is trusted)
 
-- Uniform dominance over clairvoyant DRUB
-- A general continuous EVRP theorem
-- Computational superiority without the scaling study
+A repaired general UB must include:
 
-## Falsification
+- All legally eligible future customer rewards under the declared horizon
+- Optimistic fleet-wide time–energy reachability (or unlimited-charging relaxation)
+- Observation timing / nonanticipativity
+- Accepted commitments over the **fleet**
+- Proof \(Q^\star(a)\le Q_{\mathrm{upper}}(a)\) on the **same** finite-state control problem as the oracle
 
-Any `VALID_BOUND` value strictly below exact \(Q^\star\) on a tractable instance invalidates certified pruning with this bound.
+Falsification rule unchanged: any `VALID_BOUND` strictly below exact \(Q^\star\) invalidates certified pruning.

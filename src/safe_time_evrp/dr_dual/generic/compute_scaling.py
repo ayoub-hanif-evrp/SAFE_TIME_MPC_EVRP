@@ -7,8 +7,8 @@ from pathlib import Path
 from statistics import median
 from time import perf_counter
 
+from safe_time_evrp.dr_dual.generic.discriminating_suite import build_discriminating_suite
 from safe_time_evrp.dr_dual.generic.exact_dp import solve_generic_exact
-from safe_time_evrp.dr_dual.generic.instance_gen import build_frozen_generic_suite
 from safe_time_evrp.dr_dual.generic.model import initial_generic_state
 from safe_time_evrp.dr_dual.solver import (
     solve_dr_dual,
@@ -19,12 +19,12 @@ from safe_time_evrp.dr_dual.solver import (
 
 
 def run_scaling_study(*, trials: int = 3) -> dict:
-    suite = build_frozen_generic_suite()
+    suite = build_discriminating_suite()
     rows = []
     for inst in suite:
         net = inst.net
         state = initial_generic_state(net)
-        exact = solve_generic_exact(net, max_len=3)
+        exact = solve_generic_exact(net, max_len=6)
         modes = {
             "unpruned": (False, "clairvoyant"),
             "clairvoyant": (True, "clairvoyant"),
@@ -64,6 +64,7 @@ def run_scaling_study(*, trials: int = 3) -> dict:
             {
                 "instance_id": inst.instance_id,
                 "tags": list(inst.tags),
+                "expected_traits": list(getattr(inst, "expected_traits", ())),
                 "exact_first": exact.first_action_key,
                 "exact_value": exact.value,
                 "exact_status": exact.status.value,
