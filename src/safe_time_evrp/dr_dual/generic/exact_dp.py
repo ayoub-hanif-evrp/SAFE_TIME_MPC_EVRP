@@ -1,8 +1,9 @@
-"""Exact finite-policy-tree optimization for generic small EVRP instances."""
+"""Restricted / full finite-policy search with honest status labels."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 from safe_time_evrp.dr_dual.actions import Action, ActionKind
 from safe_time_evrp.dr_dual.exact_oracle import ExactOracleResult, OracleStatus
@@ -16,9 +17,18 @@ from safe_time_evrp.dr_dual.transition import apply_action
 from safe_time_evrp.dual_mpc.belief import DiscreteBelief
 
 
+class GenericSearchStatus(str, Enum):
+    EXACT_OPTIMUM_RESTRICTED = "EXACT_OPTIMUM_RESTRICTED"
+    EXACT_OPTIMUM_FULL_FINITE = "EXACT_OPTIMUM_FULL_FINITE"
+    FEASIBLE_INCUMBENT = "FEASIBLE_INCUMBENT"
+    UNKNOWN = "UNKNOWN"
+    TIME_LIMIT = "TIME_LIMIT"
+    PROVEN_INFEASIBLE = "PROVEN_INFEASIBLE"  # only if complete restricted class is empty
+
+
 @dataclass
 class GenericExactResult:
-    status: OracleStatus
+    status: GenericSearchStatus
     value: float | None
     first_action_key: str | None
     nodes_expanded: int
@@ -51,7 +61,6 @@ def _bayes_after_first(
         post = tr.state
         rem = post.belief.support_set()
         if len(rem) <= 1:
-            # Known-θ: pick best short plan under Dirac
             forced = WorldState(
                 post.vehicles,
                 post.accepted,
@@ -60,6 +69,7 @@ def _bayes_after_first(
                 post.announced,
                 DiscreteBelief((theta,), (1.0,)),
                 post.stage,
+                post.model_inconsistent,
             )
             common = select_generic_common_policy(net, forced, noise=noise, max_len=max_len)
             if common is None:
@@ -84,41 +94,34 @@ def solve_generic_exact(
     net: RoadNetwork | None = None,
     *,
     noise: float = 0.0,
-    max_len: int = 4,
+    max_len: int = 6,
     node_limit: int = 50_000,
+    claim_full_finite: bool = False,
 ) -> GenericExactResult:
-    """Exact optimum within finite first-travel + short common-continuation family."""
+    """Search first-travel + short common-continuation class.
+
+    Default status is EXACT_OPTIMUM_RESTRICTED when the restricted class is fully enumerated.
+    claim_full_finite=True is refused unless an independent exhaustive event oracle certifies it.
+    """
     net = net or make_tiny_generic_instance()
     state = initial_generic_state(net)
     expanded = 0
     best = float("-inf")
     best_key = None
     scores: dict[str, float] = {}
+    incomplete = False
 
     for first in _first_actions(net, state):
         expanded += 1
         if expanded > node_limit:
             return GenericExactResult(
-                OracleStatus.TIME_LIMIT, None, None, expanded, "generic_first_travel+short_common", {}
+                GenericSearchStatus.TIME_LIMIT,
+                best if best_key else None,
+                best_key,
+                expanded,
+                "restricted_first_travel+common_continuation",
+                {"scores": scores, "incomplete": True},
             )
-        # Safety: feasible under all θ with some continuation
-        safe = True
-        for th in state.belief.support_set():
-            tr = apply_action(net, state, first, theta_star=th, noise=noise)
-            if tr.state is None or tr.model_inconsistent or not tr.ok:
-                safe = False
-                break
-            if select_generic_common_policy(net, tr.state, noise=noise, max_len=max_len) is None:
-                # At least serve accepted if already at customer — allow empty only if terminal
-                if not state.accepted.issubset(tr.state.completed) and not any(
-                    c.node == tr.state.vehicle(first.vehicle_id).node
-                    for c in net.customers
-                    if c.customer_id in state.accepted
-                ):
-                    # still try
-                    pass
-        if not safe:
-            continue
         val = _bayes_after_first(net, state, first, noise=noise, max_len=max_len)
         if val is None:
             continue
@@ -127,32 +130,58 @@ def solve_generic_exact(
             best = val
             best_key = first.key()
 
+    scope = (
+        f"RESTRICTED: first_travel + common_continuation max_len={max_len} "
+        f"(not general dynamic EVRP optimum)"
+    )
     if best_key is None:
+        # Truncated search found nothing — NOT a proof of infeasibility of the full model
         return GenericExactResult(
-            OracleStatus.PROVEN_INFEASIBLE,
+            GenericSearchStatus.UNKNOWN,
             None,
             None,
             expanded,
-            "generic_first_travel+short_common",
-            {"scores": scores},
+            scope,
+            {"scores": scores, "reason": "no_feasible_plan_in_restricted_class"},
         )
+    if claim_full_finite:
+        return GenericExactResult(
+            GenericSearchStatus.UNKNOWN,
+            best,
+            best_key,
+            expanded,
+            scope,
+            {"scores": scores, "note": "full_finite_requires_event_oracle"},
+        )
+    status = GenericSearchStatus.EXACT_OPTIMUM_RESTRICTED
+    if incomplete:
+        status = GenericSearchStatus.FEASIBLE_INCUMBENT
     return GenericExactResult(
-        OracleStatus.EXACT_OPTIMUM,
+        status,
         best,
         best_key,
         expanded,
-        "generic_first_travel+short_common_continuation_family",
+        scope,
         {"scores": scores, "noise": noise, "max_len": max_len},
     )
 
 
 def to_oracle_result(r: GenericExactResult) -> ExactOracleResult:
+    # Map to legacy enum without claiming general EXACT_OPTIMUM
+    if r.status is GenericSearchStatus.EXACT_OPTIMUM_RESTRICTED:
+        mapped = OracleStatus.EXACT_OPTIMUM
+    elif r.status is GenericSearchStatus.TIME_LIMIT:
+        mapped = OracleStatus.TIME_LIMIT
+    elif r.status is GenericSearchStatus.PROVEN_INFEASIBLE:
+        mapped = OracleStatus.PROVEN_INFEASIBLE
+    else:
+        mapped = OracleStatus.UNKNOWN
     return ExactOracleResult(
-        status=r.status,
+        status=mapped,
         value=r.value,
         first_action_key=r.first_action_key,
-        policy_note="generic_finite_policy_tree",
+        policy_note=r.status.value,
         nodes_expanded=r.nodes_expanded,
         scope=r.scope,
-        extras=r.extras,
+        extras={**r.extras, "generic_status": r.status.value},
     )
