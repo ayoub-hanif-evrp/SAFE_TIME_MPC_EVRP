@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from safe_time_evrp.dr_dual.actions import Action
-from safe_time_evrp.dr_dual.generic.actions import legal_actions, release_due_announcements
+from safe_time_evrp.dr_dual.generic.actions import legal_fleet_actions, release_due_announcements
 from safe_time_evrp.dr_dual.instrumentation import COUNTERS
 from safe_time_evrp.dr_dual.network import RoadNetwork
 from safe_time_evrp.dr_dual.state import WorldState
@@ -12,6 +12,7 @@ from safe_time_evrp.dual_mpc.belief import DiscreteBelief
 
 
 def _terminal_ok(net: RoadNetwork, state: WorldState) -> bool:
+    """Terminal for a continuation plan: commitments done + depot; future releases optional."""
     if not state.accepted.issubset(state.completed):
         return False
     if net.metadata.get("require_depot_return"):
@@ -58,18 +59,13 @@ def realize_plan(
 
 
 def _candidate_plans(net: RoadNetwork, state: WorldState, *, max_len: int, max_branch: int) -> list[list[Action]]:
-    """BFS short plans for the primary free vehicle."""
+    """BFS short plans using fleet legal actions (accept/dispatch any free EV)."""
     state = release_due_announcements(net, state)
-    vids = [v.vehicle_id for v in state.vehicles if v.busy_until <= v.time + 1e-12]
-    if not vids:
-        return [[]]
-    vid = vids[0]
     plans: list[list[Action]] = [[]]
     frontier = [[]]
     for _ in range(max_len):
         nxt = []
         for pref in frontier:
-            # simulate prefix under probe theta for geometry only
             probe = next(iter(state.belief.support_set()))
             s = state
             ok = True
@@ -83,7 +79,7 @@ def _candidate_plans(net: RoadNetwork, state: WorldState, *, max_len: int, max_b
             if not ok:
                 continue
             s = release_due_announcements(net, s)
-            acts = legal_actions(net, s, vid)[:max_branch]
+            acts = legal_fleet_actions(net, s)[:max_branch]
             if not acts:
                 plans.append(pref)
                 continue
@@ -91,12 +87,10 @@ def _candidate_plans(net: RoadNetwork, state: WorldState, *, max_len: int, max_b
                 nxt.append([*pref, a])
         frontier = nxt
         plans.extend(nxt)
-        if len(plans) > 200:
+        if len(plans) > 500:
             break
-    # Always include empty (stop) if terminal already ok
     if [[]] not in plans:
         plans.insert(0, [])
-    # Unique
     uniq = []
     seen = set()
     for p in plans:
@@ -112,8 +106,8 @@ def select_generic_common_policy(
     state: WorldState,
     *,
     noise: float = 0.0,
-    max_len: int = 4,
-    max_branch: int = 4,
+    max_len: int = 6,
+    max_branch: int = 6,
 ) -> tuple[tuple[Action, ...], float] | None:
     COUNTERS.common_policy_evaluations += 1
     rem = state.belief.support_set()
