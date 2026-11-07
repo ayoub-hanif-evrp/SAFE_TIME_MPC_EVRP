@@ -9,6 +9,8 @@ from safe_time_evrp.dr_dual.bounds import DecisionRelevantBound, evaluate_bound
 from safe_time_evrp.dr_dual.common_policy import abstract_p1_p2_counterexample, select_common_policy
 from safe_time_evrp.dr_dual.exact_oracle import ExactOracleResult, solve_exact
 from safe_time_evrp.dr_dual.fleet_oracle import solve_exact_two_ev_nonanticipative
+from safe_time_evrp.dr_dual.fleet_voi import measure_fleet_information_value
+from safe_time_evrp.dr_dual.observation_timing import evaluate_observation_timing_bound
 from safe_time_evrp.dr_dual.solver import (
     PruningStats,
     solve_dr_dual,
@@ -23,6 +25,8 @@ __all__ = [
     "PruningStats",
     "abstract_p1_p2_counterexample",
     "evaluate_bound",
+    "evaluate_observation_timing_bound",
+    "measure_fleet_information_value",
     "select_common_policy",
     "solve_dr_dual",
     "solve_exact",

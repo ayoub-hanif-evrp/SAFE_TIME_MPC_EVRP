@@ -1,37 +1,31 @@
-# Scientific status (foundation repair)
+# Scientific status
 
 **Branch:** `research/decision-relevant-dual-mpc`  
-**Prior tip reviewed:** `93fd812`  
-**This repair wave:** nonanticipative 2-EV oracle, REUB_v0 invalidation + REUB_v1, separated baselines, fair unpruned ablation.
+**Advance tip:** post-`c81c773` (fleet VoI isolation, OTUB, preregistered suite)
 
-## Current verdict: **CORRECTED PROTOTYPE — FOUNDATIONS UNDER REPAIR**
+## Verdict: **NOT YET SUBSTANTIVE**
 
-Not a top-tier claim. Not a topic switch. Not ready for large EVRP-TW-D / Amazon campaigns.
+The method is mathematically improving and experimentally cleaner, but it does **not** yet deliver a differentiated, computationally useful algorithmic contribution suitable for a top-tier EVRP–MPC claim.
 
-### Established in this tip
+### Precise answers
 
-1. **Nonanticipative two-EV oracle** (`fleet_oracle.py`): history-indexed EV2 policy in `{DIRECT, CHARGE, SKIP}`; EV2 synced to EV1 observation clock `T_obs` before using the posterior; `EXACT_OPTIMUM` only within this finite policy class.
-2. **Reverse-ranking regression:** clairvoyant per-θ max ≠ nonanticipative common action value.
-3. **REUB_v0 (direct-only) INVALID:** charging counterexample where `v0 < Q*`.
-4. **REUB_v1:** optimistic charge-envelope resource bound for the declared single-EV `{A,C,S}` family; verified `≥ Q*` on the toy actions; **not** certified by calling clairvoyant DRUB as a fallback.
-5. **Baselines separated:** robust (fixed uncertainty / worst-case, forced prior), optimized passive (forced-prior selection), exact dual, DRUB pruning, info-gain heuristic — each with its own selection score; true Bayes value reported for decision-quality comparison.
-6. **Fair unpruned search:** `use_pruning=False` computes **no** unused bounds.
-7. **EVRP semantics regressions:** announce→accept→serve, busy/noninterruptible, trajectory replay, commitment completion.
+1. **Cross-vehicle information value?** On the legacy two-EV toy: **ΔVoI = 0** (charge weakly dominates; sharing changes labels, not value). On a redesigned tight-battery network: **ΔVoI > 0** (strict). Legacy “adaptive routes” were not economic value.
+2. **New bound valid?** OTUB: **yes, family-restricted** (`UNSUPPORTED_BOUND` outside `{A,C,S}`). REUB_v1: family-restricted (v0 invalid).
+3. **Respects observation timing?** OTUB: **yes** (common pattern on ambiguous information sets; contingent only after separation).
+4. **Substantially cheaper than exhaustive continuation?** **Not demonstrated** — suite shows 0/8 instances with fewer total heavy ops under pruning.
+5. **Prunes more than generic cheap bounds?** Unclear / not established as a win; REUB/OTUB prune decoys but overhead dominates.
+6. **Retains exact decisions on independent small instances?** **Yes** (8/8 suite) for DRUB, REUB_v1, OTUB.
+7. **Useful with charging & announcements?** Charging encoded; announcement demo exists; not yet a primary exact multi-request campaign.
+8. **New math beyond generic info-relaxation / B&B?** **No** — OTUB is a structured family bound with classical nonanticipativity ideas; not a general EVRP theorem.
 
-### Not established
+### What counts as success next (unchanged)
 
-- A cheap resource bound that is routinely **tighter** than clairvoyant DRUB **and** cheaper to evaluate on varied networks.
-- Scalable computational advantage (toy ms timings remain noisy; heavy-ops gap is small).
-- Full event-driven fleet simulator integration / depot-return enforcement in the continuation family.
-- Generality beyond hand-built corridor toys.
-
-### Immediate research target (unchanged)
-
-A sound, EVRP-structured information-value upper bound that prunes without requiring the expensive clairvoyant continuation tree on every candidate.
+A reusable proved bound whose **total** computation (including bound build) beats unpruned search on varied instances, with a clear timing–commitment mechanism — then connect to the event-driven simulator / EVRP-TW-D.
 
 ### Commands
 
 ```bash
-python -m pytest -q tests/test_dr_dual.py tests/test_dr_dual_repair.py tests/test_dr_dual_validation.py
+python -m pytest -q tests/test_dr_dual.py tests/test_dr_dual_repair.py tests/test_dr_dual_validation.py tests/test_dr_dual_advance.py
+python -m safe_time_evrp.dr_dual.compute_study
 python -c "from safe_time_evrp.dr_dual.experiments import write_artifacts; from pathlib import Path; write_artifacts(Path('docs/decision_relevant_dual_mpc'))"
 ```

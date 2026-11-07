@@ -64,7 +64,7 @@
       "expanded": 2,
       "pruned": 1,
       "safety_out": 0,
-      "seconds": 0.0015157000161707401,
+      "seconds": 0.0014421999803744256,
       "counters": {
         "known_theta_continuation_calls": 4,
         "common_policy_evaluations": 2,
@@ -86,7 +86,7 @@
       "expanded": 2,
       "pruned": 1,
       "safety_out": 0,
-      "seconds": 0.0015157000161707401,
+      "seconds": 0.0014421999803744256,
       "counters": {
         "known_theta_continuation_calls": 4,
         "common_policy_evaluations": 2,
@@ -122,7 +122,7 @@
       "value": 12.125,
       "expanded": 3,
       "pruned": 0,
-      "seconds": 0.001064100011717528,
+      "seconds": 0.0010425999644212425,
       "counters": {
         "known_theta_continuation_calls": 0,
         "common_policy_evaluations": 2,
@@ -235,7 +235,7 @@
             "transition_calls": 40,
             "total_heavy_calls": 5
           },
-          "mean_seconds": 0.0010639999915535252,
+          "mean_seconds": 0.001033799994426469,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 0
         },
@@ -255,7 +255,7 @@
             "transition_calls": 44,
             "total_heavy_calls": 10
           },
-          "mean_seconds": 0.0014399000016661982,
+          "mean_seconds": 0.001399400003720075,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 2
         },
@@ -275,7 +275,27 @@
             "transition_calls": 40,
             "total_heavy_calls": 6
           },
-          "mean_seconds": 0.0009538666733230153,
+          "mean_seconds": 0.0009118333109654486,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "dr_single_ev_corridors",
+          "mode": "prune_otub",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 44,
+            "total_heavy_calls": 6
+          },
+          "mean_seconds": 0.0009551333302321533,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 2
         },
@@ -290,17 +310,17 @@
             "known_theta_continuation_calls": 4,
             "common_policy_evaluations": 2,
             "bayes_continuation_calls": 2,
-            "bound_evaluations": 2,
+            "bound_evaluations": 4,
             "resource_bound_evaluations": 2,
-            "transition_calls": 44,
-            "total_heavy_calls": 12
+            "transition_calls": 48,
+            "total_heavy_calls": 14
           },
-          "mean_seconds": 0.001446366678768148,
+          "mean_seconds": 0.0017784666852094233,
           "trials": 3,
-          "bound_evals_expected_zero_if_unpruned": 4
+          "bound_evals_expected_zero_if_unpruned": 6
         },
         {
-          "network": "dr_single_ev_variant",
+          "network": "suite_tight_battery",
           "mode": "unpruned",
           "selected": "travel|v1|DA_inform|None|None|0.0",
           "value": 12.125,
@@ -315,12 +335,12 @@
             "transition_calls": 40,
             "total_heavy_calls": 5
           },
-          "mean_seconds": 0.0010757666702071826,
+          "mean_seconds": 0.0009764666707875828,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 0
         },
         {
-          "network": "dr_single_ev_variant",
+          "network": "suite_tight_battery",
           "mode": "prune_clairvoyant",
           "selected": "travel|v1|DA_inform|None|None|0.0",
           "value": 12.125,
@@ -335,12 +355,12 @@
             "transition_calls": 44,
             "total_heavy_calls": 10
           },
-          "mean_seconds": 0.001594866664769749,
+          "mean_seconds": 0.001320000000608464,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 2
         },
         {
-          "network": "dr_single_ev_variant",
+          "network": "suite_tight_battery",
           "mode": "prune_resource",
           "selected": "travel|v1|DA_inform|None|None|0.0",
           "value": 12.125,
@@ -355,12 +375,32 @@
             "transition_calls": 40,
             "total_heavy_calls": 6
           },
-          "mean_seconds": 0.0009539000263127188,
+          "mean_seconds": 0.0008758000136973957,
           "trials": 3,
           "bound_evals_expected_zero_if_unpruned": 2
         },
         {
-          "network": "dr_single_ev_variant",
+          "network": "suite_tight_battery",
+          "mode": "prune_otub",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 44,
+            "total_heavy_calls": 6
+          },
+          "mean_seconds": 0.0010943333230291803,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_tight_battery",
           "mode": "prune_combined",
           "selected": "travel|v1|DA_inform|None|None|0.0",
           "value": 12.125,
@@ -370,19 +410,220 @@
             "known_theta_continuation_calls": 4,
             "common_policy_evaluations": 2,
             "bayes_continuation_calls": 2,
-            "bound_evaluations": 2,
+            "bound_evaluations": 4,
             "resource_bound_evaluations": 2,
-            "transition_calls": 44,
-            "total_heavy_calls": 12
+            "transition_calls": 48,
+            "total_heavy_calls": 14
           },
-          "mean_seconds": 0.0014633000052223604,
+          "mean_seconds": 0.0014659666533892353,
           "trials": 3,
-          "bound_evals_expected_zero_if_unpruned": 4
+          "bound_evals_expected_zero_if_unpruned": 6
+        },
+        {
+          "network": "suite_loose_deadline",
+          "mode": "unpruned",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 86,
+            "total_heavy_calls": 5
+          },
+          "mean_seconds": 0.0013315999725212653,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 0
+        },
+        {
+          "network": "suite_loose_deadline",
+          "mode": "prune_clairvoyant",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 1,
+          "pruned": 2,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 1,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 90,
+            "total_heavy_calls": 9
+          },
+          "mean_seconds": 0.001585300002867977,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_loose_deadline",
+          "mode": "prune_resource",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 86,
+            "total_heavy_calls": 7
+          },
+          "mean_seconds": 0.001615266684287538,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_loose_deadline",
+          "mode": "prune_otub",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 90,
+            "total_heavy_calls": 7
+          },
+          "mean_seconds": 0.0014334666581513982,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_loose_deadline",
+          "mode": "prune_combined",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 1,
+          "pruned": 2,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 1,
+            "bound_evaluations": 4,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 94,
+            "total_heavy_calls": 13
+          },
+          "mean_seconds": 0.001686200014470766,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 6
+        },
+        {
+          "network": "suite_fast_charge",
+          "mode": "unpruned",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 86,
+            "total_heavy_calls": 5
+          },
+          "mean_seconds": 0.0013989666864896815,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 0
+        },
+        {
+          "network": "suite_fast_charge",
+          "mode": "prune_clairvoyant",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 1,
+          "pruned": 2,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 1,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 90,
+            "total_heavy_calls": 9
+          },
+          "mean_seconds": 0.0018330666547020276,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_fast_charge",
+          "mode": "prune_resource",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 86,
+            "total_heavy_calls": 6
+          },
+          "mean_seconds": 0.0012086999874251585,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_fast_charge",
+          "mode": "prune_otub",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 1,
+          "pruned": 2,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 1,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 90,
+            "total_heavy_calls": 5
+          },
+          "mean_seconds": 0.0011260333315779765,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "suite_fast_charge",
+          "mode": "prune_combined",
+          "selected": "travel|v1|DA_exploit|None|None|0.0",
+          "value": 14.35,
+          "expanded": 1,
+          "pruned": 2,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 1,
+            "bound_evaluations": 4,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 94,
+            "total_heavy_calls": 13
+          },
+          "mean_seconds": 0.00165940000442788,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 6
         }
       ],
       "notes": [
         "unpruned computes no unused bounds",
-        "ms on toys are noisy"
+        "suite instances vary battery/deadlines/charge/first-actions \u2014 not only useless+2",
+        "ms timings remain noisy; prefer expansion/heavy-op comparisons"
       ]
     }
   }

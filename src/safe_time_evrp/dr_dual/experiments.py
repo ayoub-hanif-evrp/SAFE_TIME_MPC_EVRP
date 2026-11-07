@@ -170,16 +170,19 @@ def run_baseline_comparison() -> dict:
 
 def write_artifacts(out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
+    from safe_time_evrp.dr_dual.compute_study import write_generalization_artifacts
+
     payload = {
         "bound_validity": run_bound_validity_table(),
         "pruning_ablation": run_pruning_ablation(),
         "baselines": run_baseline_comparison(),
     }
     (out_dir / "small_instance_results.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    payload["generalization"] = write_generalization_artifacts(out_dir)
     return payload
 
 
 if __name__ == "__main__":
     art = write_artifacts(Path("docs/decision_relevant_dual_mpc"))
     print(json.dumps(art["pruning_ablation"], indent=2))
-    print(json.dumps(art["baselines"]["two_ev"], indent=2))
+    print(json.dumps(art["generalization"]["compute_suite"]["summary"], indent=2))

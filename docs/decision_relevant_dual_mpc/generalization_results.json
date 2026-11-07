@@ -1,0 +1,1095 @@
+{
+  "fleet_voi": {
+    "legacy_zero_voi_decomposition": {
+      "direct_energy": {
+        "0.0": 5.0,
+        "1.0": 8.0
+      },
+      "charge_route_travel_energy": {
+        "0.0": 5.0,
+        "1.0": 7.0
+      },
+      "battery": 14.0,
+      "charge_weakly_dominates_travel_energy": true,
+      "both_feasible_under_battery": true,
+      "fleet_voi": {
+        "v_shared": 5.7,
+        "v_without_sharing": 5.7,
+        "delta": 0.0,
+        "shared_policy": {
+          "0.0": "charge",
+          "1.0": "charge"
+        },
+        "no_share_policy": "charge"
+      },
+      "conclusion": "zero_or_negligible_fleet_VoI_on_legacy_network"
+    },
+    "positive_voi_network": {
+      "network": "dr_two_ev_positive_voi",
+      "v_shared": 3.0,
+      "v_without_sharing": 2.875,
+      "delta_voi": 0.125,
+      "shared_policy": {
+        "0.0": "direct",
+        "1.0": "charge"
+      },
+      "no_share_policy": "charge",
+      "per_theta_shared": {
+        "0.0": 3.5,
+        "1.0": 2.5
+      },
+      "per_theta_no_share": {
+        "0.0": 3.25,
+        "1.0": 2.5
+      },
+      "notes": [
+        "delta_voi>0: sharing strictly improves EV2 expected reward",
+        "compare_route_energies: inspect Segment E2_to_B vs D2_S2+S2_B under each \u03b8"
+      ],
+      "positive": true
+    }
+  },
+  "compute_suite": {
+    "instances": [
+      {
+        "instance_id": "S0_baseline",
+        "network": "dr_single_ev_corridors",
+        "tags": [
+          "baseline",
+          "three_first_actions"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_inform|None|None|0.0",
+        "exact_value": 12.125,
+        "unpruned": {
+          "first": "travel|v1|DA_inform|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 10,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "combined": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 14,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0010360999964177608,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0015381600009277464,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0009142800001427532,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0009742600028403104,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.0016100200009532273,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": true,
+          "dual_differs_from_passive": true,
+          "dual_differs_from_info_gain": false
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.8,
+            "drub": 12.15,
+            "q_star": 9.8,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.3499999999999996
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.274999999999999,
+            "drub": 12.125,
+            "q_star": 12.125,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 2.7249999999999996,
+            "otub_gap": 0.14999999999999858,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S1_tight_battery",
+        "network": "suite_tight_battery",
+        "tags": [
+          "battery_tight"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_inform|None|None|0.0",
+        "exact_value": 12.125,
+        "unpruned": {
+          "first": "travel|v1|DA_inform|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 10,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "combined": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 14,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0011367800179868937,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0013736400054767729,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0010064200032502413,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0009294199990108609,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.0015572800068184734,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": true,
+          "dual_differs_from_passive": true,
+          "dual_differs_from_info_gain": false
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.8,
+            "drub": 12.15,
+            "q_star": 9.8,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.3499999999999996
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.274999999999999,
+            "drub": 12.125,
+            "q_star": 12.125,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 2.7249999999999996,
+            "otub_gap": 0.14999999999999858,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S2_loose_deadline",
+        "network": "suite_loose_deadline",
+        "tags": [
+          "deadline_slack",
+          "charge_enables_robust_C"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_exploit|None|None|0.0",
+        "exact_value": 14.35,
+        "unpruned": {
+          "first": "travel|v1|DA_exploit|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 9,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 3,
+            "pruned": 0,
+            "heavy": 7,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 3,
+            "pruned": 0,
+            "heavy": 7,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "combined": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 13,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0013368600164540112,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.001595519995316863,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0014715200057253241,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0013724399963393808,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.001805520011112094,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": false,
+          "dual_differs_from_passive": false,
+          "dual_differs_from_info_gain": true
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 14.8,
+            "drub": 14.375,
+            "q_star": 14.35,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 0.45000000000000107,
+            "otub_gap": 0.45000000000000107,
+            "drub_gap": 0.025000000000000355
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 14.774999999999999,
+            "drub": 14.349999999999998,
+            "q_star": 14.349999999999998,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 0.5000000000000018,
+            "otub_gap": 0.4250000000000007,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 14.774999999999999,
+            "drub": 14.349999999999998,
+            "q_star": 14.349999999999998,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 22.0,
+            "reub_v1": 14.85,
+            "reub_gap": 0.5000000000000018,
+            "otub_gap": 0.4250000000000007,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S3_fast_charge",
+        "network": "suite_fast_charge",
+        "tags": [
+          "charging_speed"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_exploit|None|None|0.0",
+        "exact_value": 14.35,
+        "unpruned": {
+          "first": "travel|v1|DA_exploit|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 9,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 5,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": false
+          },
+          "combined": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 13,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0012769000022672117,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0016754599986597896,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0011709999991580844,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0010770199936814607,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.001762519998010248,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": false,
+          "dual_differs_from_passive": false,
+          "dual_differs_from_info_gain": true
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 14.8,
+            "drub": 14.375,
+            "q_star": 14.35,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 0.45000000000000107,
+            "otub_gap": 0.45000000000000107,
+            "drub_gap": 0.025000000000000355
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.274999999999999,
+            "drub": 12.125,
+            "q_star": 12.125,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 2.7249999999999996,
+            "otub_gap": 0.14999999999999858,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S4_late_obs",
+        "network": "suite_late_obs",
+        "tags": [
+          "observation_timing",
+          "late_inform"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_exploit|None|None|0.0",
+        "exact_value": 9.8,
+        "unpruned": {
+          "first": "travel|v1|DA_exploit|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 9,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 3,
+            "pruned": 0,
+            "heavy": 7,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 5,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": false
+          },
+          "combined": {
+            "first": "travel|v1|DA_exploit|None|None|0.0",
+            "expanded": 1,
+            "pruned": 2,
+            "heavy": 13,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0009887199965305626,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0013169800047762692,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0010836799978278578,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0008256000000983477,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.0014607199933379888,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": false,
+          "dual_differs_from_passive": false,
+          "dual_differs_from_info_gain": true
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.8,
+            "drub": 12.15,
+            "q_star": 9.8,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.3499999999999996
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 18.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 30.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S5_more_first_actions",
+        "network": "suite_more_first",
+        "tags": [
+          "more_first_actions"
+        ],
+        "n_first_actions": 5,
+        "exact_first": "travel|v1|DA_mid_inform|None|None|0.0",
+        "exact_value": 12.14,
+        "unpruned": {
+          "first": "travel|v1|DA_mid_inform|None|None|0.0",
+          "expanded": 5,
+          "heavy": 9,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_mid_inform|None|None|0.0",
+            "expanded": 3,
+            "pruned": 2,
+            "heavy": 19,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_mid_inform|None|None|0.0",
+            "expanded": 4,
+            "pruned": 1,
+            "heavy": 12,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_mid_inform|None|None|0.0",
+            "expanded": 3,
+            "pruned": 2,
+            "heavy": 9,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": false
+          },
+          "combined": {
+            "first": "travel|v1|DA_mid_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 3,
+            "heavy": 24,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0017191599938087166,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.002720519993454218,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.001762100006453693,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.00151389999082312,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.0026605000137351455,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": false,
+          "dual_differs_from_passive": true,
+          "dual_differs_from_info_gain": true
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.8,
+            "drub": 12.15,
+            "q_star": 9.8,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.3499999999999996
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.274999999999999,
+            "drub": 12.125,
+            "q_star": 12.125,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 2.7249999999999996,
+            "otub_gap": 0.14999999999999858,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_mid_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.29,
+            "drub": 12.14,
+            "q_star": 12.14,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 14.0,
+            "reub_v1": 14.84,
+            "reub_gap": 2.6999999999999993,
+            "otub_gap": 0.14999999999999858,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_slow_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.79,
+            "drub": 12.139999999999999,
+            "q_star": 9.79,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 11.0,
+            "reub_v1": 14.79,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.3499999999999996
+          }
+        ]
+      },
+      {
+        "instance_id": "S6_high_energy_cost",
+        "network": "suite_high_ec",
+        "tags": [
+          "energy_cost"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_inform|None|None|0.0",
+        "exact_value": 10.625,
+        "unpruned": {
+          "first": "travel|v1|DA_inform|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 10,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "combined": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 14,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0009932200075127185,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0014507999992929399,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0009466199902817607,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0009085999918170273,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.0016322600073181092,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": true,
+          "dual_differs_from_passive": true,
+          "dual_differs_from_info_gain": false
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.0,
+            "drub": 10.75,
+            "q_star": 9.0,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.0,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 1.75
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 11.375,
+            "drub": 10.625,
+            "q_star": 10.625,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.25,
+            "reub_gap": 3.625,
+            "otub_gap": 0.75,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 8.875,
+            "drub": 8.875,
+            "q_star": 8.875,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.25,
+            "reub_gap": 0.375,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      },
+      {
+        "instance_id": "S7_separable_regimes",
+        "network": "suite_sep",
+        "tags": [
+          "energy_regime_separability"
+        ],
+        "n_first_actions": 3,
+        "exact_first": "travel|v1|DA_inform|None|None|0.0",
+        "exact_value": 12.149999999999999,
+        "unpruned": {
+          "first": "travel|v1|DA_inform|None|None|0.0",
+          "expanded": 3,
+          "heavy": 5,
+          "agrees_exact": true
+        },
+        "pruning": {
+          "clairvoyant": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 10,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "resource": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "otub": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 6,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          },
+          "combined": {
+            "first": "travel|v1|DA_inform|None|None|0.0",
+            "expanded": 2,
+            "pruned": 1,
+            "heavy": 14,
+            "agrees_exact": true,
+            "pruning_costs_more_heavy_than_unpruned": true
+          }
+        },
+        "timing_mean_s": {
+          "unpruned": {
+            "mean_s": 0.0010770000051707029,
+            "trials": 5
+          },
+          "clairvoyant": {
+            "mean_s": 0.0013665199978277088,
+            "trials": 5
+          },
+          "resource": {
+            "mean_s": 0.0009406400029547512,
+            "trials": 5
+          },
+          "otub": {
+            "mean_s": 0.0010231400025077163,
+            "trials": 5
+          },
+          "combined": {
+            "mean_s": 0.001467420009430498,
+            "trials": 5
+          }
+        },
+        "baselines": {
+          "robust_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_first": "travel|v1|DA_exploit|None|None|0.0",
+          "info_gain_first": "travel|v1|DA_inform|None|None|0.0",
+          "info_gain_matches_exact": true,
+          "dual_differs_from_passive": true,
+          "dual_differs_from_info_gain": false
+        },
+        "bound_gaps": [
+          {
+            "action": "travel|v1|DA_exploit|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.8,
+            "drub": 12.175,
+            "q_star": 9.8,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 10.0,
+            "reub_v1": 14.8,
+            "reub_gap": 5.0,
+            "otub_gap": 0.0,
+            "drub_gap": 2.375
+          },
+          {
+            "action": "travel|v1|DA_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 12.274999999999999,
+            "drub": 12.149999999999999,
+            "q_star": 12.149999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": false,
+            "tau_obs": 12.0,
+            "reub_v1": 14.85,
+            "reub_gap": 2.700000000000001,
+            "otub_gap": 0.125,
+            "drub_gap": 0.0
+          },
+          {
+            "action": "travel|v1|DA_useless_inform|None|None|0.0",
+            "otub_status": "OK",
+            "otub": 9.774999999999999,
+            "drub": 9.774999999999999,
+            "q_star": 9.774999999999999,
+            "otub_ge_q": true,
+            "otub_le_drub": true,
+            "tau_obs": 22.0,
+            "reub_v1": 9.85,
+            "reub_gap": 0.07500000000000107,
+            "otub_gap": 0.0,
+            "drub_gap": 0.0
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "n_instances": 8,
+      "exact_agreement_counts": {
+        "clairvoyant": 8,
+        "resource": 8,
+        "otub": 8,
+        "combined": 8
+      },
+      "heavy_ops_strictly_improved_with_prune": {
+        "clairvoyant": 0,
+        "resource": 0,
+        "otub": 0,
+        "combined": 0
+      },
+      "note": "Do not claim scalability from millisecond means alone"
+    }
+  }
+}

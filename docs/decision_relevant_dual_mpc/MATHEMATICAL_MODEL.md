@@ -16,17 +16,28 @@ s_t=(x_t,\mathcal A_t,b_t)
 ## Energy
 
 Segment \(a\): \(e_a=\phi_0(a)+\phi_1(a)\theta^\star+\varepsilon\).  
-Observations only after completed travel. Inconsistency ⇒ fail-safe reject.
+Observations only after completed travel at time \(\tau_{\mathrm{obs}}\). Inconsistency ⇒ fail-safe reject.
 
 ## Actions
 
-Travel (named corridor segment), serve, charge_full, wait, accept/reject/defer.
+Travel (named corridor segment), serve, charge_full, wait, accept/reject.
 
-## Causal safety
+## Causal safety / nonanticipativity
 
-A first action is admissible only if for every \(\theta\) in the prior support there exists a continuation in the declared plan family completing \(\mathcal A_t\).  
-Quantifier order: choose action from current info; continuations may use later observations; no dependence on unrealized \(\theta\) before it is learned.
+\[
+h_t(\theta_1)=h_t(\theta_2)\implies \pi(h_t(\theta_1))=\pi(h_t(\theta_2)).
+\]
+
+Decisions before \(\tau_{\mathrm{obs}}\) cannot depend on the unrealized observation. After \(\tau_{\mathrm{obs}}\), recourse may use the posterior.
 
 ## Objective
 
-Expected delivery reward minus energy cost, subject to hard commitment safety. Reliability and reward reported separately in experiments.
+Expected delivery reward minus energy cost, subject to hard commitment completion (\(\mathcal A\subseteq\) completed).
+
+## Exact reference scope
+
+`EXACT_OPTIMUM` = optimum within an explicitly documented finite policy class (single-EV corridor family or history-indexed two-EV `{DIRECT,CHARGE,SKIP}`), not a continuous general EVRP optimum.
+
+## Fleet VoI isolation
+
+Hold EV1’s physical first action fixed; compare EV2 optimized causal value with vs without receiving EV1’s completed energy observation (`fleet_voi.py`). Label changes without \(\Delta>0\) are not information value.

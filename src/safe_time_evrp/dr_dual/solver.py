@@ -84,13 +84,29 @@ def _upper_bound(
         return evaluate_resource_bound(net, state, action, noise=noise)
     if bound_mode == "clairvoyant":
         return evaluate_clairvoyant_bound(net, state, action, noise=noise)
+    if bound_mode == "otub":
+        from safe_time_evrp.dr_dual.observation_timing import BoundStatus, evaluate_observation_timing_bound
+
+        res = evaluate_observation_timing_bound(net, state, action, noise=noise)
+        if res.status is BoundStatus.UNSUPPORTED_BOUND:
+            # Do not silently prune; force exact expansion by returning +inf-like non-prune
+            return float("inf")
+        if res.status is BoundStatus.INFEASIBLE or res.value is None:
+            return None
+        return res.value
     if bound_mode == "combined":
-        # Only valid if both bounds are independently sound; take the tighter (min).
+        # Sound bounds only; take the tighter (min).
         q_c = evaluate_clairvoyant_bound(net, state, action, noise=noise)
         q_r = evaluate_resource_bound(net, state, action, noise=noise)
-        if q_c is None or q_r is None:
+        from safe_time_evrp.dr_dual.observation_timing import BoundStatus, evaluate_observation_timing_bound
+
+        ot = evaluate_observation_timing_bound(net, state, action, noise=noise)
+        vals = [v for v in (q_c, q_r) if v is not None]
+        if ot.status is BoundStatus.OK and ot.value is not None:
+            vals.append(ot.value)
+        if not vals:
             return None
-        return min(q_c, q_r)
+        return min(vals)
     raise ValueError(bound_mode)
 
 
@@ -295,34 +311,9 @@ def run_fair_compute_experiment(
 ) -> dict:
     """Compare true unpruned search vs bound-pruned variants with full counters + timings."""
     if nets is None:
-        from safe_time_evrp.dr_dual.network import RoadNetwork as RN
-        from safe_time_evrp.dr_dual.network import Segment
+        from safe_time_evrp.dr_dual.instance_suite import build_preregistered_suite
 
-        base = make_single_ev_corridors()
-        # Variant: slightly longer useless corridor
-        segs = tuple(
-            Segment(
-                s.segment_id,
-                s.origin,
-                s.destination,
-                s.travel_time + (2.0 if "useless" in s.segment_id else 0.0),
-                s.base_energy,
-                s.informative,
-            )
-            for s in base.segments
-        )
-        variant = RN(
-            name="dr_single_ev_variant",
-            nodes=base.nodes,
-            depot=base.depot,
-            battery=base.battery,
-            segments=segs,
-            customers=base.customers,
-            chargers=base.chargers,
-            energy_cost=base.energy_cost,
-            metadata=dict(base.metadata),
-        )
-        nets = [base, variant]
+        nets = [s.net for s in build_preregistered_suite()[:4]]
 
     rows = []
     for net in nets:
@@ -330,6 +321,7 @@ def run_fair_compute_experiment(
             ("unpruned", False, "clairvoyant"),
             ("prune_clairvoyant", True, "clairvoyant"),
             ("prune_resource", True, "resource"),
+            ("prune_otub", True, "otub"),
             ("prune_combined", True, "combined"),
         ]
         for label, use_p, bmode in modes:
@@ -354,4 +346,11 @@ def run_fair_compute_experiment(
                     + last.counters.get("resource_bound_evaluations", 0),
                 }
             )
-    return {"rows": rows, "notes": ["unpruned computes no unused bounds", "ms on toys are noisy"]}
+    return {
+        "rows": rows,
+        "notes": [
+            "unpruned computes no unused bounds",
+            "suite instances vary battery/deadlines/charge/first-actions — not only useless+2",
+            "ms timings remain noisy; prefer expansion/heavy-op comparisons",
+        ],
+    }

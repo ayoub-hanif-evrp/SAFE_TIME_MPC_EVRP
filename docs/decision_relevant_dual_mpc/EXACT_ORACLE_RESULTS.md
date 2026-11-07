@@ -2,29 +2,25 @@
 
 ## Status label
 
-`EXACT_OPTIMUM` means optimal within an **explicitly enumerated finite policy class**, not a continuous general EVRP optimum.
+`EXACT_OPTIMUM` means optimal within an **explicitly enumerated finite policy class**.
 
-## Single-EV class
+## Single-EV
 
-- First action: travel on one D→A corridor.
-- Continuation family: serve A; optionally direct AC; optionally AS + full charge + SA + AC.
-- Nonanticipative rule: if posterior support size > 1, one common plan for all remaining θ.
+First D→A corridor + continuation family {stop after A, direct AC, AS+charge+SA+AC}. Ambiguous posterior ⇒ one common plan.
 
-## Two-EV class (repaired)
+## Two-EV (nonanticipative)
 
-Implemented in `fleet_oracle.py` (wired through `solve_exact("two")`):
+`fleet_oracle.py`: history-indexed EV2 policy; sync to \(T_{\mathrm{obs}}\).
 
-1. EV1 chooses exploit/inform corridor; serves A1.
-2. Global observation time `T_obs` = EV1 clock after travel; EV2 is waited to `T_obs` before using the posterior.
-3. History key \(h=(\text{corridor}, \mathrm{supp}(b))\).
-4. For each \(h\), EV2 selects **one** action in `{DIRECT, CHARGE, SKIP}` maximizing conditional expected reward; the same action applies to every θ mapping to \(h\).
+### Fleet VoI (critical)
 
-**Nonanticipativity:** \(h_t(\theta_1)=h_t(\theta_2)\Rightarrow \pi(h_t(\theta_1))=\pi(h_t(\theta_2))\).
+- **Legacy network:** \(\Delta\) VoI = 0 under controlled share/no-share (charge weakly dominates).
+- **Positive-VoI network:** \(\Delta\) VoI > 0 with tight battery and costly charge detour.
 
-**Regression:** reverse ranking of DIRECT vs CHARGE across θ ⇒ common policy value = 5, clairvoyant per-θ max = 10 (must not report clairvoyant as exact).
+Do not claim cross-vehicle benefit from contingent labels alone.
 
-## Known limitations
+## Limitations
 
-- Not integrated with the legacy event-driven `FleetSimulator` as the primary plant.
-- Depot-return feasibility is **not** enforced by the limited continuation family.
-- Dynamic request release is covered by semantics tests, not yet by the primary exact value table.
+- Default continuation family does not require depot return.
+- Announcement lifecycle demonstrated in `generic_small.py`, not fully folded into every exact table row.
+- Independent replay: `replay.py` (recomputes from PlantLog without `apply_action`).
