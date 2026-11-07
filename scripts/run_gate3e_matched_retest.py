@@ -20,7 +20,7 @@ from safe_time_evrp.mpc3c.forecast import (
     forecast_seed_for,
     release_seed_for,
     synthetic_poisson_releases,
-)
+)  # build_scenarios_for(instance=...) quarantined in Gate 3F
 from safe_time_evrp.mpc3c.horizon_microscope import search_horizon_causality
 from safe_time_evrp.mpc3c.seeds import instance_content_hash
 from safe_time_evrp.mpc3c.sim_experiment import compare_controllers, run_sim_dynamic

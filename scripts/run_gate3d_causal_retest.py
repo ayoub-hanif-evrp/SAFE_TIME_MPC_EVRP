@@ -8,7 +8,7 @@ from pathlib import Path
 from safe_time_evrp.data.amazon import ESOGU_ENERGY_ACTIVE_V1, list_route_ids, load_amazon_route
 from safe_time_evrp.data.evrp_tw_d import extract_root, parse_solomon_file
 from safe_time_evrp.mpc3c.controllers import ControllerKind
-from safe_time_evrp.mpc3c.forecast import build_scenarios_for, fit_empirical_arrivals, synthetic_poisson_releases
+from safe_time_evrp.mpc3c.forecast import build_anonymous_scenarios, fit_empirical_arrivals, synthetic_poisson_releases
 from safe_time_evrp.mpc3c.horizon_microscope import search_horizon_causality
 from safe_time_evrp.mpc3c.sim_experiment import compare_controllers, run_sim_dynamic
 
@@ -68,7 +68,9 @@ def main() -> None:
                 seed=hash(name) % 10_000,
                 mean_interarrival=arrival_model.train_interarrival_mean,
             )
-            forecast = build_scenarios_for(inst, arrival_model, n_scenarios=3, seed=hash(name) % 10_000)
+            forecast = build_anonymous_scenarios(
+                arrival_model, n_scenarios=3, customers_per_scenario=2, seed=hash(name) % 10_000, day_horizon=200.0
+            )
             report = compare_controllers(
                 inst,
                 fleet_size=fleet,
@@ -91,7 +93,9 @@ def main() -> None:
     for rid in route_ids:
         inst = load_amazon_route(rid, max_customers=12, electrification=ESOGU_ENERGY_ACTIVE_V1)
         releases = [(cid, float(inst.node(cid).window.ready)) for cid in inst.customer_ids()]
-        forecast = build_scenarios_for(inst, arrival_model, n_scenarios=2, seed=7)
+        forecast = build_anonymous_scenarios(
+            arrival_model, n_scenarios=2, customers_per_scenario=2, seed=7, day_horizon=12.0
+        )
         report = compare_controllers(
             inst,
             fleet_size=1,
