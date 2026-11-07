@@ -200,77 +200,30 @@ def _realize_robust_continuation(
     *,
     noise: float = 0.0,
 ) -> float | None:
-    """Execute the best plan that is feasible for ALL thetas in the current belief; score under truth.
+    """Score the **same** common nonanticipative plan under ``theta_true``.
 
-    Plan choice is nonanticipative w.r.t. theta (uses only belief support). Realized reward uses
-    ``theta_true`` for energy on any further travel in the plan.
+    Plan selection uses only the current belief (``select_common_policy``). The true
+    theta is used solely to realize rewards of that fixed plan — never to choose it.
     """
-    rem = state_after.belief.support_set()
-    # Candidate plans (same family as known-theta oracle)
-    base: list[Action] = []
-    if "cust_A" not in state_after.completed and state_after.vehicle("v1").node == "A":
-        base.append(Action(ActionKind.SERVE, "v1", customer_id="cust_A"))
-    candidates = [
-        list(base),
-        [*base, Action(ActionKind.TRAVEL, "v1", segment_id="AC"), Action(ActionKind.SERVE, "v1", customer_id="cust_C")],
-        [
-            *base,
-            Action(ActionKind.TRAVEL, "v1", segment_id="AS"),
-            Action(ActionKind.CHARGE_FULL, "v1", charger_id="chg_S"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="SA"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
-            Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
-        ],
-    ]
+    from safe_time_evrp.dr_dual.common_policy import realize_plan, select_common_policy
 
-    def feasible_for_all(plan: list[Action]) -> bool:
-        for th in rem:
-            s = WorldState(
-                state_after.vehicles,
-                state_after.accepted,
-                state_after.completed,
-                state_after.rejected,
-                state_after.announced,
-                DiscreteBelief((th,), (1.0,)),
-                state_after.stage,
-            )
-            for act in plan:
-                tr = apply_action(net, s, act, theta_star=th, noise=noise)
-                if not tr.ok or tr.state is None:
-                    return False
-                s = tr.state
-            if not state_after.accepted.issubset(s.completed):
-                return False
-        return True
+    common = select_common_policy(net, state_after, noise=noise, objective="expected")
+    if common is None:
+        return None
+    return realize_plan(net, state_after, list(common.plan), theta_true, noise=noise)
 
-    def realize(plan: list[Action]) -> float | None:
-        s = WorldState(
-            state_after.vehicles,
-            state_after.accepted,
-            state_after.completed,
-            state_after.rejected,
-            state_after.announced,
-            DiscreteBelief((theta_true,), (1.0,)),
-            state_after.stage,
-        )
-        total = 0.0
-        for act in plan:
-            tr = apply_action(net, s, act, theta_star=theta_true, noise=noise)
-            if not tr.ok or tr.state is None:
-                return None
-            total += tr.reward_delta
-            s = tr.state
-        if not state_after.accepted.issubset(s.completed):
-            return None
-        return total
 
-    best = float("-inf")
-    for plan in candidates:
-        if feasible_for_all(plan):
-            val = realize(plan)
-            if val is not None:
-                best = max(best, val)
-    return best if best > float("-inf") else None
+def common_policy_expected_value(
+    net: RoadNetwork,
+    state_after: WorldState,
+    *,
+    noise: float = 0.0,
+) -> float | None:
+    """Verified feasible-policy value: E[R(π*,θ)] for nonanticipative π* under current belief."""
+    from safe_time_evrp.dr_dual.common_policy import select_common_policy
+
+    common = select_common_policy(net, state_after, noise=noise, objective="expected")
+    return None if common is None else common.expected_reward
 
 
 def _bayes_value_after_first(
@@ -352,8 +305,10 @@ def solve_exact_single(
             {},
         )
 
-    # Optimized passive: score first actions with continuations that ignore posterior updates
-    # (belief forced to prior). Tie-break toward lower |informative|.
+    # Optimized passive: after each first action, force belief back to prior and take the
+    # nonanticipative common policy value (no use of the observation). Tie-break: low info.
+    from safe_time_evrp.dr_dual.common_policy import realize_plan, select_common_policy
+
     passive_best = float("-inf")
     passive_key = None
     for first in _first_travel_actions_single(net, state):
@@ -375,11 +330,15 @@ def solve_exact_single(
                 state.belief,
                 tr.state.stage,
             )
-            cont = _realize_robust_continuation(net, forced, theta, noise=noise)
-            if cont is None:
+            common = select_common_policy(net, forced, noise=noise, objective="expected")
+            if common is None:
                 ok = False
                 break
-            rob_vals.append(p * (tr.reward_delta + cont))
+            realized = realize_plan(net, forced, list(common.plan), theta, noise=noise)
+            if realized is None:
+                ok = False
+                break
+            rob_vals.append(p * (tr.reward_delta + realized))
         if not ok:
             continue
         score = sum(rob_vals)

@@ -54,10 +54,9 @@ def apply_action(
 ) -> TransitionResult:
     """Apply one physical/admission action. Belief updates only after completed travel."""
     v = state.vehicle(action.vehicle_id)
-    if v.busy_until > v.time + 1e-12 and action.kind not in {ActionKind.NOOP}:
-        # Allow actions only when idle at decision time == vehicle time for this tiny model.
-        if abs(v.busy_until - v.time) > 1e-12 and v.busy_until > state.vehicles[0].time:
-            pass
+    # Noninterruptible: reject new actions while a prior travel/serve/charge is incomplete.
+    if action.kind is not ActionKind.NOOP and v.busy_until > v.time + 1e-12:
+        return TransitionResult(False, None, 0.0, None, None, "vehicle_busy_noninterruptible")
 
     if action.kind is ActionKind.TRAVEL:
         assert action.segment_id is not None
@@ -114,10 +113,14 @@ def apply_action(
     if action.kind is ActionKind.SERVE:
         assert action.customer_id is not None
         cust = net.customer(action.customer_id)
+        if action.customer_id not in state.announced and action.customer_id not in state.accepted:
+            return TransitionResult(False, None, 0.0, None, None, "customer_not_released")
         if v.node != cust.node:
             return TransitionResult(False, None, 0.0, None, None, "not_at_customer")
         if action.customer_id in state.completed:
             return TransitionResult(False, None, 0.0, None, None, "already_served")
+        if v.load + cust.demand > net.load_capacity + 1e-12:
+            return TransitionResult(False, None, 0.0, None, None, "payload_exceeded")
         start = max(v.time, cust.ready)
         if start > cust.due + 1e-12:
             return TransitionResult(False, None, 0.0, None, None, "late_for_window")
@@ -227,39 +230,36 @@ def commitment_safe_under_all_theta(
     *,
     remaining_plan_builder,
 ) -> bool:
-    """Nonanticipative robust check: for every theta in support, exists continuation covering accepted.
+    """Nonanticipative robust check with a **common** continuation plan.
 
-    ``remaining_plan_builder(state_after, theta) -> list[Action] | None`` may use theta only inside
-    the check (adversarial quantification), not as a controller policy.
+    ``remaining_plan_builder(state_after) -> list[Action] | None`` must NOT receive theta.
+    The same plan is simulated under every theta in the support. Accepted customers must
+    be in ``completed`` at the end (merely remaining accepted is insufficient).
     """
+    # Build plan from the post-first physical state under an arbitrary theta for geometry;
+    # plan choice itself cannot depend on theta.
+    probe_theta = next(iter(state.belief.support_set()))
+    tr0 = apply_action(net, state, first, theta_star=probe_theta, noise=0.0)
+    if not tr0.ok or tr0.state is None:
+        return False
+    plan = remaining_plan_builder(tr0.state)
+    if plan is None:
+        return False
     for theta in state.belief.support_set():
-        tr = apply_action(net, state, first, theta_star=theta, noise=0.0)
-        if not tr.ok or tr.state is None:
-            return False
-        plan = remaining_plan_builder(tr.state, theta)
-        if plan is None:
-            return False
-        # Reset belief pollution from check: rebuild physical only for feasibility under theta
-        # Re-simulate from original with fixed theta and the concrete action sequence.
-        s0 = state
-        seq = [first, *plan]
-        # Use a shadow state with Dirac-like simulation under theta but without requiring belief
         shadow = WorldState(
-            vehicles=s0.vehicles,
-            accepted=s0.accepted,
-            completed=s0.completed,
-            rejected=s0.rejected,
-            announced=s0.announced,
+            vehicles=state.vehicles,
+            accepted=state.accepted,
+            completed=state.completed,
+            rejected=state.rejected,
+            announced=state.announced,
             belief=DiscreteBelief((theta,), (1.0,)),
-            stage=s0.stage,
+            stage=state.stage,
         )
-        for act in seq:
+        for act in [first, *plan]:
             tr2 = apply_action(net, shadow, act, theta_star=theta, noise=0.0)
             if not tr2.ok or tr2.state is None:
                 return False
             shadow = tr2.state
-        if not state.accepted.issubset(shadow.completed | shadow.accepted):
-            # Must complete all initially accepted by end of plan
-            if not state.accepted.issubset(shadow.completed):
-                return False
+        if not state.accepted.issubset(shadow.completed):
+            return False
     return True

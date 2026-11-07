@@ -50,6 +50,7 @@ class RoadNetwork:
     chargers: tuple[ChargerSpec, ...]
     theta_support: tuple[float, ...] = (0.0, 1.0)
     energy_cost: float = 0.05
+    load_capacity: float = 100.0
     metadata: dict = field(default_factory=dict)
 
     def segments_from(self, node: str) -> list[Segment]:

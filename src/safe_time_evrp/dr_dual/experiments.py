@@ -34,11 +34,13 @@ def run_bound_validity_table() -> list[dict]:
         rows.append(
             {
                 "action": a.key(),
-                "q_bar": b.q_bar,
+                "q_bar_clairvoyant": b.q_bar_clairvoyant,
+                "q_bar_resource": b.q_bar_resource,
                 "true_q": true_q,
-                "bound_valid": bound_dominates_true_q(b.q_bar, true_q),
-                "zero_voi": b.zero_voi_certificate,
-                "gap_q_bar_minus_true": b.q_bar - true_q,
+                "bound_valid": bound_dominates_true_q(b.q_bar_clairvoyant, true_q),
+                "zero_voi_status": b.zero_voi_status,
+                "resource_sound_vs_clairvoyant": b.sound_resource_ub_vs_clairvoyant,
+                "gap_q_bar_minus_true": b.q_bar_clairvoyant - true_q,
             }
         )
     rows.append({"exact_optimum_first": exact.first_action_key, "exact_value": exact.value})
@@ -57,6 +59,8 @@ def run_pruning_ablation() -> dict:
             "pruned": with_p.actions_pruned_by_bound,
             "safety_out": with_p.actions_ruled_out_by_safety,
             "seconds": with_p.solver_seconds,
+            "counters": with_p.counters,
+            "incumbent_L": with_p.incumbent_lower_bound,
             "notes": with_p.notes,
         },
         "no_pruning": {
@@ -65,11 +69,13 @@ def run_pruning_ablation() -> dict:
             "expanded": no_p.actions_expanded,
             "pruned": no_p.actions_pruned_by_bound,
             "seconds": no_p.solver_seconds,
+            "counters": no_p.counters,
         },
         "exact_first": exact.first_action_key,
         "exact_value": exact.value,
         "retains_optimum": with_p.selected_action == exact.first_action_key,
         "fewer_expansions": with_p.actions_expanded < no_p.actions_expanded,
+        "incumbent_is_executable_policy_value": True,
     }
 
 

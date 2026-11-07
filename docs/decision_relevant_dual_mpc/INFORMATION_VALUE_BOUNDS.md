@@ -20,11 +20,15 @@ Within that family, under deterministic latent regimes and the stated observatio
 - After an informative segment with zero noise, the posterior is Dirac and DRUB equals the exact Bayes continuation value.
 - After an uninformative segment, DRUB is optimistic relative to robust causal continuation (θ-contingent OL without further observations), hence still an upper bound on causal \(Q^\star\).
 
-### Zero decision-relevance certificate
+### Zero decision-relevance certificate — WITHDRAWN
 
-If for every \(\theta\), \(V_{\mathrm{OL}}(x_a(\theta),\theta)=V_{\mathrm{robust}}(x_a(\theta),b)\) with belief frozen at the prior, learning cannot improve the continuation family after \(a\). Combined with DRUB \(\le L\), such informative detours are pruned.
+Equality of known-\(\theta\) optimal values does **not** imply a common nonanticipative policy (P1/P2 counterexample). Do not prune on that test.
+
+### Incumbent lower bound L
+
+L must be the Bayes value of an **executable** first action under nonanticipative common continuations. Never initialize L from \(\min_\theta\max_\pi R\).
 
 ### What is / is not claimed
 
-- **Claimed:** soundness under the listed assumptions; empirically valid vs exact \(Q\) on the single-EV network; prunes a zero-VoI informative decoy without losing the optimum.
-- **Not claimed:** a fundamentally new relaxation beyond clairvoyant-after-\(\theta\) OL; journal-ready dominance theory; scalability proofs.
+- **Claimed (conditional):** clairvoyant DRUB ≥ true causal Q in the declared family; pruning with verified executable L retains the exact first action on the single-EV toy; P1/P2 regression.
+- **Not claimed:** novel information-relaxation theory; resource envelope as a certified general UB; scalable runtime gains; cross-vehicle VoI.

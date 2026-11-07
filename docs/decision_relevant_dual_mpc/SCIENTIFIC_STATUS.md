@@ -1,29 +1,31 @@
-# Scientific status
+# Scientific status (corrected)
 
-## Verdict: **PROMISING METHOD** (narrow, provisional)
+**Historical note:** Commit `e1f9f0a` reported PROMISING METHOD. An independent audit found an invalid incumbent lower bound, nonanticipativity bugs, and an unsound zero-VoI test. Those are repaired in this tip; see `CORRECTION_AUDIT.md`. Prior docs remain as artifacts.
 
-A sound DRUB-style upper bound, tied to the same continuation family as the exact oracle, **prunes a decision-irrelevant informative corridor** while **retaining the exact safe-dual first action** on the single-EV network (3→2 expansions in the matched ablation). Charging is an explicit `CHARGE_FULL` action; corridors are distinct physical segments; passive baseline is optimized under forced-prior continuations.
+## Current verdict: **CORRECTED PROTOTYPE — CONDITIONAL PROMISE**
 
-## What is still weak for a top-tier paper
+Not a top-tier claim. Not a topic switch.
 
-1. DRUB is close to a clairvoyant-after-\(\theta\) open-loop relaxation — the generic pruning inequality is not new; the EVRP-specific content is the zero-VoI / TW–SOC certificate and the commitment-safe action set.
-2. Cross-vehicle information value is **not** cleanly demonstrated on the current 2-EV calibration.
-3. No Schneider/EVRP-TW-D/Amazon development campaign yet (by scope limit).
-4. Partial charging and nonzero-noise Bayes optimality not fully certified.
+### What now holds
 
-## Preserved negatives
+1. Nonanticipative common continuation policy selection (same plan for identical observation histories).
+2. Incumbent L = executable Bayes value only (P1/P2 regression documents why `min max` is illegal).
+3. Zero-VoI certificate withdrawn from certified pruning.
+4. Clairvoyant DRUB retained as a **reference** upper bound; pruning uses it only with verified L.
+5. Resource envelope bound implemented and instrumented; certified prune only if it dominates clairvoyant on the instance (often does not).
+6. Full compute counters (known-θ calls, common-policy evals, bound evals), not only first-action expansions.
+7. Commitment completion, busy_until, payload checks.
 
-Gate 4 commitment-cost NO-GO and safe-dual STOP/human-decision reports remain unchanged in their directories.
+### What does not hold yet
 
-## Next human-led steps (same algorithm — no topic switch)
+- Demonstrated cross-vehicle information value under a shared global clock.
+- A cheap resource bound that is both sound and routinely tighter/cheaper than clairvoyant DRUB.
+- Multi-instance computational advantage beyond the hand-built corridor toy.
+- Dynamic request release in the primary exact table.
 
-- Tighten DRUB with cheaper resource envelopes that avoid enumerating \(V_{\mathrm{OL}}\).
-- Retune 2-EV instance until shared-θ inform changes EV2’s charge decision under exact search.
-- Only then expand development instances.
-
-## Commands / commit
+### Commands
 
 ```bash
-python -m pytest -q tests/test_dr_dual.py
+python -m pytest -q tests/test_dr_dual.py tests/test_dr_dual_repair.py
 python -c "from safe_time_evrp.dr_dual.experiments import write_artifacts; from pathlib import Path; print(write_artifacts(Path('docs/decision_relevant_dual_mpc'))['pruning_ablation'])"
 ```

@@ -2,26 +2,32 @@
   "bound_validity": [
     {
       "action": "travel|v1|DA_exploit|None|None|0.0",
-      "q_bar": 12.15,
+      "q_bar_clairvoyant": 12.15,
+      "q_bar_resource": 14.8,
       "true_q": 9.8,
       "bound_valid": true,
-      "zero_voi": false,
+      "zero_voi_status": "WITHDRAWN_UNSOUND",
+      "resource_sound_vs_clairvoyant": true,
       "gap_q_bar_minus_true": 2.3499999999999996
     },
     {
       "action": "travel|v1|DA_inform|None|None|0.0",
-      "q_bar": 12.125,
+      "q_bar_clairvoyant": 12.125,
+      "q_bar_resource": 14.85,
       "true_q": 12.125,
       "bound_valid": true,
-      "zero_voi": false,
+      "zero_voi_status": "WITHDRAWN_UNSOUND",
+      "resource_sound_vs_clairvoyant": true,
       "gap_q_bar_minus_true": 0.0
     },
     {
       "action": "travel|v1|DA_useless_inform|None|None|0.0",
-      "q_bar": 9.774999999999999,
+      "q_bar_clairvoyant": 9.774999999999999,
+      "q_bar_resource": 9.85,
       "true_q": 9.774999999999999,
       "bound_valid": true,
-      "zero_voi": true,
+      "zero_voi_status": "WITHDRAWN_UNSOUND",
+      "resource_sound_vs_clairvoyant": true,
       "gap_q_bar_minus_true": 0.0
     },
     {
@@ -36,8 +42,19 @@
       "expanded": 2,
       "pruned": 1,
       "safety_out": 0,
-      "seconds": 0.006641800049692392,
+      "seconds": 0.001503499981481582,
+      "counters": {
+        "known_theta_continuation_calls": 4,
+        "common_policy_evaluations": 2,
+        "bayes_continuation_calls": 2,
+        "bound_evaluations": 2,
+        "resource_bound_evaluations": 0,
+        "transition_calls": 44,
+        "total_heavy_calls": 10
+      },
+      "incumbent_L": 12.125,
       "notes": [
+        "seed_incumbent:travel|v1|DA_exploit|None|None|0.0:L=9.8000",
         "pruned:travel|v1|DA_useless_inform|None|None|0.0:q_bar=9.7750<=L=12.1250"
       ]
     },
@@ -46,12 +63,22 @@
       "value": 12.125,
       "expanded": 3,
       "pruned": 0,
-      "seconds": 0.007227999973110855
+      "seconds": 0.0016154000186361372,
+      "counters": {
+        "known_theta_continuation_calls": 4,
+        "common_policy_evaluations": 2,
+        "bayes_continuation_calls": 3,
+        "bound_evaluations": 2,
+        "resource_bound_evaluations": 0,
+        "transition_calls": 44,
+        "total_heavy_calls": 11
+      }
     },
     "exact_first": "travel|v1|DA_inform|None|None|0.0",
     "exact_value": 12.125,
     "retains_optimum": true,
-    "fewer_expansions": true
+    "fewer_expansions": true,
+    "incumbent_is_executable_policy_value": true
   },
   "baselines": {
     "single_ev": {
@@ -83,8 +110,8 @@
         "expanded": 3
       },
       "robust": {
-        "first": "travel|v1|DA_exploit|None|None|0.0",
-        "value": 9.8
+        "first": "travel|v1|DA_inform|None|None|0.0",
+        "value": 12.125
       },
       "info_gain_heuristic": {
         "first": "travel|v1|DA_inform|None|None|0.0",
