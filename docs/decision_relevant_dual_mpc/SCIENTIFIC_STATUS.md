@@ -1,28 +1,30 @@
 # Scientific status
 
 **Branch:** `research/decision-relevant-dual-mpc`  
-**Cycle:** Generic finite-state EVRP–MPC + TEI bound + frozen scaling study
+**Cycle:** Urgent correctness recovery (model / oracle / bound alignment)
 
-## Verdict: **NOT YET SUBSTANTIVE** (pruning hypothesis fails compute screen)
+## Verdict: **NOT YET SUBSTANTIVE** — correctness repair in progress; pruning hypothesis remains unsupported
 
-### What holds
+### What holds after repair
 
-1. P0 fixes: bound statuses (`VALID` / `UNSUPPORTED` / `PROVEN_INFEASIBLE` / `UNKNOWN`); unsupported never silently discards; commit-then-fail model inconsistency; RH `state=`; hardened replay.
-2. Generic finite-state reference (1–2 EVs, 3–5 customers, announcements, depot contract) with exact finite-policy optimum label.
-3. Generic TEI resource bound with proof sketch + adversarial tests.
-4. Frozen 8-instance scaling suite: **8/8** exact first-action agreement under generic pruning.
+1. Legacy TEI bound **quarantined**; five-action counterexample reproduced (14.625 vs 9.85).
+2. Trivial safe reward UB certified for temporary use (`VALID_BOUND` only when optimistic by construction).
+3. Oracle statuses distinguish restricted vs full finite search; cutoffs ≠ infeasibility proofs.
+4. Fleet-level ACCEPT; closed-loop awaits future releases; depot contract in `episode_complete`.
+5. Discriminating suite D1–D4 replaces degenerate 8×9.75 as the development experiment.
 
-### What fails the paper bar
+### What remains open
 
-- **0/8** heavy-op improvements from pruning.
-- Median wall-time reduction ≈ **0.3%** (screening target 20–30% **not met**).
-- No differentiated computational contribution beyond classical information-relaxation ideas.
+- Tight repaired TEI / resource bound on the corrected model.
+- Exhaustive event oracle at useful sizes with full busy-interval event queue.
+- Computational usefulness of any bound (prior screen failed; do not claim acceleration).
+- Top-tier paper claim (anytime information-aware MPC) — aspirational only.
 
 ### Commands
 
 ```bash
-python -m pytest -q tests/test_dr_dual.py tests/test_dr_dual_repair.py tests/test_dr_dual_validation.py tests/test_dr_dual_advance.py tests/test_dr_dual_generic.py
+python -m pytest -q tests/test_dr_dual.py tests/test_dr_dual_repair.py tests/test_dr_dual_validation.py tests/test_dr_dual_advance.py tests/test_dr_dual_generic.py tests/test_dr_dual_urgent_repair.py
 python -m safe_time_evrp.dr_dual.generic.compute_scaling
 ```
 
-See `PAPER_CONTRIBUTION_DECISION.md`.
+See `URGENT_CORRECTNESS_REPAIR.md` and `PAPER_CONTRIBUTION_DECISION.md`.

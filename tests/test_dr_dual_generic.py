@@ -83,38 +83,40 @@ def test_replay_rejects_soc_mismatch():
 def test_generic_exact_runs():
     net = make_tiny_generic_instance(n_customers=3, n_vehicles=1)
     r = solve_generic_exact(net, max_len=3)
-    assert r.status.value in {"EXACT_OPTIMUM", "PROVEN_INFEASIBLE", "UNKNOWN", "TIME_LIMIT"}
+    assert r.status.value in {
+        "EXACT_OPTIMUM_RESTRICTED",
+        "EXACT_OPTIMUM_FULL_FINITE",
+        "FEASIBLE_INCUMBENT",
+        "PROVEN_INFEASIBLE",
+        "UNKNOWN",
+        "TIME_LIMIT",
+    }
     assert r.nodes_expanded >= 1
 
 
-def test_generic_bound_valid_or_unsupported():
+def test_generic_bound_quarantined_unsupported():
     net = make_tiny_generic_instance(n_customers=3)
     state = initial_generic_state(net)
-    acts = [
-        a
-        for a in __import__("safe_time_evrp.dr_dual.generic.actions", fromlist=["legal_actions"]).legal_actions(
-            net, state, "v1"
-        )
-        if a.kind.value == "travel"
-    ]
+    from safe_time_evrp.dr_dual.generic.actions import legal_actions
+    from safe_time_evrp.dr_dual.generic.general_bound import evaluate_trivial_safe_reward_bound
+
+    acts = [a for a in legal_actions(net, state, "v1") if a.kind.value == "travel"]
     assert acts
     br = evaluate_generic_resource_bound(net, state, acts[0])
-    assert br.status in (
-        BoundStatus.VALID_BOUND,
-        BoundStatus.PROVEN_INFEASIBLE,
-        BoundStatus.UNSUPPORTED_BOUND,
-        BoundStatus.UNKNOWN,
-    )
+    assert br.status is BoundStatus.UNSUPPORTED_BOUND
+    triv = evaluate_trivial_safe_reward_bound(net, state, acts[0])
+    assert triv.status is BoundStatus.VALID_BOUND
 
 
-def test_generic_bound_dominates_when_valid():
+def test_trivial_bound_dominates_when_valid():
     from safe_time_evrp.dr_dual.generic.exact_dp import _bayes_after_first, _first_actions
+    from safe_time_evrp.dr_dual.generic.general_bound import evaluate_trivial_safe_reward_bound
 
     net = make_tiny_generic_instance(n_customers=3)
     state = initial_generic_state(net)
     for a in _first_actions(net, state)[:3]:
         q = _bayes_after_first(net, state, a, noise=0.0, max_len=3)
-        br = evaluate_generic_resource_bound(net, state, a)
+        br = evaluate_trivial_safe_reward_bound(net, state, a)
         if q is not None and br.status is BoundStatus.VALID_BOUND and br.value is not None:
             assert br.value + 1e-6 >= q
 

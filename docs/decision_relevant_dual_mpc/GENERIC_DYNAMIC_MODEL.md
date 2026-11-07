@@ -1,34 +1,49 @@
 # Generic finite-state dynamic EVRP model
 
-Package: `src/safe_time_evrp/dr_dual/generic/`
+Package: `src/safe_time_evrp/dr_dual/generic/`  
+See also: `URGENT_CORRECTNESS_REPAIR.md` (Nov 2026 quarantine).
 
 ## Scope (not a continuous EVRP optimum)
 
-`EXACT_OPTIMUM` means optimal within:
+Two reference solvers, with **explicit** status scope:
 
-1. Finite first-action travel set from the primary free vehicle.
-2. Short common continuation plans (max length / branching caps) that are **nonanticipative** (one plan for an ambiguous posterior support).
-3. Explicit depot-return contract when `metadata.require_depot_return` is true.
-4. Customer announcements via `metadata.announce_at` released by fleet clock.
+| Solver | Status when complete | Action / policy class |
+|--------|----------------------|------------------------|
+| `exact_dp.solve_generic_exact` | `EXACT_OPTIMUM_RESTRICTED` | First travel + short **common** continuation plans (max length / branching / plan caps); primary-vehicle-biased generation |
+| `event_oracle.solve_event_exact` | `EXACT_OPTIMUM_FULL_FINITE` | Belief-state DP over `legal_fleet_actions` within depth/node limits |
+
+Incomplete search → `FEASIBLE_INCUMBENT` | `UNKNOWN` | `TIME_LIMIT`.  
+**Never** interpret a truncated empty search as `PROVEN_INFEASIBLE`.
+
+## Dynamics (corrected)
+
+1. **Announcement** at `metadata.announce_at` when `global_clock(state) ≥ release` (`release_due_announcements`).
+2. **ACCEPT / REJECT** are fleet-level decisions after announcement — **not** tied to being at the customer node (`fleet_accept_actions`).
+3. **Dispatch / TRAVEL / CHARGE / WAIT** per free vehicle; **SERVE** only at customer node if accepted.
+4. **Episode complete** only if no pending future releases, all accepted customers completed, and depot-return contract (if any) holds.
+5. Observations update shared belief **only** after completed travel (`apply_action`); history keys never include hidden θ.
 
 ## Components
 
 | Module | Role |
 |--------|------|
-| `model.py` | 1–2 EVs, 3–5 customers, corridors, chargers |
-| `actions.py` | Legal atomic actions + announcement release + clock sync |
+| `model.py` | Tiny networks (1–2 EVs, few customers, chargers) |
+| `actions.py` | Global clock, releases, fleet ACCEPT, `episode_complete`, `legal_fleet_actions` |
 | `history.py` | Observable history keys |
-| `common_continuation.py` | Generic common-plan search |
-| `exact_dp.py` | Finite policy-tree exact reference |
-| `general_bound.py` | Generic TEI resource UB |
-| `closed_loop.py` | Receding-horizon with carried `WorldState` |
-| `instance_gen.py` | Frozen seeds for scaling study |
+| `common_continuation.py` | Restricted common-plan search |
+| `exact_dp.py` | Restricted finite policy-tree reference |
+| `event_oracle.py` | Small belief-state fleet reference |
+| `general_bound.py` | Quarantined TEI + trivial safe UB |
+| `counterexamples.py` | Five-action multi-customer undercount |
+| `closed_loop.py` | RH driver awaiting full episode lifecycle |
+| `discriminating_suite.py` | D1–D4 development instances |
+| `instance_gen.py` | Legacy frozen seeds (structural only; not behavioral scale evidence) |
 
 ## Architecture
 
-Exact DP uses `WorldState` + `apply_action` + `DiscreteBelief`.  
-`FleetSimulator` is **not** the exact plant (no belief / immutable branch). Closed-loop cross-check against FleetSimulator is deferred until the generic bound is sound and useful.
+Exact / event references use `WorldState` + `apply_action` + `DiscreteBelief`.  
+`FleetSimulator` is **not** the exact plant. Closed-loop plant cross-check remains deferred until a repaired tight bound is sound **and** useful.
 
 ## Frozen A/C/S references
 
-DRUB, REUB_v1, OTUB remain as family-restricted baselines. No further A/C/S tightening in this cycle.
+DRUB, REUB_v1, OTUB remain family-restricted baselines. No further A/C/S tightening in this cycle.
