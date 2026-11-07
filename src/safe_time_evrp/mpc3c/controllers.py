@@ -1,8 +1,9 @@
-"""Matched Gate 3C/3E controllers with a real planning horizon.
+"""Matched Gate 3C/3E/4 controllers with a real planning horizon.
 
-Labels (Gate 3E):
-- myopic: released-and-ready only, no forecasts
-- rh_open_loop: deterministic receding-horizon open-loop replan
+Labels:
+- myopic: weak ready-only baseline (NOT a SOTA nonclairvoyant router)
+- reactive: strong nonclairvoyant — all announced customers + known windows; no forecasts
+- rh_open_loop: deterministic receding-horizon open-loop replan (may use anonymous forecasts)
 - rollout: deterministic prefix-search / PI-style rollout (not a stochastic policy tree)
 - flexibility_mpc: same candidate set as rollout + flexibility terminal (negative-control ablation)
 """
@@ -28,6 +29,7 @@ from safe_time_evrp.testbed.constructor import make_observation
 
 class ControllerKind(str, Enum):
     MYOPIC = "myopic"
+    REACTIVE = "reactive"
     RH_OPEN_LOOP = "rh_open_loop"
     ROLLOUT = "rollout"  # deterministic prefix-search; see module docstring
     FLEXIBILITY = "flexibility_mpc"
@@ -35,7 +37,8 @@ class ControllerKind(str, Enum):
 
 # Honest display labels for manifests / docs.
 CONTROLLER_LABELS = {
-    ControllerKind.MYOPIC: "myopic_feasible_routing",
+    ControllerKind.MYOPIC: "weak_ready_only_myopic",
+    ControllerKind.REACTIVE: "reactive_announced_commitment_preserving",
     ControllerKind.RH_OPEN_LOOP: "deterministic_receding_horizon_mpc",
     ControllerKind.ROLLOUT: "deterministic_prefix_rollout",
     ControllerKind.FLEXIBILITY: "flexibility_terminal_ablation",
@@ -131,7 +134,28 @@ def decide(
             [
                 f"horizon_used={horizon}",
                 "myopic_ready_only",
+                "baseline_strength=weak",
                 f"forecasts_ignored={len(forecasts)}",
+                f"label={CONTROLLER_LABELS[kind]}",
+            ],
+        )
+
+    if kind is ControllerKind.REACTIVE:
+        # Strong nonclairvoyant: plan all currently announced customers using known
+        # future service windows; ignore anonymous forecasts of unreleased demand.
+        plan = construct_routes(instance, observation, horizon=horizon, energy=model)
+        score = _plan_score(_served_count(plan.routes), plan.total_distance, plan.total_charge_time)
+        return _pack(
+            kind,
+            plan.routes,
+            observation,
+            score,
+            [
+                f"horizon_used={horizon}",
+                "reactive_all_announced",
+                "baseline_strength=strong_nonclairvoyant",
+                f"forecasts_ignored={len(forecasts)}",
+                f"n_announced={len(observation.released_open)}",
                 f"label={CONTROLLER_LABELS[kind]}",
             ],
         )

@@ -1,0 +1,9 @@
+{
+  "gate": "4",
+  "source_commit": "3ff06e1deead2c64692d734e741591c16975eea6",
+  "n_evrp_rows": 24,
+  "mean_rh_minus_reactive": 0.0,
+  "theory_stop": true,
+  "recommendation": "Stop theory investigation: both candidates reduce to known ADP / resource-extension methods without a new structural certificate.",
+  "artifact_policy": "source_commit_is_generating_revision_not_self_hash"
+}

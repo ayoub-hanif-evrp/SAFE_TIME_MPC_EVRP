@@ -81,7 +81,14 @@ class ArrivalForecast:
 
 
 def fit_empirical_arrivals(instances: list[Instance]) -> ArrivalForecast:
-    """Fit spatial/timing atoms on train-split instances only."""
+    """Fit **spatial/window atoms** on train-split instances only.
+
+    Gate 4: ``train_interarrival_mean`` is retained for backward compatibility but
+    is **not** a valid estimate of request announcement interarrivals. It is the
+    mean of pooled ``window.ready`` gaps across independent instances — service
+    openings, not order events. Prefer ``mpc3c.announcement.AnnouncementProcessSpec``
+    with preregistered Poisson parameters for plant releases.
+    """
     atoms: list[TrainDemandAtom] = []
     ready_times: list[float] = []
     for inst in instances:
@@ -102,12 +109,16 @@ def fit_empirical_arrivals(instances: list[Instance]) -> ArrivalForecast:
         return ArrivalForecast(model_id="empty")
     ready_times = sorted(ready_times)
     gaps = [ready_times[i + 1] - ready_times[i] for i in range(len(ready_times) - 1)]
+    # Deprecated as λ̂: pooled ready gaps are not announcement observations.
     mu = mean(gaps) if gaps else mean(ready_times)
     return ArrivalForecast(
         scenarios=[],
         train_atoms=tuple(atoms),
         train_interarrival_mean=mu,
-        model_id=f"train_atoms={len(atoms)};mu={mu:.6f}",
+        model_id=(
+            f"train_atoms={len(atoms)};pooled_ready_gap_mean={mu:.6f}"
+            ";NOT_valid_announcement_interarrival"
+        ),
     )
 
 

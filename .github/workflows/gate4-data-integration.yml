@@ -1,0 +1,56 @@
+name: gate4-data-integration
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/safe_time_evrp/mpc3c/**"
+      - "src/safe_time_evrp/data/**"
+      - "tests/test_gate4_validity.py"
+      - "scripts/run_gate4_diagnostic.py"
+      - "scripts/download_evrp_tw_d.py"
+      - "docs/research_gate_4/**"
+      - ".github/workflows/gate4-data-integration.yml"
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Download and verify public benchmarks
+        run: |
+          python -m safe_time_evrp.data.download
+          python -m safe_time_evrp.data.verify
+      - name: Download and extract EVRP-TW-D
+        run: python scripts/download_evrp_tw_d.py
+      - name: Fail closed if EVRP-TW-D missing
+        run: test -d data/raw/evrp_tw_d
+      - name: Gate 4 validity tests (required)
+        run: python -m pytest -q tests/test_gate4_validity.py tests/test_gate3f_validity.py
+      - name: Gate 4 diagnostic
+        run: |
+          python scripts/run_gate4_diagnostic.py
+          test -f docs/research_gate_4/matched_summary.json
+          python - <<'PY'
+          import json, subprocess
+          summary = json.loads(open("docs/research_gate_4/matched_summary.json", encoding="utf-8").read())
+          head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          # source_commit must equal the revision that generated the artifact (this checkout).
+          assert summary["source_commit"] == head, (summary["source_commit"], head)
+          assert "theory_stop" in summary
+          print("provenance ok", head, "theory_stop", summary["theory_stop"])
+          PY
+      - name: Upload Gate 4 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate4-matched-summary
+          path: |
+            docs/research_gate_4/matched_summary.json
+            docs/research_gate_4/matched_diagnostic.json
+          if-no-files-found: ignore

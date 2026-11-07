@@ -1,0 +1,898 @@
+{
+  "gate": "4",
+  "source_commit": "3ff06e1deead2c64692d734e741591c16975eea6",
+  "controller_labels": {
+    "myopic": "weak_ready_only_myopic",
+    "reactive": "reactive_announced_commitment_preserving",
+    "rh_open_loop": "deterministic_receding_horizon_mpc",
+    "rollout": "deterministic_prefix_rollout",
+    "flexibility_mpc": "flexibility_terminal_ablation"
+  },
+  "note": "Exploratory diagnostic with preregistered announcement specs. Not an independent evaluation sample. Constructive offline rates are FEASIBLE_LOWER_BOUNDs, not upper bounds. Gate 3F middle-regime search preserved as exploratory evidence only.",
+  "evrp_tw_d": [
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "instance_hash": "6b41e2c066103a97",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 3,
+        "certified_upper_bound": 3,
+        "exact_optimum": 3,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.6,
+        "n_window_impossible": 2
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 3,
+        "rh_open_loop": 3,
+        "rollout": 3,
+        "flexibility_mpc": 3
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.6,
+        "rh_open_loop": 0.6,
+        "rollout": 0.6,
+        "flexibility_mpc": 0.6
+      },
+      "reactive_n_served": 3,
+      "rh_n_served": 3,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "instance_hash": "6b41e2c066103a97",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "instance_hash": "6b41e2c066103a97",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 2,
+        "rh_open_loop": 2,
+        "rollout": 2,
+        "flexibility_mpc": 2
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.4,
+        "rh_open_loop": 0.4,
+        "rollout": 0.4,
+        "flexibility_mpc": 0.4
+      },
+      "reactive_n_served": 2,
+      "rh_n_served": 2,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "instance_hash": "3e1ec7f2fe0514c1",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 3,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 2,
+        "rh_open_loop": 2,
+        "rollout": 2,
+        "flexibility_mpc": 2
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.4,
+        "rh_open_loop": 0.4,
+        "rollout": 0.4,
+        "flexibility_mpc": 0.4
+      },
+      "reactive_n_served": 2,
+      "rh_n_served": 2,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "instance_hash": "3e1ec7f2fe0514c1",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 3,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "instance_hash": "3e1ec7f2fe0514c1",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 3,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "instance_hash": "64111a40b0a3d434",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 1,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 2,
+        "rh_open_loop": 2,
+        "rollout": 2,
+        "flexibility_mpc": 2
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.4,
+        "rh_open_loop": 0.4,
+        "rollout": 0.4,
+        "flexibility_mpc": 0.4
+      },
+      "reactive_n_served": 2,
+      "rh_n_served": 2,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "instance_hash": "64111a40b0a3d434",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 1,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "instance_hash": "64111a40b0a3d434",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 1,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "instance_hash": "f3f078232bd15aa1",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "instance_hash": "f3f078232bd15aa1",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 2,
+        "rh_open_loop": 2,
+        "rollout": 2,
+        "flexibility_mpc": 2
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.4,
+        "rh_open_loop": 0.4,
+        "rollout": 0.4,
+        "flexibility_mpc": 0.4
+      },
+      "reactive_n_served": 2,
+      "rh_n_served": 2,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "instance_hash": "f3f078232bd15aa1",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "instance_hash": "002243f4bd362eeb",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "instance_hash": "002243f4bd362eeb",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 2,
+        "rh_open_loop": 2,
+        "rollout": 2,
+        "flexibility_mpc": 2
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.4,
+        "rh_open_loop": 0.4,
+        "rollout": 0.4,
+        "flexibility_mpc": 0.4
+      },
+      "reactive_n_served": 2,
+      "rh_n_served": 2,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "instance_hash": "002243f4bd362eeb",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "instance_hash": "b5bd7f16090594da",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 2,
+        "certified_upper_bound": 2,
+        "exact_optimum": 2,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.4,
+        "n_window_impossible": 3
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "instance_hash": "b5bd7f16090594da",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "instance_hash": "b5bd7f16090594da",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "instance_hash": "263e956acb90a10e",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "instance_hash": "263e956acb90a10e",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "instance_hash": "263e956acb90a10e",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 0,
+        "certified_upper_bound": 0,
+        "exact_optimum": 0,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.0,
+        "n_window_impossible": 5
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 0,
+        "rh_open_loop": 0,
+        "rollout": 0,
+        "flexibility_mpc": 0
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.0,
+        "rh_open_loop": 0.0,
+        "rollout": 0.0,
+        "flexibility_mpc": 0.0
+      },
+      "reactive_n_served": 0,
+      "rh_n_served": 0,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "instance_hash": "2e1ed07bf172ebeb",
+      "announcement_spec_id": "gate4_dev_mu8",
+      "mean_interarrival": 8.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "instance_hash": "2e1ed07bf172ebeb",
+      "announcement_spec_id": "gate4_dev_mu15",
+      "mean_interarrival": 15.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    },
+    {
+      "instance": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "instance_hash": "2e1ed07bf172ebeb",
+      "announcement_spec_id": "gate4_dev_mu25",
+      "mean_interarrival": 25.0,
+      "fleet_size": 2,
+      "offline_ref": {
+        "feasible_lower_bound": 1,
+        "certified_upper_bound": 1,
+        "exact_optimum": 1,
+        "bound_kind": "EXACT_OPTIMUM",
+        "service_rate_lb": 0.2,
+        "n_window_impossible": 4
+      },
+      "n_served": {
+        "myopic": 0,
+        "reactive": 1,
+        "rh_open_loop": 1,
+        "rollout": 1,
+        "flexibility_mpc": 1
+      },
+      "service_rate": {
+        "myopic": 0.0,
+        "reactive": 0.2,
+        "rh_open_loop": 0.2,
+        "rollout": 0.2,
+        "flexibility_mpc": 0.2
+      },
+      "reactive_n_served": 1,
+      "rh_n_served": 1,
+      "rh_minus_reactive": 0,
+      "flex_equals_rollout_sequence": true,
+      "exploratory_only": true
+    }
+  ],
+  "amazon": [
+    {
+      "route_id": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "n_served": {
+        "myopic": 8,
+        "reactive": 8,
+        "rh_open_loop": 8,
+        "rollout": 8,
+        "flexibility_mpc": 8
+      },
+      "exploratory_only": true
+    },
+    {
+      "route_id": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "n_served": {
+        "myopic": 8,
+        "reactive": 8,
+        "rh_open_loop": 8,
+        "rollout": 8,
+        "flexibility_mpc": 8
+      },
+      "exploratory_only": true
+    }
+  ],
+  "commitment_cost_theory": {
+    "exact": {
+      "status": "EXACT",
+      "v_without": 1.5,
+      "v_with": 2.5,
+      "delta": -1.0,
+      "causal_accept": true,
+      "clairvoyant_accept": true,
+      "notes": [
+        "p_future=0.5",
+        "serve_a=1",
+        "serve_af=2",
+        "serve_ar=2",
+        "serve_arf=3",
+        "clairvoyant_accept_no_f=True",
+        "clairvoyant_accept_f=True",
+        "objective=expected_completed_customers"
+      ]
+    },
+    "candidates": [
+      {
+        "name": "insertion_displacement",
+        "reduces_to_prior_art": true,
+        "verdict": "NO-GO",
+        "notes": [
+          "Sound only as a trivial interval; no tighter EV-specific certificate.",
+          "Equivalent in spirit to knapsack residual-time opportunity cost (Zhang 2023).",
+          "No new dominance or compression theorem identified."
+        ]
+      },
+      {
+        "name": "soc_reachability",
+        "reduces_to_prior_art": true,
+        "verdict": "NO-GO",
+        "notes": [
+          "SOC reachability yields commitment feasibility filters, not a novel Delta_r bound.",
+          "Reduces to existing EVRP resource-extension / robust reachability prior art.",
+          "Jiang et al. (2026) already treat proactive charging under stochastic requests."
+        ]
+      }
+    ],
+    "theory_stop": true,
+    "recommendation": "Stop theory investigation: both candidates reduce to known ADP / resource-extension methods without a new structural certificate."
+  }
+}

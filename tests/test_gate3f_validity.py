@@ -69,6 +69,12 @@ def test_announcement_not_clamped_to_due():
 
 
 def test_offline_upper_bound_at_least_online_served():
+    """Gate 4: constructive value is a lower bound indicator, not a certified UB.
+
+    Online service may exceed the constructive plan; only exact/certified UB
+    may dominate online. Keep a weak sanity check that the deprecated helper runs
+    and is honestly labeled.
+    """
     inst = _toy()
     releases = [("A", 0.0), ("B", 5.0), ("C", 8.0)]
     ub = offline_service_upper_bound(inst, releases, fleet_size=1)
@@ -80,7 +86,9 @@ def test_offline_upper_bound_at_least_online_served():
         releases=releases,
         t_max=200.0,
     )
-    assert ub.static_constructive_served >= len(online.served)
+    assert ub.static_constructive_served >= 0
+    assert len(online.served) >= 0
+    assert any("FEASIBLE_LOWER_BOUND" in n or "NOT_an_upper_bound" in n for n in ub.notes)
 
 
 def test_build_scenarios_for_rejects_eval_instance():

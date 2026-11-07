@@ -1,15 +1,25 @@
-"""Simulator-backed closed-loop experiment harness (Gate 3D/3E).
+"""Simulator-backed closed-loop experiment harness (Gate 3D/3E/4).
 
 Gate 3E contracts:
 - Do not terminate while request-release events remain within the evaluation horizon.
 - Strip unreleased forecast services, then revalidate cleaned routes before dispatch.
 - Admission must not break previously accepted commitments (nominal plant feasibility).
 - Never treat accepted customers as rejected.
+
+Gate 4 timing contract (``TimingContract.BLOCKING_WITH_PLANT_ADVANCE``):
+- Optimization blocks dispatch decisions while physical time may advance by the
+  measured (or forced) optimize duration.
+- Events remain chronological on the simulator heap.
+- A candidate computed from an outdated plant state is discarded (stale).
+- Already dispatched travel/service/charging remain noninterruptible.
+- Incumbent routes are retained when new optimization fails the commitment gate.
+- This is **not** hard real-time process preemption; do not claim hard deadlines.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from time import perf_counter
 
 from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy, ScaledNominalEnergy
@@ -30,6 +40,15 @@ _TRIGGERS = {
     "wait_end",
     "replan_interval",
 }
+
+
+class TimingContract(str, Enum):
+    """Closed-loop computation timing semantics."""
+
+    # Optimize as if instantaneous; plant does not advance during decide (legacy).
+    INSTANTANEOUS = "instantaneous"
+    # Blocking optimize; plant clock advances by elapsed; intervening events → stale discard.
+    BLOCKING_WITH_PLANT_ADVANCE = "blocking_with_plant_advance"
 
 
 @dataclass
@@ -65,6 +84,9 @@ class RunResult:
     executed_first_action_signature: str = ""
     stale_discard_count: int = 0
     plant_time_advanced_during_optimize: bool = False
+    timing_contract: str = TimingContract.INSTANTANEOUS.value
+    preempted_optimize_count: int = 0
+    incumbent_fallback_count: int = 0
 
 
 def _strip_unreleased(visits: list[Visit], released: set[str], completed: set[str]) -> list[Visit]:
@@ -302,14 +324,29 @@ def run_sim_dynamic(
     max_events: int = 20_000,
     energy: NominalLinearEnergy | None = None,
     disturbance=None,
-    advance_plant_during_optimize: bool = False,
+    advance_plant_during_optimize: bool | None = None,
+    timing_contract: TimingContract | None = None,
     forced_optimize_seconds: float | None = None,
 ) -> RunResult:
     """Closed-loop episode through ``FleetSimulator``.
 
     ``forced_optimize_seconds`` is a test hook that replaces measured wall time when
     exercising the plant-time / stale-discard contract.
+
+    For any claim of real-time or computation-aware performance, pass
+    ``timing_contract=TimingContract.BLOCKING_WITH_PLANT_ADVANCE`` (or
+    ``advance_plant_during_optimize=True``). Instantaneous optimize is allowed only
+    as a non-realtime diagnostic.
     """
+    if timing_contract is None:
+        if advance_plant_during_optimize is True:
+            timing_contract = TimingContract.BLOCKING_WITH_PLANT_ADVANCE
+        elif advance_plant_during_optimize is False:
+            timing_contract = TimingContract.INSTANTANEOUS
+        else:
+            timing_contract = TimingContract.INSTANTANEOUS
+    advance = timing_contract is TimingContract.BLOCKING_WITH_PLANT_ADVANCE
+
     model = energy or NominalLinearEnergy()
     if releases is None:
         releases = [(cid, float(instance.node(cid).window.ready)) for cid in instance.customer_ids()]
@@ -335,11 +372,13 @@ def run_sim_dynamic(
     executed_first_sig = ""
     stale_discard_count = 0
     plant_time_advanced = False
+    incumbent_fallback_count = 0
     incumbent_routes: dict[str, list[Visit]] = {f"v{i + 1}": [] for i in range(fleet_size)}
 
     def decide_once(trigger: str) -> None:
         nonlocal optimize_seconds, replan_id, same_time, last_decision_time
-        nonlocal first_sig, executed_first_sig, incumbent_routes, stale_discard_count, plant_time_advanced
+        nonlocal first_sig, executed_first_sig, incumbent_routes, stale_discard_count
+        nonlocal plant_time_advanced, incumbent_fallback_count
         if abs(simulator.time - last_decision_time) <= EPS:
             same_time += 1
         else:
@@ -368,9 +407,10 @@ def run_sim_dynamic(
         elapsed = float(forced_optimize_seconds) if forced_optimize_seconds is not None else (perf_counter() - wall)
         optimize_seconds += elapsed
 
-        if advance_plant_during_optimize and elapsed > 0:
-            # Gate 3F timing contract (robust-episode style): intervening events make the
-            # candidate stale — discard without applying; locked plant actions continue.
+        if advance and elapsed > 0:
+            # Blocking + plant advance: intervening events make the candidate stale —
+            # discard without applying; locked plant actions continue. Optimize work
+            # is accounted in optimize_seconds even when discarded.
             start_time = simulator.time
             nxt = simulator.next_event_time()
             if nxt is not None and start_time + elapsed > nxt + EPS:
@@ -414,6 +454,7 @@ def run_sim_dynamic(
                     if any(v.id == vid for v in observation.vehicles)
                 }
                 fallback = True
+                incumbent_fallback_count += 1
                 notes.append("commitment_gate_kept_incumbent")
             elif _routes_cover_commitments(instance, observation, cleaned, proposed_accepted):
                 notes.append("commitment_gate_refused_new_accepts")
@@ -592,6 +633,9 @@ def run_sim_dynamic(
         executed_first_action_signature=executed_first_sig,
         stale_discard_count=stale_discard_count,
         plant_time_advanced_during_optimize=plant_time_advanced,
+        timing_contract=timing_contract.value,
+        preempted_optimize_count=stale_discard_count,
+        incumbent_fallback_count=incumbent_fallback_count,
     )
 
 
