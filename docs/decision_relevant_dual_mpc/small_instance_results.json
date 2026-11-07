@@ -1,0 +1,111 @@
+{
+  "bound_validity": [
+    {
+      "action": "travel|v1|DA_exploit|None|None|0.0",
+      "q_bar": 12.15,
+      "true_q": 9.8,
+      "bound_valid": true,
+      "zero_voi": false,
+      "gap_q_bar_minus_true": 2.3499999999999996
+    },
+    {
+      "action": "travel|v1|DA_inform|None|None|0.0",
+      "q_bar": 12.125,
+      "true_q": 12.125,
+      "bound_valid": true,
+      "zero_voi": false,
+      "gap_q_bar_minus_true": 0.0
+    },
+    {
+      "action": "travel|v1|DA_useless_inform|None|None|0.0",
+      "q_bar": 9.774999999999999,
+      "true_q": 9.774999999999999,
+      "bound_valid": true,
+      "zero_voi": true,
+      "gap_q_bar_minus_true": 0.0
+    },
+    {
+      "exact_optimum_first": "travel|v1|DA_inform|None|None|0.0",
+      "exact_value": 12.125
+    }
+  ],
+  "pruning_ablation": {
+    "with_pruning": {
+      "selected": "travel|v1|DA_inform|None|None|0.0",
+      "value": 12.125,
+      "expanded": 2,
+      "pruned": 1,
+      "safety_out": 0,
+      "seconds": 0.006641800049692392,
+      "notes": [
+        "pruned:travel|v1|DA_useless_inform|None|None|0.0:q_bar=9.7750<=L=12.1250"
+      ]
+    },
+    "no_pruning": {
+      "selected": "travel|v1|DA_inform|None|None|0.0",
+      "value": 12.125,
+      "expanded": 3,
+      "pruned": 0,
+      "seconds": 0.007227999973110855
+    },
+    "exact_first": "travel|v1|DA_inform|None|None|0.0",
+    "exact_value": 12.125,
+    "retains_optimum": true,
+    "fewer_expansions": true
+  },
+  "baselines": {
+    "single_ev": {
+      "exact": {
+        "first": "travel|v1|DA_inform|None|None|0.0",
+        "value": 12.125,
+        "extras": {
+          "safe_action_values": {
+            "travel|v1|DA_exploit|None|None|0.0": 9.8,
+            "travel|v1|DA_inform|None|None|0.0": 12.125,
+            "travel|v1|DA_useless_inform|None|None|0.0": 9.774999999999999
+          },
+          "passive_optimized_first": "travel|v1|DA_exploit|None|None|0.0",
+          "passive_optimized_robust_score": 9.8,
+          "clairvoyant_value": 12.175,
+          "dual_differs_from_passive": true,
+          "noise": 0.0
+        }
+      },
+      "dr_dual_pruning": {
+        "first": "travel|v1|DA_inform|None|None|0.0",
+        "value": 12.125,
+        "expanded": 2,
+        "pruned": 1
+      },
+      "dr_dual_no_pruning": {
+        "first": "travel|v1|DA_inform|None|None|0.0",
+        "value": 12.125,
+        "expanded": 3
+      },
+      "robust": {
+        "first": "travel|v1|DA_exploit|None|None|0.0",
+        "value": 9.8
+      },
+      "info_gain_heuristic": {
+        "first": "travel|v1|DA_inform|None|None|0.0",
+        "value": 12.125
+      }
+    },
+    "two_ev": {
+      "status": "EXACT_OPTIMUM",
+      "first": "travel|v1|E1_exploit|None|None|0.0",
+      "value": 15.55,
+      "cross_vehicle": false,
+      "details": [
+        {
+          "first": "travel|v1|E1_exploit|None|None|0.0",
+          "value": 15.55
+        },
+        {
+          "first": "travel|v1|E1_inform|None|None|0.0",
+          "value": 15.5
+        }
+      ]
+    }
+  }
+}
