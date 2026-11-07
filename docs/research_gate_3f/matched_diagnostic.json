@@ -1,0 +1,4509 @@
+{
+  "git_commit": "7bb647101d6db81c79db0506f502a706840bbc86",
+  "controller_labels": {
+    "myopic": "myopic_feasible_routing",
+    "rh_open_loop": "deterministic_receding_horizon_mpc",
+    "rollout": "deterministic_prefix_rollout",
+    "flexibility_mpc": "flexibility_terminal_ablation"
+  },
+  "forecast_model_id": "train_atoms=60;mu=0.191000",
+  "stochastic_claim": "single_scenario_anticipatory_only",
+  "evrptwd_candidates": [
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2012677619,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1885153218,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2127785553,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1830536698,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 350726060,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1754832645,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 465133035,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C2",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 272650794,
+      "instance_hash": "6b41e2c066103a97"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.348",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1756533038,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.348",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1961132794,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.348",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2012887616,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.348",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1110731103,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.310000000000002",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1014419699,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C0"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.348",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 2030336533,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.310000000000002",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1077864355,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_size": 3,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.310000000000002",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1169213795,
+      "instance_hash": "3e1ec7f2fe0514c1"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1822132370,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1773149845,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 89241339,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1197183047,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 557535009,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1947755478,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 853490950,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 4,
+        "static_constructive_served": 1,
+        "static_service_rate": 0.2,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=14.762",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1344491696,
+      "instance_hash": "64111a40b0a3d434"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 172058484,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1206589011,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1563513969,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1370648043,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2095001877,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2129890236,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C0"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 699958764,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 775303915,
+      "instance_hash": "f3f078232bd15aa1"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1767550531,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 96645392,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 477047956,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C1",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 684116902,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1899999248,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 165243732,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C1",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.124",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 343455287,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_130_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 5,
+        "static_constructive_served": 0,
+        "static_service_rate": 0.0,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=2.0",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1906414054,
+      "instance_hash": "002243f4bd362eeb"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 86085037,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1078663199,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1018319248,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1039780179,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1380666064,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1505210231,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.403",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1713958092,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_131_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 5,
+        "static_constructive_served": 0,
+        "static_service_rate": 0.0,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=2.0",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1699262556,
+      "instance_hash": "b5bd7f16090594da"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1066360818,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1154381348,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 638275826,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1144010648,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 413019132,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1037717248,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.6",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1003208635,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_132_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 5,
+        "static_constructive_served": 0,
+        "static_service_rate": 0.0,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=2.0",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1475388821,
+      "instance_hash": "263e956acb90a10e"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 978311536,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1689488748,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1209246324,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 972679475,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 279705336,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1390484819,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1834901661,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_133_C_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.743",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1108592343,
+      "instance_hash": "2e1ed07bf172ebeb"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 876892605,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1148762499,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 984136116,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1372983465,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 362201354,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 4,
+        "static_constructive_served": 1,
+        "static_service_rate": 0.2,
+        "a_priori_impossible_ids": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.493",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2027809238,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C0"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.284",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 540603606,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_134_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 4,
+        "static_constructive_served": 1,
+        "static_service_rate": 0.2,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.284",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 277619343,
+      "instance_hash": "00f21cfd3a9fe6d6"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1456847981,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2073558248,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2041979457,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 425660325,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1682989378,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 824550772,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 2068072561,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_135_RC_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C0"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=18.707",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1177053291,
+      "instance_hash": "64e49462c0a99adb"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 44855642,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1225220409,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2145422242,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C1"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1325624528,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1418880117,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C1",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 866873229,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1946172800,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_136_RC_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=15.044",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1143482333,
+      "instance_hash": "f17f55c53dfdeebc"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1674777336,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1152801756,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 545011473,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C1",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1071367369,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 50592660,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1793334476,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.567",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1445979481,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_137_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.155",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 608782024,
+      "instance_hash": "c55fe5f1ab89f23e"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1626891381,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 804374381,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1074003753,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 250292892,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 193275169,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1672597646,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 552239640,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_138_R_wide_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.772",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1187145386,
+      "instance_hash": "0f38ef3a2e1a9905"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2044997582,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2146099421,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 332688066,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 2071756070,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1761828035,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 7275981,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 288421389,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_139_R_narrow_1769114883.txt",
+      "fleet_size": 2,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.534",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 794513072,
+      "instance_hash": "4ab57a11868e901a"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 1.0,
+      "mean_interarrival": 0.191,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1939331812,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 5.0,
+      "mean_interarrival": 0.9550000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 200573518,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 8.0,
+      "mean_interarrival": 1.528,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1999613091,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1060456703,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 5,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1083050284,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 15.0,
+      "mean_interarrival": 2.865,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.844",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 536712693,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 3,
+        "static_constructive_served": 2,
+        "static_service_rate": 0.4,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C3"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.844",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1970655571,
+      "instance_hash": "88eb15a586faad72"
+    },
+    {
+      "file": "solomon_dataset_13_R_wide_1769114883.txt",
+      "fleet_size": 1,
+      "mu_scale": 30.0,
+      "mean_interarrival": 5.73,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 4,
+        "static_constructive_served": 1,
+        "static_service_rate": 0.2,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C1",
+          "C2",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.336",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": false,
+      "release_seed": 1160794980,
+      "instance_hash": "88eb15a586faad72"
+    }
+  ],
+  "evrptwd_middle_regime": [
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 49,
+          "action_hamming_vs_rollout": 49,
+          "decision_event_diffs_vs_rh": 25,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.000582799781113863,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 376.43774084952366,
+          "optimize_seconds": 0.004064199980348349,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 376.43774084952366,
+          "optimize_seconds": 0.014032099861651659,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 376.43774084952366,
+          "optimize_seconds": 0.015085899969562888,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=19.244",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1830536698,
+      "instance_hash": "6b41e2c066103a97",
+      "releases": [
+        [
+          "C3",
+          2.537249505964856
+        ],
+        [
+          "C0",
+          6.399131289730184
+        ],
+        [
+          "C1",
+          7.9938689553298445
+        ],
+        [
+          "C4",
+          9.12396669954183
+        ],
+        [
+          "C2",
+          15.210931907460768
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883",
+      "fleet_size": 3,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 54,
+          "action_hamming_vs_rollout": 54,
+          "decision_event_diffs_vs_rh": 19,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.0006997999735176563,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C3"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C2",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 382.69481764828504,
+          "optimize_seconds": 0.002774499822407961,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C3"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C2",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 382.69481764828504,
+          "optimize_seconds": 0.007670499791856855,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C3"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C2",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 382.69481764828504,
+          "optimize_seconds": 0.00927159993443638,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "mu_scale": 12.0,
+      "mean_interarrival": 2.292,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C2",
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=16.310000000000002",
+          "fleet_size=3"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1014419699,
+      "instance_hash": "3e1ec7f2fe0514c1",
+      "releases": [
+        [
+          "C1",
+          6.794023426085669
+        ],
+        [
+          "C3",
+          7.071701980070702
+        ],
+        [
+          "C0",
+          12.626646861853267
+        ],
+        [
+          "C4",
+          13.068952751817118
+        ],
+        [
+          "C2",
+          14.57835516386028
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883",
+      "fleet_size": 1,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "C1"
+          ],
+          "n_served": 1,
+          "n_announced_eligible": 5,
+          "service_rate": 0.2,
+          "rejected": [
+            "C0",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 19,
+          "action_hamming_vs_rollout": 19,
+          "decision_event_diffs_vs_rh": 18,
+          "n_steps": 14,
+          "distance": 77.32056595757692,
+          "optimize_seconds": 0.0005707999807782471,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 229.67973348348494,
+          "optimize_seconds": 0.002199999988079071,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 229.67973348348494,
+          "optimize_seconds": 0.005696900247130543,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 229.67973348348494,
+          "optimize_seconds": 0.006407999899238348,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "mu_scale": 20.0,
+      "mean_interarrival": 3.8200000000000003,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 2,
+        "static_constructive_served": 3,
+        "static_service_rate": 0.6,
+        "a_priori_impossible_ids": [
+          "C0",
+          "C2"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=21.461",
+          "fleet_size=1"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 853490950,
+      "instance_hash": "64111a40b0a3d434",
+      "releases": [
+        [
+          "C3",
+          1.0579107080139372
+        ],
+        [
+          "C4",
+          2.262199477662036
+        ],
+        [
+          "C1",
+          2.2901877596383167
+        ],
+        [
+          "C2",
+          14.884106499049139
+        ],
+        [
+          "C0",
+          19.159929260663926
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 49,
+          "action_hamming_vs_rollout": 49,
+          "decision_event_diffs_vs_rh": 25,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.0005508999456651509,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 327.23478526841825,
+          "optimize_seconds": 0.0029183001024648547,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 327.23478526841825,
+          "optimize_seconds": 0.007398700108751655,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "n_announced_eligible": 5,
+          "service_rate": 0.8,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 26,
+          "distance": 327.23478526841825,
+          "optimize_seconds": 0.008548699843231589,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "mu_scale": 10.0,
+      "mean_interarrival": 1.9100000000000001,
+      "upper_bound": {
+        "n_customers": 5,
+        "n_announced": 5,
+        "n_a_priori_impossible": 1,
+        "static_constructive_served": 4,
+        "static_service_rate": 0.8,
+        "a_priori_impossible_ids": [
+          "C4"
+        ],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=20.867",
+          "fleet_size=2"
+        ]
+      },
+      "middle_regime": true,
+      "release_seed": 1370648043,
+      "instance_hash": "f3f078232bd15aa1",
+      "releases": [
+        [
+          "C3",
+          2.902430668109534
+        ],
+        [
+          "C0",
+          4.9478493818035405
+        ],
+        [
+          "C2",
+          13.561681993614531
+        ],
+        [
+          "C4",
+          15.29042975975819
+        ],
+        [
+          "C1",
+          15.413494612662623
+        ]
+      ]
+    }
+  ],
+  "amazon": [
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.024659200222231448,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.027952499862294644,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.21897909988183528,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.23306599957868457,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "931fa801c025482c"
+    },
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.026896299794316292,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.028971699939575046,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.22186179988784716,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.22678709990577772,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "3de2be4162943d35"
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.024676299828570336,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.028230499825440347,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.228419000050053,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.23295320005854592,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "1bd7b16fe8810c94"
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.030250600015278906,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.035209900175686926,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.27760669990675524,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.2810810999944806,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "5472289839a599a8"
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.02334079990396276,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.026834899734240025,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.2103447997942567,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.21754850004799664,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "0e6dd374f6822579"
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.029562799783889204,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.033214000111911446,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.26895689993398264,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.27105319971451536,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "window_conflicts_excluded": "0",
+      "upper_bound": {
+        "n_customers": 10,
+        "n_announced": 10,
+        "n_a_priori_impossible": 0,
+        "static_constructive_served": 10,
+        "static_service_rate": 1.0,
+        "a_priori_impossible_ids": [],
+        "notes": [
+          "static_constructive_with_announcement_ready",
+          "nominal_energy_only",
+          "horizon=13.0",
+          "fleet_size=1"
+        ]
+      },
+      "instance_hash": "246a379590abc803"
+    }
+  ]
+}

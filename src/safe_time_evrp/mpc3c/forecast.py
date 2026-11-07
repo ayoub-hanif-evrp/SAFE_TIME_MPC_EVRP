@@ -1,12 +1,16 @@
-"""Information-safe demand forecasts for Gate 3E.
+"""Information-safe demand forecasts for Gate 3E/3F.
 
 Forecasts are anonymous synthetic customers sampled from **train-only** spatial
 and timing distributions. They never inherit evaluation-instance customer IDs,
 coordinates, or windows from hidden future requests.
+
+Gate 3F: plant announcements use a true homogeneous Poisson process (exponential
+interarrivals). Announcement time is separated from window.ready / window.due.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from statistics import mean
 
@@ -144,7 +148,7 @@ def build_anonymous_scenarios(
             state, jy = _lcg(state)
             x = atom.x + (jx - 0.5) * 0.5
             y = atom.y + (jy - 0.5) * 0.5
-            gap = (mu / rate_scale) * (0.05 + 1.9 * u_gap)
+            gap = _exponential_gap(mu / rate_scale, u_gap)
             t += gap
             ready = min(t, day_horizon)
             span = max(atom.due - atom.ready, 1.0)
@@ -170,24 +174,36 @@ def build_anonymous_scenarios(
     )
 
 
-# Backward-compatible name used by Gate 3D scripts (now anonymous).
+def _exponential_gap(mu: float, u: float) -> float:
+    """Homogeneous Poisson interarrival: Exp(mean=mu) via inverse CDF."""
+    u = min(max(u, 1e-12), 1.0 - 1e-12)
+    return -float(mu) * math.log(1.0 - u)
+
+
 def build_scenarios_for(
-    instance: Instance,
-    model: ArrivalForecast,
+    instance: Instance | None = None,
+    model: ArrivalForecast | None = None,
     *,
     n_scenarios: int = 3,
     seed: int = 0,
     rate_scale: float = 1.0,
+    day_horizon: float | None = None,
 ) -> ArrivalForecast:
-    """Gate 3E: ignore evaluation customer IDs; sample anonymous demand only.
+    """Quarantined compatibility wrapper (Gate 3F).
 
-    ``instance`` is accepted for API compatibility (day horizon / metadata) but
-    must not supply hidden customer identities into scenarios.
+    Online use with a live evaluation ``instance`` is forbidden because reading
+    eval customer dues leaked horizon information. Pass ``day_horizon`` explicitly
+    (from train stats or a fixed policy constant) instead.
     """
-    dues = [float(instance.node(c).window.due) for c in instance.customer_ids()]
-    day = max(dues) if dues else 200.0
-    # Deliberately do not read instance.customer_ids() into scenario membership.
-    _ = instance.name
+    if model is None:
+        raise ValueError("model is required")
+    if instance is not None:
+        raise RuntimeError(
+            "build_scenarios_for(instance=...) is quarantined (Gate 3F information boundary). "
+            "Use build_anonymous_scenarios(model, day_horizon=...) with a horizon that does not "
+            "depend on unreleased evaluation customers."
+        )
+    day = 200.0 if day_horizon is None else float(day_horizon)
     return build_anonymous_scenarios(
         model,
         n_scenarios=n_scenarios,
@@ -257,7 +273,12 @@ def synthetic_poisson_releases(
     seed: int = 0,
     mean_interarrival: float | None = None,
 ) -> list[tuple[str, float]]:
-    """Plant release stream for real evaluation customers (independent RNG stream)."""
+    """Homogeneous Poisson announcement times for evaluation customers.
+
+    Announcement time is **not** clamped to window.ready or window.due.
+    Service windows remain separate plant constraints. Customers announced after
+    their due may be a-priori unserviceable and must be counted in the denominator.
+    """
     customers = list(instance.customer_ids())
     if not customers:
         return []
@@ -274,12 +295,8 @@ def synthetic_poisson_releases(
     t = 0.0
     for cid in order:
         state, u = _lcg(state)
-        u = min(max(u, 1e-6), 1 - 1e-6)
-        t += mu * (0.05 + 1.9 * u)
-        ready_cap = float(instance.node(cid).window.due)
-        # Release no earlier than window.ready so the plant can serve when ready.
-        ready_min = float(instance.node(cid).window.ready)
-        releases.append((cid, min(max(t, ready_min), ready_cap)))
+        t += _exponential_gap(mu, u)
+        releases.append((cid, float(t)))
     return releases
 
 
