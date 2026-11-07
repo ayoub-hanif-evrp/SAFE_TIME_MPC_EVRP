@@ -54,8 +54,10 @@ def test_energy_active_config_differs_from_baseline():
     assert ESOGU_ENERGY_ACTIVE_V1.battery_kwh == ESOGU_LIGHT_CARGO_V1.battery_kwh
 
 
-def test_horizon_microscope_changes_present_action():
+def test_horizon_microscope_changes_executed_action():
     report = search_horizon_causality()
-    assert report["horizon_changes_present_action"] is True
-    assert report["action_short"] != report["action_long"]
-    assert report["action_no_forecast"] == report["action_short"]
+    assert report["horizon_changes_executed_action"] is True
+    assert report["executed_action_short"] != report["executed_action_long"]
+    assert report["executed_action_no_forecast"] == report["executed_action_short"]
+    # Dispatched first action must not be an unreleased synthetic service.
+    assert not str(report["executed_action_long"][0]).startswith("syn_")

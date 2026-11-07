@@ -1,0 +1,54 @@
+name: gate3e-data-integration
+
+# Separate from fast unit CI. Run manually or on demand with datasets available.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/safe_time_evrp/mpc3c/**"
+      - "src/safe_time_evrp/data/**"
+      - "tests/test_gate3e_correctness.py"
+      - "scripts/run_gate3e_matched_retest.py"
+      - "docs/research_gate_3e/**"
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Download and verify public benchmarks
+        run: |
+          python -m safe_time_evrp.data.download
+          python -m safe_time_evrp.data.verify
+      - name: Gate 3E correctness tests (non-optional)
+        run: python -m pytest -q tests/test_gate3e_correctness.py tests/test_gate3d_execution_contract.py tests/test_gate3d_amazon_horizon.py
+      - name: Horizon causality invariant
+        run: |
+          python - <<'PY'
+          from safe_time_evrp.mpc3c.horizon_microscope import search_horizon_causality
+          r = search_horizon_causality()
+          assert r["horizon_changes_executed_action"], r
+          assert not str(r["executed_action_long"][0]).startswith("syn_")
+          print("ok", r["executed_action_short"], "->", r["executed_action_long"])
+          PY
+      - name: Matched retest if EVRP-TW-D present
+        run: |
+          if [ -d data/raw/evrp_tw_d ]; then
+            python scripts/run_gate3e_matched_retest.py
+            test -f docs/research_gate_3e/matched_summary.json
+          else
+            echo "EVRP-TW-D raw data missing; failing integration job"
+            exit 1
+          fi
+      - name: Upload matched summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate3e-matched-summary
+          path: docs/research_gate_3e/matched_summary.json
+          if-no-files-found: ignore

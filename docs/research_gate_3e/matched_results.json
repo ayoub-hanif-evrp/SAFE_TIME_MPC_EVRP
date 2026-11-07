@@ -1,0 +1,1581 @@
+{
+  "git_commit": "870029d26e411247ab5af0927c1fbba4cece671e",
+  "controller_labels": {
+    "myopic": "myopic_feasible_routing",
+    "rh_open_loop": "deterministic_receding_horizon_mpc",
+    "rollout": "deterministic_prefix_rollout",
+    "flexibility_mpc": "flexibility_terminal_ablation"
+  },
+  "forecast_model_id": "train_atoms=60;mu=0.191000",
+  "horizon_microscope": {
+    "instance": "horizon_fork_executable",
+    "short_H": 1.0,
+    "long_H": 20.0,
+    "executed_action_short": [
+      "A",
+      "service"
+    ],
+    "executed_action_long": [
+      "S",
+      "charge"
+    ],
+    "executed_action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "planned_action_short": [
+      "A",
+      "service"
+    ],
+    "planned_action_long": [
+      "syn_far_0",
+      "service"
+    ],
+    "horizon_changes_executed_action": true,
+    "horizon_changes_present_action": true,
+    "action_short": [
+      "A",
+      "service"
+    ],
+    "action_long": [
+      "S",
+      "charge"
+    ],
+    "action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "grid": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "S",
+        "charge"
+      ],
+      "10.0": [
+        "S",
+        "charge"
+      ],
+      "20.0": [
+        "S",
+        "charge"
+      ]
+    },
+    "grid_executed": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "S",
+        "charge"
+      ],
+      "10.0": [
+        "S",
+        "charge"
+      ],
+      "20.0": [
+        "S",
+        "charge"
+      ]
+    },
+    "mechanism": "Long H includes anonymous forecast demand; constructive plan may visit the synthetic stop, but after strip+revalidate the dispatched first action is a legal proactive charge at S. Short H dispatches A service. Claim is on executed actions."
+  },
+  "evrptwd_dev": [
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.000606499903369695,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.0009558999445289373,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.001824099919758737,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 10,
+          "distance": 0.0,
+          "optimize_seconds": 0.002026400063186884,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "seed_fleet_size": 2,
+      "release_seed": 577288152,
+      "forecast_seed": 1433919166,
+      "instance_hash": "6b41e2c066103a97",
+      "native_Q": 126.33,
+      "releases": [
+        [
+          "C1",
+          15.392
+        ],
+        [
+          "C0",
+          10.894
+        ],
+        [
+          "C3",
+          9.55
+        ],
+        [
+          "C4",
+          17.631
+        ],
+        [
+          "C2",
+          11.801
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883",
+      "fleet_size": 3,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.000766600074712187,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.001034200075082481,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.0020389000419527292,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:D0:return|v3:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.002513499930500984,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "seed_fleet_size": 3,
+      "release_seed": 2030862667,
+      "forecast_seed": 1429361397,
+      "instance_hash": "3e1ec7f2fe0514c1",
+      "native_Q": 125.64,
+      "releases": [
+        [
+          "C1",
+          14.794
+        ],
+        [
+          "C0",
+          13.639
+        ],
+        [
+          "C2",
+          14.815
+        ],
+        [
+          "C4",
+          13.838
+        ],
+        [
+          "C3",
+          12.841
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883",
+      "fleet_size": 1,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 18,
+          "distance": 248.347515503421,
+          "optimize_seconds": 0.0006923000328242779,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 18,
+          "distance": 248.347515503421,
+          "optimize_seconds": 0.0008217000286094844,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 18,
+          "distance": 248.347515503421,
+          "optimize_seconds": 0.0013278999831527472,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 3,
+          "n_announced_eligible": 5,
+          "service_rate": 0.6,
+          "rejected": [
+            "C0",
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "executed_first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 18,
+          "distance": 248.347515503421,
+          "optimize_seconds": 0.0016072998405434191,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "seed_fleet_size": 1,
+      "release_seed": 1995306675,
+      "forecast_seed": 1650219478,
+      "instance_hash": "64111a40b0a3d434",
+      "native_Q": 123.8,
+      "releases": [
+        [
+          "C4",
+          10.234
+        ],
+        [
+          "C1",
+          17.241
+        ],
+        [
+          "C2",
+          13.127
+        ],
+        [
+          "C0",
+          16.862
+        ],
+        [
+          "C3",
+          11.335
+        ]
+      ]
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.0005872001056559384,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.000807599863037467,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.001705799950286746,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [],
+          "n_served": 0,
+          "n_announced_eligible": 5,
+          "service_rate": 0.0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:syn_s0_0:service|v2:syn_s0_1:service",
+          "executed_first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 11,
+          "distance": 0.0,
+          "optimize_seconds": 0.001979200169444084,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "seed_fleet_size": 2,
+      "release_seed": 1088732123,
+      "forecast_seed": 1747073535,
+      "instance_hash": "f3f078232bd15aa1",
+      "native_Q": 112.93,
+      "releases": [
+        [
+          "C2",
+          16.325
+        ],
+        [
+          "C3",
+          12.045
+        ],
+        [
+          "C4",
+          14.284
+        ],
+        [
+          "C1",
+          19.275
+        ],
+        [
+          "C0",
+          17.044
+        ]
+      ]
+    }
+  ],
+  "amazon": [
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.024028300191275775,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.02711690030992031,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.21424240007763728,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 95.5775,
+          "optimize_seconds": 0.21503549977205694,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "7",
+      "instance_hash": "931fa801c025482c",
+      "release_seed": 735665548,
+      "forecast_seed": 1386178618
+    },
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.026760800159536302,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.029209500062279403,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.2189754998544231,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "executed_first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 95.5775,
+          "optimize_seconds": 0.2250533002661541,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "7",
+      "instance_hash": "3de2be4162943d35",
+      "release_seed": 735665548,
+      "forecast_seed": 766837199
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.024962399853393435,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.028289299982134253,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.22796459990786389,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 88.595,
+          "optimize_seconds": 0.23178430029656738,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "0",
+      "instance_hash": "1bd7b16fe8810c94",
+      "release_seed": 1358565195,
+      "forecast_seed": 663132471
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.030526800081133842,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.03523079992737621,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.2779177997726947,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "executed_first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 53,
+          "distance": 88.595,
+          "optimize_seconds": 0.2818602995830588,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "0",
+      "instance_hash": "5472289839a599a8",
+      "release_seed": 1358565195,
+      "forecast_seed": 48190533
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.023319400032050908,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.027337100182194263,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.21412410022458062,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 0,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 51,
+          "distance": 101.985,
+          "optimize_seconds": 0.2183023000252433,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "electrification": "esogu_light_cargo_v1",
+      "consumption_kwh_per_km": 0.15,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "0",
+      "instance_hash": "0e6dd374f6822579",
+      "release_seed": 1413157880,
+      "forecast_seed": 1429931052
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.02940339979249984,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.033874799963086843,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.26685239997459576,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO"
+          ],
+          "n_served": 10,
+          "n_announced_eligible": 10,
+          "service_rate": 1.0,
+          "rejected": [],
+          "commitment_violations": 0,
+          "accepted_unfulfilled": [],
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "executed_first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 52,
+          "distance": 101.985,
+          "optimize_seconds": 0.26937460008775815,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "file": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "electrification": "esogu_energy_active_v1",
+      "consumption_kwh_per_km": 0.5,
+      "battery_kwh": 40.0,
+      "charger": "synthetic_depot_colocated",
+      "observed_package_windows": "0",
+      "instance_hash": "246a379590abc803",
+      "release_seed": 1413157880,
+      "forecast_seed": 1473905674
+    }
+  ],
+  "protocol": {
+    "forecast": "anonymous_train_atoms_only",
+    "seeds": "sha256_stable_seed",
+    "fleet": "seed_required_fleet_size",
+    "holdout_used_for_tuning": false
+  },
+  "solomon_140_rh_trace": {
+    "file": "solomon_dataset_140_RC_wide_1769114883.txt",
+    "n_served": 4,
+    "commitment_violations": 0,
+    "accepted_unfulfilled": [],
+    "replay_ok": true,
+    "executed_first_action_signature": "v1:D0:return",
+    "release_seed": 5282616
+  }
+}

@@ -37,9 +37,9 @@ ESOGU_LIGHT_CARGO_V1 = ElectrificationConfig(
     load_capacity=1e9,  # Amazon capacity is volumetric; ignore tight payload for this pilot
 )
 
-# Gate 3D energy-active profile: consumption uplift at fixed 40 kWh (not ≤25% Q).
-# Empirically, ≥0.5 kWh/km with ≥12 stops yields charge events on the subset
-# while tours remain mostly serviceable under FleetSimulator.
+# Gate 3D/3E energy-active profile: modeled consumption uplift at fixed 40 kWh
+# (not ≤25% Q; not calibrated ESOGU field measurements). Use to study whether
+# charging appears and alters plans; always compare against ESOGU_LIGHT_CARGO_V1.
 ESOGU_ENERGY_ACTIVE_V1 = ElectrificationConfig(
     name="esogu_energy_active_v1",
     battery_kwh=40.0,
@@ -187,7 +187,11 @@ def load_amazon_route(
     for sid in dropoffs:
         stop = route["stops"][sid]
         service = 0.0
-        ready, due = 0.0, electrification.day_horizon_h
+        # Aggregate package windows explicitly: ready = max(starts), due = min(ends).
+        # Missing package bounds are skipped; if the intersection is empty, fall back
+        # to the full day and record the conflict in assumptions/metadata.
+        ready_candidates: list[float] = []
+        due_candidates: list[float] = []
         for _pid, meta in pkg.get(sid, {}).items():
             service = max(service, float(meta.get("planned_service_time_seconds") or 0.0) / 3600.0)
             tw = meta.get("time_window") or {}
@@ -200,10 +204,19 @@ def load_amazon_route(
                 electrification.day_horizon_h,
                 departure_epoch_h=departure_epoch_h,
             )
-            ready = window.ready
-            due = window.due
-            if ready > 0.0 or due < electrification.day_horizon_h - 1e-9:
+            if not _is_missing(start_raw):
+                ready_candidates.append(window.ready)
+            if not _is_missing(end_raw):
+                due_candidates.append(window.due)
+        if ready_candidates or due_candidates:
+            ready = max(ready_candidates) if ready_candidates else 0.0
+            due = min(due_candidates) if due_candidates else electrification.day_horizon_h
+            if due < ready:
+                ready, due = 0.0, electrification.day_horizon_h
+            else:
                 modeled_windows += 1
+        else:
+            ready, due = 0.0, electrification.day_horizon_h
         nodes.append(
             Node(
                 sid,

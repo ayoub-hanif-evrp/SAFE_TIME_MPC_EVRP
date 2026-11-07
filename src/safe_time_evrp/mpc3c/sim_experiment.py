@@ -1,8 +1,10 @@
-"""Simulator-backed Gate 3D closed-loop experiment harness.
+"""Simulator-backed closed-loop experiment harness (Gate 3D/3E).
 
-Replaces Gate 3C ``run_dynamic`` microtrip evaluation. Controllers emit full
-suffixes; ``FleetSimulator`` executes them with noninterruptibility, preserved
-unexecuted suffix, and event-queue time advance.
+Gate 3E contracts:
+- Do not terminate while request-release events remain within the evaluation horizon.
+- Strip unreleased forecast services, then revalidate cleaned routes before dispatch.
+- Admission must not break previously accepted commitments (nominal plant feasibility).
+- Never treat accepted customers as rejected.
 """
 
 from __future__ import annotations
@@ -11,7 +13,8 @@ from dataclasses import dataclass, field
 from time import perf_counter
 
 from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy
-from safe_time_evrp.environment.simulator import FleetSimulator
+from safe_time_evrp.environment.physics import evaluate_route
+from safe_time_evrp.environment.simulator import FleetSimulator, SimulatorError
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
 from safe_time_evrp.mpc3c.controllers import ControllerKind, decide
@@ -55,10 +58,14 @@ class RunResult:
     log: list
     replay_ok: bool
     decision_event_signatures: list[str]
+    announced: list[str] = field(default_factory=list)
+    unannounced_at_cutoff: list[str] = field(default_factory=list)
+    accepted_unfulfilled: list[str] = field(default_factory=list)
+    t_max: float = 0.0
+    executed_first_action_signature: str = ""
 
 
 def _strip_unreleased(visits: list[Visit], released: set[str], completed: set[str]) -> list[Visit]:
-    """Drop provisional forecast services that are not yet plant-released."""
     out: list[Visit] = []
     for visit in visits:
         if visit.purpose == "service" and visit.node_id not in released and visit.node_id not in completed:
@@ -67,8 +74,62 @@ def _strip_unreleased(visits: list[Visit], released: set[str], completed: set[st
     return out
 
 
-def _to_decision(
+def _served(routes: dict[str, list[Visit]]) -> set[str]:
+    out: set[str] = set()
+    for visits in routes.values():
+        for visit in visits:
+            if visit.purpose == "service":
+                out.add(visit.node_id)
+    return out
+
+
+def _routes_cover_commitments(
     instance: Instance,
+    observation: Observation,
+    routes: dict[str, list[Visit]],
+    accepted: list[str],
+) -> bool:
+    """Nominal commitment feasibility on the plant instance (released customers only)."""
+    model = NominalLinearEnergy()
+    pending = {
+        c
+        for c in accepted
+        if c not in observation.completed and c not in observation.in_service and c not in observation.rejected
+    }
+    covered: set[str] = set()
+    for vehicle in observation.vehicles:
+        result = evaluate_route(instance, vehicle.anchor, routes.get(vehicle.id, []), model)
+        if not result.feasible:
+            return False
+        covered.update(result.served)
+    return pending <= covered
+
+
+def _clean_and_revalidate(
+    instance: Instance,
+    observation: Observation,
+    routes: dict[str, list[Visit]],
+) -> dict[str, list[Visit]]:
+    """Strip unreleased forecast services and independently revalidate each vehicle route."""
+    model = NominalLinearEnergy()
+    q = instance.vehicle_type.battery_capacity
+    released = set(observation.released_open) | set(observation.accepted) | set(observation.in_service)
+    completed = set(observation.completed)
+    applied: dict[str, list[Visit]] = {}
+    for vehicle in observation.vehicles:
+        raw = routes.get(vehicle.id, [])
+        cleaned = _strip_unreleased(raw, released, completed)
+        suffix = dispatch_suffix(cleaned, observation, vehicle.node, vehicle.soc, q)
+        if vehicle.status in {"traveling", "serving", "charging"}:
+            applied[vehicle.id] = suffix
+            continue
+        result = evaluate_route(instance, vehicle.anchor, suffix, model)
+        # Keep the cleaned suffix (not evaluate_route's rewritten visit list) when feasible.
+        applied[vehicle.id] = suffix if result.feasible else []
+    return applied
+
+
+def _to_decision(
     observation: Observation,
     routes: dict[str, list[Visit]],
     *,
@@ -77,40 +138,26 @@ def _to_decision(
     deferred: list[str],
     accepted: list[str],
     planned_service: list[str],
-    total_distance: float,
-    total_charge_time: float,
     optimize_seconds: float,
     trigger: str,
     notes: list[str],
+    fallback_used: bool = False,
+    no_feasible_continuation: bool = False,
 ) -> Decision:
-    q = instance.vehicle_type.battery_capacity
-    released = set(observation.released_open) | set(observation.accepted) | set(observation.in_service)
-    completed = set(observation.completed)
-    applied: dict[str, list[Visit]] = {}
-    for vehicle in observation.vehicles:
-        raw = routes.get(vehicle.id, [])
-        cleaned = _strip_unreleased(raw, released, completed)
-        applied[vehicle.id] = dispatch_suffix(
-            cleaned,
-            observation,
-            vehicle.node,
-            vehicle.soc,
-            q,
-        )
     locked = {vehicle.id: vehicle.locked_destination for vehicle in observation.vehicles}
     return Decision(
         time=observation.time,
-        routes=applied,
+        routes=routes,
         accepted=list(accepted),
         newly_accepted=list(newly_accepted),
         rejected=list(rejected),
         deferred=list(deferred),
-        fallback_used=False,
-        no_feasible_continuation=False,
+        fallback_used=fallback_used,
+        no_feasible_continuation=no_feasible_continuation,
         horizon_extended=False,
         planned_service=list(planned_service),
-        total_distance=total_distance,
-        total_charge_time=total_charge_time,
+        total_distance=0.0,
+        total_charge_time=0.0,
         optimize_seconds=optimize_seconds,
         trigger=trigger,
         locked_destinations=locked,
@@ -118,10 +165,10 @@ def _to_decision(
     )
 
 
-def _action_sig(decision: Decision) -> str:
+def _action_sig(routes: dict[str, list[Visit]]) -> str:
     parts = []
-    for vid in sorted(decision.routes):
-        visits = decision.routes[vid]
+    for vid in sorted(routes):
+        visits = routes[vid]
         if not visits:
             parts.append(f"{vid}:None")
             continue
@@ -139,6 +186,34 @@ def _hamming(a: list[tuple], b: list[tuple]) -> int:
     return d
 
 
+def _pending_release_within(simulator: FleetSimulator, t_max: float) -> bool:
+    """True if a future request_release remains scheduled at or before t_max."""
+    for event in list(simulator._heap):
+        if event.cancelled or event.event_id in simulator._cancelled:
+            continue
+        if event.kind == "request_release" and event.time <= t_max + EPS:
+            return True
+    return False
+
+
+def _finished(simulator: FleetSimulator, t_max: float) -> bool:
+    if _pending_release_within(simulator, t_max):
+        return False
+    open_status = {"announced", "accepted", "deferred", "in_service"}
+    if any(status.value in open_status for status in simulator.requests.values()):
+        return False
+    if simulator.time + EPS < t_max:
+        # Still inside evaluation horizon with no open work and no pending releases.
+        # Allow finish only when fleet is idle at depot (no more plant events needed).
+        nxt = simulator.next_event_time()
+        if nxt is not None and nxt <= t_max + EPS:
+            return False
+    return all(
+        vehicle.status.value == "idle" and vehicle.node == simulator.instance.depot_id
+        for vehicle in simulator.vehicles.values()
+    )
+
+
 def run_sim_dynamic(
     instance: Instance,
     kind: ControllerKind,
@@ -152,22 +227,24 @@ def run_sim_dynamic(
     max_events: int = 20_000,
     energy: NominalLinearEnergy | None = None,
     disturbance=None,
+    advance_plant_during_optimize: bool = False,
 ) -> RunResult:
-    """Closed-loop episode through ``FleetSimulator`` with Gate 3D controllers."""
+    """Closed-loop episode through ``FleetSimulator``."""
     model = energy or NominalLinearEnergy()
     if releases is None:
         releases = [(cid, float(instance.node(cid).window.ready)) for cid in instance.customer_ids()]
     if t_max is None:
-        t_max = max(instance.node(cid).window.due for cid in instance.customer_ids()) + 50.0
+        t_max = max((rt for _, rt in releases), default=0.0)
+        t_max = max(t_max, max(instance.node(cid).window.due for cid in instance.customer_ids())) + 50.0
     if max_replan_interval is None:
         max_replan_interval = max(horizon, 1.0)
 
+    release_map = {cid: float(rt) for cid, rt in releases}
     simulator = FleetSimulator(instance, fleet_size, energy=model, disturbance=disturbance)
     for customer_id, release_time in releases:
         simulator.schedule_release(customer_id, release_time)
 
     steps: list[StepLog] = []
-    decisions: list[Decision] = []
     action_sequence: list[tuple[float, str, str | None, str | None]] = []
     signatures: list[str] = []
     optimize_seconds = 0.0
@@ -175,9 +252,12 @@ def run_sim_dynamic(
     same_time = 0
     last_decision_time = -1.0
     first_sig = ""
+    executed_first_sig = ""
+    incumbent_routes: dict[str, list[Visit]] = {f"v{i + 1}": [] for i in range(fleet_size)}
 
     def decide_once(trigger: str) -> None:
-        nonlocal optimize_seconds, replan_id, same_time, last_decision_time, first_sig
+        nonlocal optimize_seconds, replan_id, same_time, last_decision_time
+        nonlocal first_sig, executed_first_sig, incumbent_routes
         if abs(simulator.time - last_decision_time) <= EPS:
             same_time += 1
         else:
@@ -187,7 +267,6 @@ def run_sim_dynamic(
             raise RuntimeError("decision loop did not advance time")
 
         observation = simulator.observation()
-        # Idle/replan anchors must sit at plant time (Gate 3D desync contract).
         for vehicle in observation.vehicles:
             if vehicle.status == "idle" and abs(vehicle.anchor.time - observation.time) > EPS:
                 raise RuntimeError(
@@ -206,19 +285,67 @@ def run_sim_dynamic(
         elapsed = perf_counter() - wall
         optimize_seconds += elapsed
 
+        if advance_plant_during_optimize and elapsed > 0:
+            # Optional Gate 3E timing contract: consume plant time, but never skip events.
+            nxt = simulator.next_event_time()
+            if nxt is not None and simulator.time + elapsed > nxt + EPS:
+                # Stale: do not apply; let the intervening event fire.
+                return
+            simulator.time = simulator.time + elapsed
+
+        observation = simulator.observation()
+        cleaned = _clean_and_revalidate(instance, observation, ctrl.routes)
+
+        # Proposed accepts: released customers appearing in cleaned routes.
         truly_released = set(observation.released_open)
-        planned_released = _served(ctrl.routes) & truly_released
+        planned_released = _served(cleaned) & truly_released
+        proposed_accepted = list(observation.accepted)
         newly = sorted(c for c in planned_released if c not in observation.accepted and c not in observation.in_service)
-        accepted_out = list(observation.accepted)
         for cid in newly:
-            if cid not in accepted_out:
-                accepted_out.append(cid)
-        # Do not reject customers whose windows have not opened yet (Gate 3D).
-        # Horizon-deferred optionals stay deferred; irrevocable reject only after ready.
+            if cid not in proposed_accepted:
+                proposed_accepted.append(cid)
+
+        # Commitment gate: new admissions must keep all accepted feasible.
+        notes = list(ctrl.notes)
+        fallback = False
+        no_cont = False
+        if not _routes_cover_commitments(instance, observation, cleaned, proposed_accepted):
+            # Refuse new admissions; try incumbent cleaned routes for current accepted.
+            newly = []
+            proposed_accepted = list(observation.accepted)
+            if incumbent_routes and _routes_cover_commitments(
+                instance, observation, incumbent_routes, proposed_accepted
+            ):
+                cleaned = {
+                    vid: dispatch_suffix(
+                        list(visits),
+                        observation,
+                        next(v for v in observation.vehicles if v.id == vid).node,
+                        next(v for v in observation.vehicles if v.id == vid).soc,
+                        instance.vehicle_type.battery_capacity,
+                    )
+                    for vid, visits in incumbent_routes.items()
+                    if any(v.id == vid for v in observation.vehicles)
+                }
+                fallback = True
+                notes.append("commitment_gate_kept_incumbent")
+            elif _routes_cover_commitments(instance, observation, cleaned, proposed_accepted):
+                notes.append("commitment_gate_refused_new_accepts")
+            else:
+                no_cont = True
+                notes.append("no_feasible_commitment_continuation")
+                # Safe returns for idle vehicles; do not reject accepted.
+                cleaned = {}
+                for vehicle in observation.vehicles:
+                    if vehicle.status in {"traveling", "serving", "charging"}:
+                        cleaned[vehicle.id] = list(incumbent_routes.get(vehicle.id, []))
+                    else:
+                        cleaned[vehicle.id] = [Visit(instance.depot_id, "return")]
+
         deferred = [
             c
             for c in observation.released_open
-            if c not in accepted_out
+            if c not in proposed_accepted
             and c not in observation.completed
             and c not in observation.in_service
             and (
@@ -226,35 +353,42 @@ def run_sim_dynamic(
                 or instance.node(c).window.ready > observation.time + horizon
             )
         ]
+        # Never reject already-accepted commitments.
         rejected = [
             c
             for c in observation.released_open
-            if c not in accepted_out
+            if c not in proposed_accepted
             and c not in observation.completed
             and c not in observation.in_service
             and c not in deferred
             and c not in planned_released
+            and c not in observation.accepted
         ]
+
         decision = _to_decision(
-            instance,
             observation,
-            ctrl.routes,
+            cleaned,
             newly_accepted=newly,
             rejected=rejected,
             deferred=deferred,
-            accepted=accepted_out,
-            planned_service=sorted(_served(ctrl.routes) & truly_released),
-            total_distance=0.0,
-            total_charge_time=0.0,
+            accepted=proposed_accepted,
+            planned_service=sorted(_served(cleaned) & truly_released),
             optimize_seconds=elapsed,
             trigger=trigger,
-            notes=ctrl.notes,
+            notes=notes,
+            fallback_used=fallback,
+            no_feasible_continuation=no_cont,
         )
+        if _routes_cover_commitments(instance, observation, cleaned, proposed_accepted):
+            incumbent_routes = {vid: list(visits) for vid, visits in cleaned.items()}
+
         if not first_sig:
-            first_sig = _action_sig(decision)
-        signatures.append(_action_sig(decision))
-        for vid in sorted(decision.routes):
-            visits = decision.routes[vid]
+            first_sig = _action_sig(ctrl.routes)
+        if not executed_first_sig:
+            executed_first_sig = _action_sig(cleaned)
+        signatures.append(_action_sig(cleaned))
+        for vid in sorted(cleaned):
+            visits = cleaned[vid]
             if visits:
                 first = visits[0]
                 action_sequence.append((observation.time, vid, first.node_id, first.purpose))
@@ -264,14 +398,43 @@ def run_sim_dynamic(
             StepLog(
                 observation.time,
                 kind.value,
-                {vid: (visits[0].node_id if visits else None) for vid, visits in decision.routes.items()},
+                {vid: (visits[0].node_id if visits else None) for vid, visits in cleaned.items()},
                 sum(1 for s in simulator.requests.values() if s.value == "completed"),
-                list(ctrl.notes),
+                list(notes),
                 trigger=trigger,
             )
         )
-        decisions.append(decision)
-        simulator.apply_decision(decision)
+        try:
+            simulator.apply_decision(decision)
+        except SimulatorError as exc:
+            notes.append(f"plant_rejected_dispatch:{exc}")
+            safe_routes = {
+                vehicle.id: (
+                    list(incumbent_routes.get(vehicle.id, []))
+                    if vehicle.status in {"traveling", "serving", "charging"}
+                    else []
+                )
+                for vehicle in observation.vehicles
+            }
+            safe = _to_decision(
+                observation,
+                safe_routes,
+                newly_accepted=[],
+                rejected=[],
+                deferred=[
+                    c
+                    for c in observation.released_open
+                    if c not in observation.accepted and c not in observation.completed
+                ],
+                accepted=list(observation.accepted),
+                planned_service=[],
+                optimize_seconds=elapsed,
+                trigger=trigger,
+                notes=notes,
+                fallback_used=True,
+                no_feasible_continuation=True,
+            )
+            simulator.apply_decision(safe)
         if replan_id is not None:
             simulator.cancel(replan_id)
         replan_id = simulator.schedule_replan(simulator.time + max_replan_interval)
@@ -295,9 +458,20 @@ def run_sim_dynamic(
         raise RuntimeError("event limit reached")
 
     simulator.mark_finished()
+    # Eligible = released by cutoff.
+    eligible = sorted(cid for cid, rt in release_map.items() if rt <= t_max + EPS)
+    unannounced = sorted(cid for cid in instance.customer_ids() if cid not in eligible)
     completed = sorted(cid for cid, st in simulator.requests.items() if st.value == "completed")
-    rejected = sorted(cid for cid, st in simulator.requests.items() if st.value in {"rejected", "accepted_unfulfilled"})
-    commitment_violations = sum(1 for st in simulator.requests.values() if st.value == "accepted_unfulfilled")
+    rejected = sorted(cid for cid, st in simulator.requests.items() if st.value == "rejected")
+    accepted_unfulfilled = sorted(cid for cid, st in simulator.requests.items() if st.value == "accepted_unfulfilled")
+    # Also count accepted still open at cutoff as unfulfilled for reporting.
+    still_open_accepted = sorted(
+        cid
+        for cid, st in simulator.requests.items()
+        if st.value in {"accepted", "in_service", "deferred"} and cid in observation_accepted_safe(simulator)
+    )
+    accepted_unfulfilled = sorted(set(accepted_unfulfilled) | set(still_open_accepted))
+    commitment_violations = len(accepted_unfulfilled)
     charge_events = sum(1 for rec in simulator.log if rec.kind == "charge_start")
     distance = 0.0
     for rec in simulator.log:
@@ -325,28 +499,16 @@ def run_sim_dynamic(
         log=list(simulator.log),
         replay_ok=replay.ok,
         decision_event_signatures=signatures,
+        announced=eligible,
+        unannounced_at_cutoff=unannounced,
+        accepted_unfulfilled=accepted_unfulfilled,
+        t_max=t_max,
+        executed_first_action_signature=executed_first_sig,
     )
 
 
-def _served(routes: dict[str, list[Visit]]) -> set[str]:
-    out: set[str] = set()
-    for visits in routes.values():
-        for visit in visits:
-            if visit.purpose == "service":
-                out.add(visit.node_id)
-    return out
-
-
-def _finished(simulator: FleetSimulator, t_max: float) -> bool:
-    open_status = {"announced", "accepted", "deferred", "in_service"}
-    if any(status.value in open_status for status in simulator.requests.values()):
-        return False
-    if simulator.time > t_max + EPS:
-        return True
-    return all(
-        vehicle.status.value == "idle" and vehicle.node == simulator.instance.depot_id
-        for vehicle in simulator.vehicles.values()
-    )
+def observation_accepted_safe(simulator: FleetSimulator) -> set[str]:
+    return {cid for cid, st in simulator.requests.items() if st.value in {"accepted", "in_service", "deferred"}}
 
 
 def compare_controllers(
@@ -358,7 +520,7 @@ def compare_controllers(
     forecast: ArrivalForecast | None = None,
     t_max: float | None = None,
 ) -> dict:
-    """Matched Gate 3D comparison under the simulator harness."""
+    """Matched comparison under the simulator harness."""
     results: dict[str, RunResult] = {}
     for kind in ControllerKind:
         results[kind.value] = run_sim_dynamic(
@@ -381,12 +543,16 @@ def compare_controllers(
             name: {
                 "served": r.served,
                 "n_served": len(r.served),
+                "n_announced_eligible": len(r.announced),
+                "service_rate": (len(r.served) / len(r.announced)) if r.announced else 0.0,
                 "rejected": r.rejected,
                 "commitment_violations": r.commitment_violations,
+                "accepted_unfulfilled": r.accepted_unfulfilled,
                 "charge_events": r.charge_events,
                 "first_action_signature": r.first_action_signature,
-                "differs_from_rh": r.first_action_signature != rh.first_action_signature,
-                "differs_from_rollout": r.first_action_signature != rollout.first_action_signature,
+                "executed_first_action_signature": r.executed_first_action_signature,
+                "differs_from_rh": r.executed_first_action_signature != rh.executed_first_action_signature,
+                "differs_from_rollout": r.executed_first_action_signature != rollout.executed_first_action_signature,
                 "action_hamming_vs_rh": _hamming(r.action_sequence, rh.action_sequence),
                 "action_hamming_vs_rollout": _hamming(r.action_sequence, rollout.action_sequence),
                 "decision_event_diffs_vs_rh": sum(
@@ -400,6 +566,6 @@ def compare_controllers(
             }
             for name, r in results.items()
         },
-        "flex_equals_rollout_first": flex.first_action_signature == rollout.first_action_signature,
+        "flex_equals_rollout_first": flex.executed_first_action_signature == rollout.executed_first_action_signature,
         "flex_equals_rollout_sequence": flex.action_sequence == rollout.action_sequence,
     }

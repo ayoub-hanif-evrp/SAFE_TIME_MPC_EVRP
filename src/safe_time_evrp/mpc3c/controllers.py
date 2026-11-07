@@ -1,4 +1,11 @@
-"""Matched Gate 3C/3D controllers with a real planning horizon."""
+"""Matched Gate 3C/3E controllers with a real planning horizon.
+
+Labels (Gate 3E):
+- myopic: released-and-ready only, no forecasts
+- rh_open_loop: deterministic receding-horizon open-loop replan
+- rollout: deterministic prefix-search / PI-style rollout (not a stochastic policy tree)
+- flexibility_mpc: same candidate set as rollout + flexibility terminal (negative-control ablation)
+"""
 
 from __future__ import annotations
 
@@ -10,7 +17,11 @@ from safe_time_evrp.environment.physics import evaluate_route
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Anchor, Observation, Visit
 from safe_time_evrp.mpc3c.flexibility import flexibility_terminal_value
-from safe_time_evrp.mpc3c.forecast import ForecastCustomer, information_safe_remaining
+from safe_time_evrp.mpc3c.forecast import (
+    ForecastCustomer,
+    augment_instance_for_planning,
+    information_safe_remaining,
+)
 from safe_time_evrp.optimization.insertion import construct_routes
 from safe_time_evrp.testbed.constructor import make_observation
 
@@ -18,8 +29,17 @@ from safe_time_evrp.testbed.constructor import make_observation
 class ControllerKind(str, Enum):
     MYOPIC = "myopic"
     RH_OPEN_LOOP = "rh_open_loop"
-    ROLLOUT = "rollout"
+    ROLLOUT = "rollout"  # deterministic prefix-search; see module docstring
     FLEXIBILITY = "flexibility_mpc"
+
+
+# Honest display labels for manifests / docs.
+CONTROLLER_LABELS = {
+    ControllerKind.MYOPIC: "myopic_feasible_routing",
+    ControllerKind.RH_OPEN_LOOP: "deterministic_receding_horizon_mpc",
+    ControllerKind.ROLLOUT: "deterministic_prefix_rollout",
+    ControllerKind.FLEXIBILITY: "flexibility_terminal_ablation",
+}
 
 
 @dataclass
@@ -29,6 +49,7 @@ class ControllerDecision:
     first_actions: dict[str, Visit | None]
     score: float
     notes: list[str] = field(default_factory=list)
+    label: str = ""
 
 
 def _anchors_after_plan(
@@ -45,12 +66,16 @@ def _anchors_after_plan(
     return out
 
 
-def _plan_score_distance(plan_distance: float, charge_time: float) -> float:
-    return -(plan_distance + 0.1 * charge_time)
+def _plan_score(n_served: int, plan_distance: float, charge_time: float, *, service_reward: float = 50.0) -> float:
+    """Service-sensitive score: prefer serving more customers, then shorter distance."""
+    return service_reward * n_served - (plan_distance + 0.1 * charge_time)
+
+
+def _served_count(routes: dict[str, list[Visit]]) -> int:
+    return len({v.node_id for visits in routes.values() for v in visits if v.purpose == "service"})
 
 
 def _with_forecasts(observation: Observation, forecast_customers: list[ForecastCustomer]) -> Observation:
-    """Planning observation: released open plus forecast IDs inside the horizon."""
     if not forecast_customers:
         return observation
     extra = [f.customer_id for f in forecast_customers if f.customer_id not in observation.released_open]
@@ -77,16 +102,12 @@ def decide(
     compute_budget_variants: int = 8,
     forecast_customers: list[ForecastCustomer] | None = None,
 ) -> ControllerDecision:
-    """Choose fleet suffixes; ``horizon`` is used by all Gate 3C/3D controllers.
-
-    ``forecast_customers`` are anticipatory demand samples visible only as forecasts.
-    They may enter planning observations but must not be treated as plant-released
-    commitments by the experiment harness.
-    """
+    """Choose fleet suffixes. Forecasts are anonymous and planning-instance augmented."""
     model = NominalLinearEnergy()
     forecasts = list(forecast_customers or [])
+    plan_instance = augment_instance_for_planning(instance, forecasts)
+
     if kind is ControllerKind.MYOPIC:
-        # Myopic: only customers already ready; ignore forecasts and later releases.
         ready_ids = [
             cid for cid in observation.released_open if instance.node(cid).window.ready <= observation.time + 1e-9
         ]
@@ -101,33 +122,47 @@ def decide(
             observation.deferred,
         )
         plan = construct_routes(instance, obs, horizon=0.0, energy=model)
-        score = _plan_score_distance(plan.total_distance, plan.total_charge_time)
+        score = _plan_score(_served_count(plan.routes), plan.total_distance, plan.total_charge_time)
         return _pack(
             kind,
             plan.routes,
             observation,
             score,
-            [f"horizon_used={horizon}", "myopic_ready_only", f"forecasts_ignored={len(forecasts)}"],
+            [
+                f"horizon_used={horizon}",
+                "myopic_ready_only",
+                f"forecasts_ignored={len(forecasts)}",
+                f"label={CONTROLLER_LABELS[kind]}",
+            ],
         )
 
     plan_obs = _with_forecasts(observation, forecasts)
 
     if kind is ControllerKind.RH_OPEN_LOOP:
-        plan = construct_routes(instance, plan_obs, horizon=horizon, energy=model)
-        score = _plan_score_distance(plan.total_distance, plan.total_charge_time)
+        plan = construct_routes(plan_instance, plan_obs, horizon=horizon, energy=model)
+        score = _plan_score(_served_count(plan.routes), plan.total_distance, plan.total_charge_time)
         return _pack(
             kind,
             plan.routes,
             observation,
             score,
-            [f"horizon_used={horizon}", f"forecast_count={len(forecasts)}"],
+            [
+                f"horizon_used={horizon}",
+                f"forecast_count={len(forecasts)}",
+                f"label={CONTROLLER_LABELS[kind]}",
+            ],
         )
 
     if kind is ControllerKind.ROLLOUT:
-        base = construct_routes(instance, plan_obs, horizon=horizon, energy=model)
+        base = construct_routes(plan_instance, plan_obs, horizon=horizon, energy=model)
         best_routes = base.routes
-        best_score = _plan_score_distance(base.total_distance, base.total_charge_time)
-        notes = [f"horizon_used={horizon}", "rollout=perfect_information_prefix", f"forecast_count={len(forecasts)}"]
+        best_score = _plan_score(_served_count(base.routes), base.total_distance, base.total_charge_time)
+        notes = [
+            f"horizon_used={horizon}",
+            "rollout=deterministic_prefix_search",
+            f"forecast_count={len(forecasts)}",
+            f"label={CONTROLLER_LABELS[kind]}",
+        ]
         optionals = list(plan_obs.released_open)[:compute_budget_variants]
         for cid in optionals:
             obs = Observation(
@@ -140,10 +175,10 @@ def decide(
                 plan_obs.in_service,
                 plan_obs.deferred,
             )
-            plan = construct_routes(instance, obs, horizon=horizon, energy=model)
+            plan = construct_routes(plan_instance, obs, horizon=horizon, energy=model)
             if not plan.feasible_commitments:
                 continue
-            score = _plan_score_distance(plan.total_distance, plan.total_charge_time)
+            score = _plan_score(_served_count(plan.routes), plan.total_distance, plan.total_charge_time)
             if score > best_score:
                 best_score = score
                 best_routes = plan.routes
@@ -152,8 +187,14 @@ def decide(
     if kind is ControllerKind.FLEXIBILITY:
         lam = 0.75
         candidates: list[tuple[float, dict[str, list[Visit]], list[str]]] = []
-        base = construct_routes(instance, plan_obs, horizon=horizon, energy=model)
-        candidates.append((_plan_score_distance(base.total_distance, base.total_charge_time), base.routes, ["base"]))
+        base = construct_routes(plan_instance, plan_obs, horizon=horizon, energy=model)
+        candidates.append(
+            (
+                _plan_score(_served_count(base.routes), base.total_distance, base.total_charge_time),
+                base.routes,
+                ["base"],
+            )
+        )
         optionals = list(plan_obs.released_open)[:compute_budget_variants]
         for cid in optionals:
             obs = Observation(
@@ -166,24 +207,29 @@ def decide(
                 plan_obs.in_service,
                 plan_obs.deferred,
             )
-            plan = construct_routes(instance, obs, horizon=horizon, energy=model)
+            plan = construct_routes(plan_instance, obs, horizon=horizon, energy=model)
             if plan.feasible_commitments:
                 candidates.append(
                     (
-                        _plan_score_distance(plan.total_distance, plan.total_charge_time),
+                        _plan_score(_served_count(plan.routes), plan.total_distance, plan.total_charge_time),
                         plan.routes,
                         [f"prefix:{cid}"],
                     )
                 )
         best_score = float("-inf")
         best_routes = base.routes
-        best_notes = [f"horizon_used={horizon}", f"lambda={lam}", f"forecast_count={len(forecasts)}"]
+        best_notes = [
+            f"horizon_used={horizon}",
+            f"lambda={lam}",
+            f"forecast_count={len(forecasts)}",
+            f"label={CONTROLLER_LABELS[kind]}",
+        ]
         for dist_score, routes, note in candidates:
-            anchors = _anchors_after_plan(instance, observation, routes)
+            anchors = _anchors_after_plan(plan_instance, observation, routes)
             rem = information_safe_remaining(observation, forecasts, routes)
             flex = 0.0
             for vehicle in observation.vehicles:
-                flex += flexibility_terminal_value(instance, anchors[vehicle.id], rem)
+                flex += flexibility_terminal_value(plan_instance, anchors[vehicle.id], rem)
             total = dist_score + lam * flex
             if total > best_score:
                 best_score = total
@@ -193,6 +239,7 @@ def decide(
                     f"lambda={lam}",
                     f"flex={flex:.3f}",
                     f"forecast_count={len(forecasts)}",
+                    f"label={CONTROLLER_LABELS[kind]}",
                     *note,
                 ]
         return _pack(kind, best_routes, observation, best_score, best_notes)
@@ -211,7 +258,14 @@ def _pack(
     for vehicle in observation.vehicles:
         visits = routes.get(vehicle.id, [])
         first[vehicle.id] = visits[0] if visits else None
-    return ControllerDecision(kind.value, routes, first, score, notes)
+    return ControllerDecision(
+        kind.value,
+        routes,
+        first,
+        score,
+        notes,
+        label=CONTROLLER_LABELS[kind],
+    )
 
 
 def static_all_released_observation(instance: Instance, fleet_size: int) -> Observation:

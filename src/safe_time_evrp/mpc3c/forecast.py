@@ -1,8 +1,8 @@
-"""Request-arrival forecasts for Gate 3D predictive horizons.
+"""Information-safe demand forecasts for Gate 3E.
 
-Forecasts use only information available at decision time: an empirical arrival
-model fitted on a train split, or an explicit scenario set. Hidden customers from
-the live episode are never read through ``instance.customer_ids()`` remaining sets.
+Forecasts are anonymous synthetic customers sampled from **train-only** spatial
+and timing distributions. They never inherit evaluation-instance customer IDs,
+coordinates, or windows from hidden future requests.
 """
 
 from __future__ import annotations
@@ -10,25 +10,50 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from statistics import mean
 
-from safe_time_evrp.models.instance import Instance
+from safe_time_evrp.models.instance import (
+    Arc,
+    Instance,
+    Node,
+    NodeKind,
+    TimeWindow,
+    euclidean,
+)
 from safe_time_evrp.models.state import Observation, Visit
+from safe_time_evrp.mpc3c.seeds import stable_seed
 
 
 @dataclass(frozen=True)
 class ForecastCustomer:
+    """Anonymous forecast demand unit (not an evaluation customer id)."""
+
     customer_id: str
     ready_time: float
     due_time: float
-    source: str = "scenario"
+    x: float
+    y: float
+    demand: float = 1.0
+    service_time: float = 1.0
+    source: str = "anonymous_scenario"
+
+
+@dataclass(frozen=True)
+class TrainDemandAtom:
+    x: float
+    y: float
+    demand: float
+    service_time: float
+    ready: float
+    due: float
 
 
 @dataclass
 class ArrivalForecast:
-    """Scenario set of future arrivals known to the controller as forecasts only."""
+    """Train-fitted demand model + materialized anonymous scenario samples."""
 
     scenarios: list[list[ForecastCustomer]] = field(default_factory=list)
+    train_atoms: tuple[TrainDemandAtom, ...] = ()
     train_interarrival_mean: float | None = None
-    train_customer_pool: tuple[str, ...] = ()
+    model_id: str = ""
 
     def sample_within(
         self,
@@ -51,28 +76,101 @@ class ArrivalForecast:
         return out
 
 
-def fit_empirical_arrivals(
-    instances: list[Instance],
-) -> ArrivalForecast:
-    """Fit a simple inter-arrival model on train-split ready times."""
+def fit_empirical_arrivals(instances: list[Instance]) -> ArrivalForecast:
+    """Fit spatial/timing atoms on train-split instances only."""
+    atoms: list[TrainDemandAtom] = []
     ready_times: list[float] = []
-    pool: list[str] = []
     for inst in instances:
         for cid in inst.customer_ids():
-            ready_times.append(float(inst.node(cid).window.ready))
-            pool.append(cid)
-    if not ready_times:
-        return ArrivalForecast()
+            node = inst.node(cid)
+            atoms.append(
+                TrainDemandAtom(
+                    float(node.x),
+                    float(node.y),
+                    float(node.demand),
+                    float(node.service_time),
+                    float(node.window.ready),
+                    float(node.window.due),
+                )
+            )
+            ready_times.append(float(node.window.ready))
+    if not atoms:
+        return ArrivalForecast(model_id="empty")
     ready_times = sorted(ready_times)
     gaps = [ready_times[i + 1] - ready_times[i] for i in range(len(ready_times) - 1)]
     mu = mean(gaps) if gaps else mean(ready_times)
     return ArrivalForecast(
         scenarios=[],
+        train_atoms=tuple(atoms),
         train_interarrival_mean=mu,
-        train_customer_pool=tuple(sorted(set(pool))),
+        model_id=f"train_atoms={len(atoms)};mu={mu:.6f}",
     )
 
 
+def _lcg(state: int) -> tuple[int, float]:
+    state = (state * 1103515245 + 12345) & 0x7FFFFFFF
+    return state, (state % 10_000) / 10_000.0
+
+
+def build_anonymous_scenarios(
+    model: ArrivalForecast,
+    *,
+    n_scenarios: int = 3,
+    customers_per_scenario: int = 3,
+    seed: int = 0,
+    rate_scale: float = 1.0,
+    day_horizon: float = 200.0,
+) -> ArrivalForecast:
+    """Sample anonymous forecast customers from train atoms (no eval IDs)."""
+    if not model.train_atoms:
+        return ArrivalForecast(
+            scenarios=[[] for _ in range(n_scenarios)],
+            train_atoms=model.train_atoms,
+            train_interarrival_mean=model.train_interarrival_mean,
+            model_id=model.model_id,
+        )
+    mu = model.train_interarrival_mean or 1.0
+    scenarios: list[list[ForecastCustomer]] = []
+    state = seed & 0x7FFFFFFF
+    for s in range(n_scenarios):
+        items: list[ForecastCustomer] = []
+        t = 0.0
+        for k in range(customers_per_scenario):
+            state, u_gap = _lcg(state)
+            state, u_pick = _lcg(state)
+            atom = model.train_atoms[int(u_pick * len(model.train_atoms)) % len(model.train_atoms)]
+            # Jitter location slightly so samples are not exact train clones of eval geometry.
+            state, jx = _lcg(state)
+            state, jy = _lcg(state)
+            x = atom.x + (jx - 0.5) * 0.5
+            y = atom.y + (jy - 0.5) * 0.5
+            gap = (mu / rate_scale) * (0.05 + 1.9 * u_gap)
+            t += gap
+            ready = min(t, day_horizon)
+            span = max(atom.due - atom.ready, 1.0)
+            due = min(day_horizon, ready + span)
+            items.append(
+                ForecastCustomer(
+                    customer_id=f"syn_s{s}_{k}",
+                    ready_time=ready,
+                    due_time=due,
+                    x=x,
+                    y=y,
+                    demand=max(atom.demand, 0.01),
+                    service_time=max(atom.service_time, 0.0),
+                    source=f"anonymous_scenario_{s}",
+                )
+            )
+        scenarios.append(items)
+    return ArrivalForecast(
+        scenarios=scenarios,
+        train_atoms=model.train_atoms,
+        train_interarrival_mean=model.train_interarrival_mean,
+        model_id=model.model_id,
+    )
+
+
+# Backward-compatible name used by Gate 3D scripts (now anonymous).
 def build_scenarios_for(
     instance: Instance,
     model: ArrivalForecast,
@@ -81,51 +179,75 @@ def build_scenarios_for(
     seed: int = 0,
     rate_scale: float = 1.0,
 ) -> ArrivalForecast:
-    """Materialize scenario arrivals on ``instance`` using train inter-arrival stats."""
-    customers = list(instance.customer_ids())
-    if not customers:
-        return ArrivalForecast(scenarios=[], train_interarrival_mean=model.train_interarrival_mean)
-    mu = model.train_interarrival_mean
-    if mu is None or mu <= 0:
-        base = [
-            ForecastCustomer(
-                cid,
-                float(instance.node(cid).window.ready),
-                float(instance.node(cid).window.due),
-                source="instance_ready",
-            )
-            for cid in customers
-        ]
-        return ArrivalForecast(
-            scenarios=[list(base) for _ in range(n_scenarios)],
-            train_interarrival_mean=mu,
-            train_customer_pool=model.train_customer_pool,
-        )
+    """Gate 3E: ignore evaluation customer IDs; sample anonymous demand only.
 
-    scenarios: list[list[ForecastCustomer]] = []
-    state = (seed * 1103515245 + 12345) & 0x7FFFFFFF
-    for s in range(n_scenarios):
-        items: list[ForecastCustomer] = []
-        t = 0.0
-        order = list(customers)
-        for i in range(len(order) - 1, 0, -1):
-            state = (state * 1103515245 + 12345) & 0x7FFFFFFF
-            j = state % (i + 1)
-            order[i], order[j] = order[j], order[i]
-        for cid in order:
-            state = (state * 1103515245 + 12345) & 0x7FFFFFFF
-            u = (state % 10_000) / 10_000.0
-            u = min(max(u, 1e-6), 1 - 1e-6)
-            gap = (mu / rate_scale) * (0.05 + 1.9 * u)
-            t += gap
-            due = float(instance.node(cid).window.due)
-            ready = min(t, due)
-            items.append(ForecastCustomer(cid, ready, due, source=f"scenario_{s}"))
-        scenarios.append(items)
-    return ArrivalForecast(
-        scenarios=scenarios,
-        train_interarrival_mean=mu,
-        train_customer_pool=model.train_customer_pool,
+    ``instance`` is accepted for API compatibility (day horizon / metadata) but
+    must not supply hidden customer identities into scenarios.
+    """
+    dues = [float(instance.node(c).window.due) for c in instance.customer_ids()]
+    day = max(dues) if dues else 200.0
+    # Deliberately do not read instance.customer_ids() into scenario membership.
+    _ = instance.name
+    return build_anonymous_scenarios(
+        model,
+        n_scenarios=n_scenarios,
+        customers_per_scenario=min(3, max(1, len(model.train_atoms) // 10 or 1)),
+        seed=seed,
+        rate_scale=rate_scale,
+        day_horizon=day,
+    )
+
+
+def augment_instance_for_planning(instance: Instance, forecasts: list[ForecastCustomer]) -> Instance:
+    """Clone geometry and attach anonymous forecast customers as planning-only nodes."""
+    if not forecasts:
+        return instance
+    nodes = dict(instance.nodes)
+    arcs = dict(instance.arcs)
+    velocity = instance.vehicle_type.velocity or 1.0
+    rate = instance.vehicle_type.consumption_rate
+    for fc in forecasts:
+        if fc.customer_id in nodes:
+            continue
+        nodes[fc.customer_id] = Node(
+            fc.customer_id,
+            NodeKind.CUSTOMER,
+            fc.x,
+            fc.y,
+            fc.demand,
+            TimeWindow(fc.ready_time, fc.due_time),
+            fc.service_time,
+        )
+    # Complete arcs involving new nodes via Euclidean travel (planning proxy).
+    ids = list(nodes)
+    for a in ids:
+        for b in ids:
+            if a == b or (a, b) in arcs:
+                continue
+            na, nb = nodes[a], nodes[b]
+            dist = euclidean(na.x, na.y, nb.x, nb.y)
+            travel = dist / velocity if velocity > 0 else dist
+            arcs[(a, b)] = Arc(
+                origin=a,
+                destination=b,
+                distance=dist,
+                travel_time=travel,
+                energy=rate * dist,
+                distance_definition="forecast_euclidean_proxy",
+                distance_km=dist,
+                travel_time_h=travel,
+            )
+    return Instance(
+        name=instance.name + "+forecast",
+        nodes=nodes,
+        arcs=arcs,
+        vehicle_type=instance.vehicle_type,
+        depot_id=instance.depot_id,
+        source_format=instance.source_format,
+        source_name=instance.source_name,
+        assumptions=instance.assumptions + ("planning_augmented_anonymous_forecasts",),
+        station_capacity=instance.station_capacity,
+        metadata=dict(instance.metadata),
     )
 
 
@@ -135,28 +257,29 @@ def synthetic_poisson_releases(
     seed: int = 0,
     mean_interarrival: float | None = None,
 ) -> list[tuple[str, float]]:
-    """Generate an actual plant release stream (not visible as forecasts)."""
+    """Plant release stream for real evaluation customers (independent RNG stream)."""
     customers = list(instance.customer_ids())
     if not customers:
         return []
     dues = [float(instance.node(c).window.due) for c in customers]
     horizon = max(dues) if dues else 10.0
     mu = mean_interarrival if mean_interarrival is not None else max(horizon / max(len(customers), 1), 0.1)
-    state = (seed * 1103515245 + 12345) & 0x7FFFFFFF
+    state = seed & 0x7FFFFFFF
     order = list(customers)
     for i in range(len(order) - 1, 0, -1):
-        state = (state * 1103515245 + 12345) & 0x7FFFFFFF
-        j = state % (i + 1)
+        state, u = _lcg(state)
+        j = int(u * (i + 1)) % (i + 1)
         order[i], order[j] = order[j], order[i]
     releases: list[tuple[str, float]] = []
     t = 0.0
     for cid in order:
-        state = (state * 1103515245 + 12345) & 0x7FFFFFFF
-        u = (state % 10_000) / 10_000.0
+        state, u = _lcg(state)
         u = min(max(u, 1e-6), 1 - 1e-6)
         t += mu * (0.05 + 1.9 * u)
         ready_cap = float(instance.node(cid).window.due)
-        releases.append((cid, min(t, ready_cap)))
+        # Release no earlier than window.ready so the plant can serve when ready.
+        ready_min = float(instance.node(cid).window.ready)
+        releases.append((cid, min(max(t, ready_min), ready_cap)))
     return releases
 
 
@@ -167,7 +290,7 @@ def visible_forecast(
     *,
     scenario_index: int = 0,
 ) -> list[ForecastCustomer]:
-    """Forecast customers inside the planning horizon, excluding already-known IDs."""
+    """Forecast customers inside H; exclude IDs already in the observation."""
     if forecast is None:
         return []
     known = (
@@ -191,7 +314,7 @@ def information_safe_remaining(
     forecast_customers: list[ForecastCustomer],
     routes: dict[str, list[Visit]] | None = None,
 ) -> list[str]:
-    """Remaining set for flexibility scoring: released/accepted + forecasts only."""
+    """Remaining set for flexibility scoring: released + anonymous forecasts only."""
     served: set[str] = set(observation.completed) | set(observation.in_service)
     if routes:
         for visits in routes.values():
@@ -206,3 +329,11 @@ def information_safe_remaining(
         if item.customer_id not in served and item.customer_id not in remaining:
             remaining.append(item.customer_id)
     return remaining
+
+
+def release_seed_for(instance_name: str) -> int:
+    return stable_seed("release", instance_name)
+
+
+def forecast_seed_for(instance_name: str) -> int:
+    return stable_seed("forecast", instance_name)

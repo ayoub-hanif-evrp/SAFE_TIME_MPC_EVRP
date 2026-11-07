@@ -1,0 +1,197 @@
+{
+  "git_commit": "870029d26e411247ab5af0927c1fbba4cece671e",
+  "evrptwd_dev": {
+    "n": 4,
+    "mean_served": {
+      "myopic": 0.75,
+      "rh_open_loop": 0.75,
+      "rollout": 0.75,
+      "flexibility_mpc": 0.75
+    },
+    "mean_service_rate": {
+      "myopic": 0.15,
+      "rh_open_loop": 0.15,
+      "rollout": 0.15,
+      "flexibility_mpc": 0.15
+    },
+    "mean_commitment_violations": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.0,
+      "rollout": 0.0,
+      "flexibility_mpc": 0.0
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "replay_ok_frac": 1.0,
+    "mean_charge_events": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.0,
+      "rollout": 0.0,
+      "flexibility_mpc": 0.0
+    }
+  },
+  "amazon_light": {
+    "n": 3,
+    "mean_served": {
+      "myopic": 10.0,
+      "rh_open_loop": 10.0,
+      "rollout": 10.0,
+      "flexibility_mpc": 10.0
+    },
+    "mean_service_rate": {
+      "myopic": 1.0,
+      "rh_open_loop": 1.0,
+      "rollout": 1.0,
+      "flexibility_mpc": 1.0
+    },
+    "mean_commitment_violations": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.0,
+      "rollout": 0.0,
+      "flexibility_mpc": 0.0
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "replay_ok_frac": 1.0,
+    "mean_charge_events": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.0,
+      "rollout": 0.0,
+      "flexibility_mpc": 0.0
+    }
+  },
+  "amazon_energy_active": {
+    "n": 3,
+    "mean_served": {
+      "myopic": 10.0,
+      "rh_open_loop": 10.0,
+      "rollout": 10.0,
+      "flexibility_mpc": 10.0
+    },
+    "mean_service_rate": {
+      "myopic": 1.0,
+      "rh_open_loop": 1.0,
+      "rollout": 1.0,
+      "flexibility_mpc": 1.0
+    },
+    "mean_commitment_violations": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.0,
+      "rollout": 0.0,
+      "flexibility_mpc": 0.0
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "replay_ok_frac": 1.0,
+    "mean_charge_events": {
+      "myopic": 1.0,
+      "rh_open_loop": 1.0,
+      "rollout": 1.0,
+      "flexibility_mpc": 1.0
+    }
+  },
+  "horizon_microscope": {
+    "instance": "horizon_fork_executable",
+    "short_H": 1.0,
+    "long_H": 20.0,
+    "executed_action_short": [
+      "A",
+      "service"
+    ],
+    "executed_action_long": [
+      "S",
+      "charge"
+    ],
+    "executed_action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "planned_action_short": [
+      "A",
+      "service"
+    ],
+    "planned_action_long": [
+      "syn_far_0",
+      "service"
+    ],
+    "horizon_changes_executed_action": true,
+    "horizon_changes_present_action": true,
+    "action_short": [
+      "A",
+      "service"
+    ],
+    "action_long": [
+      "S",
+      "charge"
+    ],
+    "action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "grid": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "S",
+        "charge"
+      ],
+      "10.0": [
+        "S",
+        "charge"
+      ],
+      "20.0": [
+        "S",
+        "charge"
+      ]
+    },
+    "grid_executed": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "S",
+        "charge"
+      ],
+      "10.0": [
+        "S",
+        "charge"
+      ],
+      "20.0": [
+        "S",
+        "charge"
+      ]
+    },
+    "mechanism": "Long H includes anonymous forecast demand; constructive plan may visit the synthetic stop, but after strip+revalidate the dispatched first action is a legal proactive charge at S. Short H dispatches A service. Claim is on executed actions."
+  },
+  "solomon_140_rh_trace": {
+    "file": "solomon_dataset_140_RC_wide_1769114883.txt",
+    "n_served": 4,
+    "commitment_violations": 0,
+    "accepted_unfulfilled": [],
+    "replay_ok": true,
+    "executed_first_action_signature": "v1:D0:return",
+    "release_seed": 5282616
+  },
+  "controller_labels": {
+    "myopic": "myopic_feasible_routing",
+    "rh_open_loop": "deterministic_receding_horizon_mpc",
+    "rollout": "deterministic_prefix_rollout",
+    "flexibility_mpc": "flexibility_terminal_ablation"
+  }
+}
