@@ -12,10 +12,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from time import perf_counter
 
-from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy
+from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy, ScaledNominalEnergy
 from safe_time_evrp.environment.physics import evaluate_route
 from safe_time_evrp.environment.simulator import FleetSimulator, SimulatorError
-from safe_time_evrp.models.instance import Instance
+from safe_time_evrp.models.instance import Arc, Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
 from safe_time_evrp.mpc3c.controllers import ControllerKind, decide
 from safe_time_evrp.mpc3c.forecast import ArrivalForecast, visible_forecast
@@ -63,6 +63,8 @@ class RunResult:
     accepted_unfulfilled: list[str] = field(default_factory=list)
     t_max: float = 0.0
     executed_first_action_signature: str = ""
+    stale_discard_count: int = 0
+    plant_time_advanced_during_optimize: bool = False
 
 
 def _strip_unreleased(visits: list[Visit], released: set[str], completed: set[str]) -> list[Visit]:
@@ -83,14 +85,67 @@ def _served(routes: dict[str, list[Visit]]) -> set[str]:
     return out
 
 
+def _assignment_has_duplicates(routes: dict[str, list[Visit]]) -> bool:
+    seen: set[str] = set()
+    for visits in routes.values():
+        for visit in visits:
+            if visit.purpose != "service":
+                continue
+            if visit.node_id in seen:
+                return True
+            seen.add(visit.node_id)
+    return False
+
+
+def _with_scaled_travel_times(instance: Instance, time_scale: float) -> Instance:
+    if abs(time_scale - 1.0) <= 1e-12:
+        return instance
+    arcs = {
+        key: Arc(
+            origin=arc.origin,
+            destination=arc.destination,
+            distance=arc.distance,
+            travel_time=arc.travel_time * time_scale,
+            energy=arc.energy,
+            distance_definition=arc.distance_definition,
+            distance_km=arc.distance_km,
+            travel_time_h=(arc.travel_time_h * time_scale) if arc.travel_time_h is not None else None,
+        )
+        for key, arc in instance.arcs.items()
+    }
+    return Instance(
+        name=instance.name,
+        nodes=instance.nodes,
+        arcs=arcs,
+        vehicle_type=instance.vehicle_type,
+        depot_id=instance.depot_id,
+        source_format=instance.source_format,
+        source_name=instance.source_name,
+        assumptions=instance.assumptions + (f"time_scale={time_scale}",),
+        station_capacity=instance.station_capacity,
+        metadata=dict(instance.metadata),
+    )
+
+
 def _routes_cover_commitments(
     instance: Instance,
     observation: Observation,
     routes: dict[str, list[Visit]],
     accepted: list[str],
+    *,
+    energy_scale: float = 1.0,
+    time_scale: float = 1.0,
 ) -> bool:
-    """Nominal commitment feasibility on the plant instance (released customers only)."""
-    model = NominalLinearEnergy()
+    """Commitment feasibility under explicitly budgeted energy/time scales.
+
+    Default scales (1,1) are nominal. This is an admission gate, not a recursive
+    feasibility theorem under arbitrary disturbances. Duplicate service assignments
+    across vehicles are rejected.
+    """
+    if _assignment_has_duplicates(routes):
+        return False
+    model = NominalLinearEnergy() if abs(energy_scale - 1.0) <= 1e-12 else ScaledNominalEnergy(energy_scale)
+    plant = _with_scaled_travel_times(instance, time_scale)
     pending = {
         c
         for c in accepted
@@ -98,11 +153,31 @@ def _routes_cover_commitments(
     }
     covered: set[str] = set()
     for vehicle in observation.vehicles:
-        result = evaluate_route(instance, vehicle.anchor, routes.get(vehicle.id, []), model)
+        result = evaluate_route(plant, vehicle.anchor, routes.get(vehicle.id, []), model)
         if not result.feasible:
             return False
         covered.update(result.served)
     return pending <= covered
+
+
+def robust_routes_cover_commitments(
+    instance: Instance,
+    observation: Observation,
+    routes: dict[str, list[Visit]],
+    accepted: list[str],
+    *,
+    energy_scale: float = 1.1,
+    time_scale: float = 1.1,
+) -> bool:
+    """Budgeted robust cover check (explicit scales; not a disturbance adversary)."""
+    return _routes_cover_commitments(
+        instance,
+        observation,
+        routes,
+        accepted,
+        energy_scale=energy_scale,
+        time_scale=time_scale,
+    )
 
 
 def _clean_and_revalidate(
@@ -228,8 +303,13 @@ def run_sim_dynamic(
     energy: NominalLinearEnergy | None = None,
     disturbance=None,
     advance_plant_during_optimize: bool = False,
+    forced_optimize_seconds: float | None = None,
 ) -> RunResult:
-    """Closed-loop episode through ``FleetSimulator``."""
+    """Closed-loop episode through ``FleetSimulator``.
+
+    ``forced_optimize_seconds`` is a test hook that replaces measured wall time when
+    exercising the plant-time / stale-discard contract.
+    """
     model = energy or NominalLinearEnergy()
     if releases is None:
         releases = [(cid, float(instance.node(cid).window.ready)) for cid in instance.customer_ids()]
@@ -253,11 +333,13 @@ def run_sim_dynamic(
     last_decision_time = -1.0
     first_sig = ""
     executed_first_sig = ""
+    stale_discard_count = 0
+    plant_time_advanced = False
     incumbent_routes: dict[str, list[Visit]] = {f"v{i + 1}": [] for i in range(fleet_size)}
 
     def decide_once(trigger: str) -> None:
         nonlocal optimize_seconds, replan_id, same_time, last_decision_time
-        nonlocal first_sig, executed_first_sig, incumbent_routes
+        nonlocal first_sig, executed_first_sig, incumbent_routes, stale_discard_count, plant_time_advanced
         if abs(simulator.time - last_decision_time) <= EPS:
             same_time += 1
         else:
@@ -282,16 +364,20 @@ def run_sim_dynamic(
             horizon=horizon,
             forecast_customers=forecast_customers,
         )
-        elapsed = perf_counter() - wall
+        # Use outer-scope test hook when set (do not shadow with a local parameter).
+        elapsed = float(forced_optimize_seconds) if forced_optimize_seconds is not None else (perf_counter() - wall)
         optimize_seconds += elapsed
 
         if advance_plant_during_optimize and elapsed > 0:
-            # Optional Gate 3E timing contract: consume plant time, but never skip events.
+            # Gate 3F timing contract (robust-episode style): intervening events make the
+            # candidate stale — discard without applying; locked plant actions continue.
+            start_time = simulator.time
             nxt = simulator.next_event_time()
-            if nxt is not None and simulator.time + elapsed > nxt + EPS:
-                # Stale: do not apply; let the intervening event fire.
+            if nxt is not None and start_time + elapsed > nxt + EPS:
+                stale_discard_count += 1
                 return
-            simulator.time = simulator.time + elapsed
+            simulator.time = start_time + elapsed
+            plant_time_advanced = True
 
         observation = simulator.observation()
         cleaned = _clean_and_revalidate(instance, observation, ctrl.routes)
@@ -504,6 +590,8 @@ def run_sim_dynamic(
         accepted_unfulfilled=accepted_unfulfilled,
         t_max=t_max,
         executed_first_action_signature=executed_first_sig,
+        stale_discard_count=stale_discard_count,
+        plant_time_advanced_during_optimize=plant_time_advanced,
     )
 
 
