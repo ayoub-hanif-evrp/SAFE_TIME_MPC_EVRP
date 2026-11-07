@@ -62,9 +62,7 @@ def main() -> None:
         inst = parse_solomon_file(root / "anchored" / "Cus_5" / "solomon" / name).with_recharge_policy("full")
         for spec in GATE4_DEV_ANNOUNCEMENT_SPECS:
             releases = spec.materialize(inst, seed_key=f"{name}|{spec.spec_id}")
-            ref = offline_service_reference(
-                inst, releases, fleet_size=fleet, try_exact=len(inst.customer_ids()) <= 5
-            )
+            ref = offline_service_reference(inst, releases, fleet_size=fleet, try_exact=len(inst.customer_ids()) <= 5)
             forecast = build_anonymous_scenarios(
                 spatial_model,
                 n_scenarios=1,

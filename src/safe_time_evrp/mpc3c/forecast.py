@@ -115,10 +115,7 @@ def fit_empirical_arrivals(instances: list[Instance]) -> ArrivalForecast:
         scenarios=[],
         train_atoms=tuple(atoms),
         train_interarrival_mean=mu,
-        model_id=(
-            f"train_atoms={len(atoms)};pooled_ready_gap_mean={mu:.6f}"
-            ";NOT_valid_announcement_interarrival"
-        ),
+        model_id=(f"train_atoms={len(atoms)};pooled_ready_gap_mean={mu:.6f};NOT_valid_announcement_interarrival"),
     )
 
 

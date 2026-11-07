@@ -261,9 +261,7 @@ def offline_service_reference(
         "gate3f_static_constructive_reclassified_as_FEASIBLE_LOWER_BOUND",
     ]
     if try_exact and len(eligible) <= exact_max_customers:
-        exact = _enumerate_offline_served(
-            plant, eligible, fleet_size=fleet_size, max_customers=exact_max_customers
-        )
+        exact = _enumerate_offline_served(plant, eligible, fleet_size=fleet_size, max_customers=exact_max_customers)
         if exact is not None:
             kind = BoundKind.EXACT_OPTIMUM
             notes.append(f"exact_enumeration_family_served={exact}")
@@ -322,9 +320,7 @@ def heuristic_strictly_below_exact_counterexample() -> dict:
         "exact_optimum": report.exact_optimum,
         "certified_upper_bound": report.certified_upper_bound,
         "bound_kind": report.bound_kind.value,
-        "gap_demonstrated": (
-            report.exact_optimum is not None and report.feasible_lower_bound < report.exact_optimum
-        ),
+        "gap_demonstrated": (report.exact_optimum is not None and report.feasible_lower_bound < report.exact_optimum),
         "notes": list(report.notes),
     }
 

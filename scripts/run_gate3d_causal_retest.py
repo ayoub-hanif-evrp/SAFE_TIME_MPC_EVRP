@@ -139,25 +139,17 @@ def main() -> None:
         if not usable:
             return {"n": 0}
         ctrls = list(usable[0]["results"])
-        means = {
-            c: sum(r["results"][c]["n_served"] for r in usable) / len(usable)
-            for c in ctrls
-        }
+        means = {c: sum(r["results"][c]["n_served"] for r in usable) / len(usable) for c in ctrls}
         flex_eq_roll = sum(1 for r in usable if r.get("flex_equals_rollout_sequence")) / len(usable)
         flex_neq_rh = sum(1 for r in usable if r["results"]["flexibility_mpc"]["differs_from_rh"]) / len(usable)
-        charge_mean = {
-            c: sum(r["results"][c]["charge_events"] for r in usable) / len(usable) for c in ctrls
-        }
+        charge_mean = {c: sum(r["results"][c]["charge_events"] for r in usable) / len(usable) for c in ctrls}
         return {
             "n": len(usable),
             "mean_served": means,
             "flex_equals_rollout_frac": flex_eq_roll,
             "flex_differs_rh_frac": flex_neq_rh,
             "mean_charge_events": charge_mean,
-            "replay_ok_frac": sum(
-                1 for r in usable if all(r["results"][c]["replay_ok"] for c in ctrls)
-            )
-            / len(usable),
+            "replay_ok_frac": sum(1 for r in usable if all(r["results"][c]["replay_ok"] for c in ctrls)) / len(usable),
         }
 
     summary = {

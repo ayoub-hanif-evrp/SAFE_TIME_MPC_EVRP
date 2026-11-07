@@ -165,12 +165,9 @@ def main() -> None:
         return {
             "n": len(usable),
             "mean_served": {c: sum(r["results"][c]["n_served"] for r in usable) / len(usable) for c in ctrls},
-            "mean_service_rate": {
-                c: sum(r["results"][c]["service_rate"] for r in usable) / len(usable) for c in ctrls
-            },
+            "mean_service_rate": {c: sum(r["results"][c]["service_rate"] for r in usable) / len(usable) for c in ctrls},
             "mean_ub_rate": sum(r["upper_bound"]["static_service_rate"] for r in usable) / len(usable),
-            "flex_equals_rollout_frac": sum(1 for r in usable if r.get("flex_equals_rollout_sequence"))
-            / len(usable),
+            "flex_equals_rollout_frac": sum(1 for r in usable if r.get("flex_equals_rollout_sequence")) / len(usable),
             "mean_commitment_violations": {
                 c: sum(r["results"][c]["commitment_violations"] for r in usable) / len(usable) for c in ctrls
             },

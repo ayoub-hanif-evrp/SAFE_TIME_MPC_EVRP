@@ -52,9 +52,7 @@ class AnnouncementProcessSpec:
             )
         if self.source is AnnouncementSource.WINDOW_READY_AS_ANNOUNCE:
             return [(cid, float(instance.node(cid).window.ready)) for cid in instance.customer_ids()]
-        raise NotImplementedError(
-            f"announcement source {self.source} requires verified operational logs"
-        )
+        raise NotImplementedError(f"announcement source {self.source} requires verified operational logs")
 
 
 # Preregistered development specs (chosen for Gate 4; not fitted to maximize RH gap).
