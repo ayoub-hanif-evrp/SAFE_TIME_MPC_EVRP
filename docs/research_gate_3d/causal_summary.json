@@ -1,0 +1,130 @@
+{
+  "evrptwd_dev": {
+    "n": 4,
+    "mean_served": {
+      "myopic": 0.5,
+      "rh_open_loop": 4.5,
+      "rollout": 4.25,
+      "flexibility_mpc": 4.25
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "flex_differs_rh_frac": 0.0,
+    "mean_charge_events": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.25,
+      "rollout": 0.25,
+      "flexibility_mpc": 0.25
+    },
+    "replay_ok_frac": 1.0
+  },
+  "evrptwd_held_out": {
+    "n": 4,
+    "mean_served": {
+      "myopic": 0.75,
+      "rh_open_loop": 3.25,
+      "rollout": 4.0,
+      "flexibility_mpc": 4.0
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "flex_differs_rh_frac": 0.0,
+    "mean_charge_events": {
+      "myopic": 0.0,
+      "rh_open_loop": 0.25,
+      "rollout": 0.25,
+      "flexibility_mpc": 0.25
+    },
+    "replay_ok_frac": 1.0
+  },
+  "amazon_energy_active": {
+    "n": 4,
+    "mean_served": {
+      "myopic": 12.0,
+      "rh_open_loop": 12.0,
+      "rollout": 12.0,
+      "flexibility_mpc": 12.0
+    },
+    "flex_equals_rollout_frac": 1.0,
+    "flex_differs_rh_frac": 0.0,
+    "mean_charge_events": {
+      "myopic": 1.0,
+      "rh_open_loop": 1.0,
+      "rollout": 1.0,
+      "flexibility_mpc": 1.0
+    },
+    "replay_ok_frac": 1.0
+  },
+  "horizon_microscope": {
+    "instance": "horizon_fork",
+    "short_H": 1.0,
+    "long_H": 20.0,
+    "action_short": [
+      "A",
+      "service"
+    ],
+    "action_long": [
+      "B",
+      "service"
+    ],
+    "action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "horizon_changes_present_action": true,
+    "grid": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "B",
+        "service"
+      ],
+      "10.0": [
+        "B",
+        "service"
+      ],
+      "20.0": [
+        "B",
+        "service"
+      ]
+    },
+    "mechanism": "Short H excludes forecast B (ready=5); long H includes B in planning observation; constructive insertion then changes the present first customer from A to B."
+  },
+  "amazon_charge_probe": {
+    "n": 4,
+    "with_charge": 4,
+    "fraction": 1.0,
+    "detail": [
+      {
+        "route": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_001b4ee3-c4f2-467f-932b-c85524d1021f",
+        "charge_events": 1,
+        "n_served": 12
+      }
+    ],
+    "config": "esogu_energy_active_v1",
+    "note": "consumption uplift 0.15\u21920.50 kWh/km at fixed 40 kWh with 12 stops; not \u226425% Q"
+  }
+}

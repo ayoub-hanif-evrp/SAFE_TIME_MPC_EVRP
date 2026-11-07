@@ -1,0 +1,1480 @@
+{
+  "evrptwd_dev": [
+    {
+      "instance": "solomon_dataset_127_RC_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 39,
+          "action_hamming_vs_rollout": 39,
+          "decision_event_diffs_vs_rh": 20,
+          "n_steps": 8,
+          "distance": 0.0,
+          "optimize_seconds": 0.000556000042706728,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C0"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 366.9479906425095,
+          "optimize_seconds": 0.005891699925996363,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C0"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 366.9479906425095,
+          "optimize_seconds": 0.033901199989486486,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C0"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 366.9479906425095,
+          "optimize_seconds": 0.03827809984795749,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 2,
+      "vehicles_used_seed": 2,
+      "native_Q": 126.33,
+      "file": "solomon_dataset_127_RC_narrow_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_128_C_narrow_1769114883",
+      "fleet_size": 3,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 44,
+          "action_hamming_vs_rollout": 44,
+          "decision_event_diffs_vs_rh": 16,
+          "n_steps": 8,
+          "distance": 0.0,
+          "optimize_seconds": 0.0006504000048153102,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 26,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 20,
+          "distance": 418.7899386374237,
+          "optimize_seconds": 0.00493240007199347,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 26,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 10,
+          "n_steps": 20,
+          "distance": 412.1278209306695,
+          "optimize_seconds": 0.029026799893472344,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return|v3:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 26,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 10,
+          "n_steps": 20,
+          "distance": 412.1278209306695,
+          "optimize_seconds": 0.03653909987770021,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 3,
+      "vehicles_used_seed": 3,
+      "native_Q": 125.64,
+      "file": "solomon_dataset_128_C_narrow_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_129_RC_wide_1769114883",
+      "fleet_size": 1,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "C0",
+            "C2"
+          ],
+          "n_served": 2,
+          "rejected": [
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 19,
+          "action_hamming_vs_rollout": 19,
+          "decision_event_diffs_vs_rh": 19,
+          "n_steps": 13,
+          "distance": 238.25021782997206,
+          "optimize_seconds": 0.0005575999384745955,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 5,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 398.0744752557451,
+          "optimize_seconds": 0.006873699894640595,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 5,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 398.0744752557451,
+          "optimize_seconds": 0.03818669996690005,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 5,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 21,
+          "distance": 398.0744752557451,
+          "optimize_seconds": 0.04040659993188456,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 1,
+      "vehicles_used_seed": 1,
+      "native_Q": 123.8,
+      "file": "solomon_dataset_129_RC_wide_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_12_C_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 39,
+          "action_hamming_vs_rollout": 33,
+          "decision_event_diffs_vs_rh": 21,
+          "n_steps": 8,
+          "distance": 0.0,
+          "optimize_seconds": 0.0004557002102956176,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 5,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 27,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 24,
+          "distance": 327.3402718557296,
+          "optimize_seconds": 0.004559399792924523,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C0"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 27,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 14,
+          "n_steps": 21,
+          "distance": 198.15289510933107,
+          "optimize_seconds": 0.029527699924074113,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C0"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 27,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 14,
+          "n_steps": 21,
+          "distance": 198.15289510933107,
+          "optimize_seconds": 0.03407660004450008,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 2,
+      "vehicles_used_seed": 2,
+      "native_Q": 112.93,
+      "file": "solomon_dataset_12_C_narrow_1769114883.txt",
+      "fleet_matched": true
+    }
+  ],
+  "evrptwd_held_out": [
+    {
+      "instance": "solomon_dataset_140_RC_wide_1769114883",
+      "fleet_size": 1,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "C1",
+            "C4"
+          ],
+          "n_served": 2,
+          "rejected": [
+            "C0",
+            "C2",
+            "C3"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 12,
+          "action_hamming_vs_rollout": 17,
+          "decision_event_diffs_vs_rh": 11,
+          "n_steps": 13,
+          "distance": 96.30006804221875,
+          "optimize_seconds": 0.0006744998972862959,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 4,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 15,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 13,
+          "distance": 63.831803084356004,
+          "optimize_seconds": 0.006361700070556253,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 15,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 15,
+          "n_steps": 18,
+          "distance": 263.4271384728539,
+          "optimize_seconds": 0.04078059981111437,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C2"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 15,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 15,
+          "n_steps": 18,
+          "distance": 263.4271384728539,
+          "optimize_seconds": 0.043239299790002406,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 1,
+      "vehicles_used_seed": 1,
+      "native_Q": 129.36,
+      "file": "solomon_dataset_140_RC_wide_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_141_RC_wide_1769114883",
+      "fleet_size": 1,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "C2"
+          ],
+          "n_served": 1,
+          "rejected": [
+            "C0",
+            "C1",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 16,
+          "action_hamming_vs_rollout": 16,
+          "decision_event_diffs_vs_rh": 16,
+          "n_steps": 11,
+          "distance": 41.27382129146754,
+          "optimize_seconds": 0.00040499988244846463,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C3"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 17,
+          "distance": 306.3466913036189,
+          "optimize_seconds": 0.006352499884087592,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C3"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 17,
+          "distance": 306.3466913036189,
+          "optimize_seconds": 0.03908129985211417,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C3"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 17,
+          "distance": 306.3466913036189,
+          "optimize_seconds": 0.04085410002153367,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 1,
+      "vehicles_used_seed": 1,
+      "native_Q": 128.74,
+      "file": "solomon_dataset_141_RC_wide_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_142_R_wide_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 37,
+          "action_hamming_vs_rollout": 37,
+          "decision_event_diffs_vs_rh": 21,
+          "n_steps": 8,
+          "distance": 0.0,
+          "optimize_seconds": 0.00045769999269396067,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 22,
+          "distance": 524.1982152258843,
+          "optimize_seconds": 0.00817819987423718,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 22,
+          "distance": 524.1982152258843,
+          "optimize_seconds": 0.04131270002108067,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 22,
+          "distance": 524.1982152258843,
+          "optimize_seconds": 0.04686050000600517,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 2,
+      "vehicles_used_seed": 2,
+      "native_Q": 119.72,
+      "file": "solomon_dataset_142_R_wide_1769114883.txt",
+      "fleet_matched": true
+    },
+    {
+      "instance": "solomon_dataset_143_C_narrow_1769114883",
+      "fleet_size": 2,
+      "horizon": 12.0,
+      "results": {
+        "myopic": {
+          "served": [],
+          "n_served": 0,
+          "rejected": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 42,
+          "action_hamming_vs_rollout": 37,
+          "decision_event_diffs_vs_rh": 22,
+          "n_steps": 8,
+          "distance": 0.0,
+          "optimize_seconds": 0.0005151999648660421,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "C0",
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 5,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 44,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 24,
+          "distance": 342.23304424556466,
+          "optimize_seconds": 0.008416199998464435,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "C0",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 44,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 20,
+          "n_steps": 21,
+          "distance": 210.74071391172308,
+          "optimize_seconds": 0.03419530001701787,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "C0",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "n_served": 4,
+          "rejected": [
+            "C1"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "v1:D0:return|v2:D0:return",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 44,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 20,
+          "n_steps": 21,
+          "distance": 210.74071391172308,
+          "optimize_seconds": 0.038086499902419746,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "seed_fleet_size": 2,
+      "vehicles_used_seed": 2,
+      "native_Q": 133.11,
+      "file": "solomon_dataset_143_C_narrow_1769114883.txt",
+      "fleet_matched": true
+    }
+  ],
+  "amazon_energy_active": [
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ",
+            "CA",
+            "CG"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 1,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 42,
+          "distance": 95.98666666666666,
+          "optimize_seconds": 0.052745099703315645,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ",
+            "CA",
+            "CG"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 1,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 42,
+          "distance": 95.98666666666666,
+          "optimize_seconds": 0.08414759993320331,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ",
+            "CA",
+            "CG"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 1,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 1,
+          "n_steps": 42,
+          "distance": 95.98666666666666,
+          "optimize_seconds": 0.7716436003684066,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT",
+            "BY",
+            "BZ",
+            "CA",
+            "CG"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AD:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 1,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 1,
+          "n_steps": 42,
+          "distance": 95.98666666666666,
+          "optimize_seconds": 0.7352484000730328,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "electrification": "esogu_energy_active_v1",
+      "file": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "observed_package_windows": "11"
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV",
+            "BY",
+            "CB"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 90.44916666666666,
+          "optimize_seconds": 0.055506500124465674,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV",
+            "BY",
+            "CB"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 90.44916666666666,
+          "optimize_seconds": 0.09029769996413961,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV",
+            "BY",
+            "CB"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 90.44916666666666,
+          "optimize_seconds": 0.788824500166811,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AG",
+            "AN",
+            "AS",
+            "BA",
+            "BF",
+            "BJ",
+            "BP",
+            "BV",
+            "BY",
+            "CB"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AC:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 90.44916666666666,
+          "optimize_seconds": 0.7971349998842925,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "electrification": "esogu_energy_active_v1",
+      "file": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "observed_package_windows": "0"
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO",
+            "BR",
+            "BU"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 40,
+          "distance": 103.45083333333332,
+          "optimize_seconds": 0.05317780014593154,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO",
+            "BR",
+            "BU"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 40,
+          "distance": 103.45083333333332,
+          "optimize_seconds": 0.08696559997042641,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO",
+            "BR",
+            "BU"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 40,
+          "distance": 103.45083333333332,
+          "optimize_seconds": 0.7679606999736279,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AJ",
+            "AP",
+            "AR",
+            "AS",
+            "AZ",
+            "BF",
+            "BI",
+            "BO",
+            "BR",
+            "BU"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AA:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 40,
+          "distance": 103.45083333333332,
+          "optimize_seconds": 0.7654611000907607,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "electrification": "esogu_energy_active_v1",
+      "file": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "observed_package_windows": "0"
+    },
+    {
+      "instance": "RouteID_001b4ee3-c4f2-467f-932b-c85524d1021f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "AY",
+            "BB",
+            "BE",
+            "BF",
+            "BL",
+            "BM"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AB:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 85.85500000000002,
+          "optimize_seconds": 0.04787799989571795,
+          "replay_ok": true
+        },
+        "rh_open_loop": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "AY",
+            "BB",
+            "BE",
+            "BF",
+            "BL",
+            "BM"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AB:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 85.85500000000002,
+          "optimize_seconds": 0.08197189983911812,
+          "replay_ok": true
+        },
+        "rollout": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "AY",
+            "BB",
+            "BE",
+            "BF",
+            "BL",
+            "BM"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AB:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 85.85500000000002,
+          "optimize_seconds": 0.7233271001605317,
+          "replay_ok": true
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "AY",
+            "BB",
+            "BE",
+            "BF",
+            "BL",
+            "BM"
+          ],
+          "n_served": 12,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 1,
+          "first_action_signature": "v1:AB:service",
+          "differs_from_rh": false,
+          "differs_from_rollout": false,
+          "action_hamming_vs_rh": 0,
+          "action_hamming_vs_rollout": 0,
+          "decision_event_diffs_vs_rh": 0,
+          "n_steps": 41,
+          "distance": 85.85500000000002,
+          "optimize_seconds": 0.7275144000304863,
+          "replay_ok": true
+        }
+      },
+      "flex_equals_rollout_first": true,
+      "flex_equals_rollout_sequence": true,
+      "electrification": "esogu_energy_active_v1",
+      "file": "RouteID_001b4ee3-c4f2-467f-932b-c85524d1021f",
+      "observed_package_windows": "3"
+    }
+  ],
+  "horizon_microscope": {
+    "instance": "horizon_fork",
+    "short_H": 1.0,
+    "long_H": 20.0,
+    "action_short": [
+      "A",
+      "service"
+    ],
+    "action_long": [
+      "B",
+      "service"
+    ],
+    "action_no_forecast": [
+      "A",
+      "service"
+    ],
+    "horizon_changes_present_action": true,
+    "grid": {
+      "0.5": [
+        "A",
+        "service"
+      ],
+      "1.0": [
+        "A",
+        "service"
+      ],
+      "3.0": [
+        "A",
+        "service"
+      ],
+      "6.0": [
+        "B",
+        "service"
+      ],
+      "10.0": [
+        "B",
+        "service"
+      ],
+      "20.0": [
+        "B",
+        "service"
+      ]
+    },
+    "mechanism": "Short H excludes forecast B (ready=5); long H includes B in planning observation; constructive insertion then changes the present first customer from A to B."
+  },
+  "selection_policy": "fleet_size from evrptwd_seeds.json seed-required fleet; drop if missing",
+  "amazon_charge_probe": {
+    "n": 4,
+    "with_charge": 4,
+    "fraction": 1.0,
+    "detail": [
+      {
+        "route": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+        "charge_events": 1,
+        "n_served": 12
+      },
+      {
+        "route": "RouteID_001b4ee3-c4f2-467f-932b-c85524d1021f",
+        "charge_events": 1,
+        "n_served": 12
+      }
+    ],
+    "config": "esogu_energy_active_v1",
+    "note": "consumption uplift 0.15\u21920.50 kWh/km at fixed 40 kWh with 12 stops; not \u226425% Q"
+  }
+}
