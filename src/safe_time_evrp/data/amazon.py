@@ -184,6 +184,8 @@ def load_amazon_route(
 
     modeled_windows = 0
     observed_windows = 0
+    window_conflicts_excluded = 0
+    excluded_conflict_stops: list[str] = []
     for sid in dropoffs:
         stop = route["stops"][sid]
         service = 0.0
@@ -208,15 +210,22 @@ def load_amazon_route(
                 ready_candidates.append(window.ready)
             if not _is_missing(end_raw):
                 due_candidates.append(window.due)
+        window_conflict = False
         if ready_candidates or due_candidates:
             ready = max(ready_candidates) if ready_candidates else 0.0
             due = min(due_candidates) if due_candidates else electrification.day_horizon_h
             if due < ready:
-                ready, due = 0.0, electrification.day_horizon_h
+                # Gate 3F: do not silently widen to a full-day window.
+                window_conflict = True
             else:
                 modeled_windows += 1
         else:
             ready, due = 0.0, electrification.day_horizon_h
+        if window_conflict:
+            # Exclude conflicting stop from the customer set; record in metadata.
+            window_conflicts_excluded += 1
+            excluded_conflict_stops.append(sid)
+            continue
         nodes.append(
             Node(
                 sid,
@@ -282,8 +291,10 @@ def load_amazon_route(
             "depot_colocated_charger" if add_depot_charger else "no_extra_charger",
             f"max_customers={max_customers}",
             "windows=parsed_utc_when_present_else_full_day",
+            "window_conflict=exclude_stop_no_silent_widen",
             f"observed_package_windows={observed_windows}",
             f"nontrivial_modeled_windows={modeled_windows}",
+            f"window_conflicts_excluded={window_conflicts_excluded}",
         ),
         metadata={
             "route_id": route_id,
@@ -292,6 +303,10 @@ def load_amazon_route(
             "date_YYYY_MM_DD": date_s,
             "observed_package_windows": str(observed_windows),
             "nontrivial_modeled_windows": str(modeled_windows),
+            "window_conflicts_excluded": str(window_conflicts_excluded),
+            "excluded_conflict_stops": ",".join(excluded_conflict_stops),
             "electrification": electrification.name,
+            "payload": "unlimited_modeled",
+            "charger": "synthetic_depot_colocated" if add_depot_charger else "none",
         },
     )
