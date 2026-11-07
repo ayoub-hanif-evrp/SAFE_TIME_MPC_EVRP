@@ -1,0 +1,71 @@
+{
+  "evrptwd_dev": {
+    "myopic": {
+      "mean_served": 4.125,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rh_open_loop": {
+      "mean_served": 4.125,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rollout": {
+      "mean_served": 4.125,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "flexibility_mpc": {
+      "mean_served": 4.125,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "flex_vs_rollout_action_frac": 0.0
+  },
+  "evrptwd_held_out": {
+    "myopic": {
+      "mean_served": 4.5,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rh_open_loop": {
+      "mean_served": 4.5,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rollout": {
+      "mean_served": 4.5,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "flexibility_mpc": {
+      "mean_served": 4.5,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "flex_vs_rollout_action_frac": 0.0
+  },
+  "amazon": {
+    "myopic": {
+      "mean_served": 6.875,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rh_open_loop": {
+      "mean_served": 6.875,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.0
+    },
+    "rollout": {
+      "mean_served": 6.875,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.125
+    },
+    "flexibility_mpc": {
+      "mean_served": 6.875,
+      "mean_violations": 0.0,
+      "frac_differs_from_rh": 0.125
+    },
+    "flex_vs_rollout_action_frac": 0.0
+  }
+}

@@ -1,0 +1,1858 @@
+{
+  "evrptwd": {
+    "dev": [
+      {
+        "instance": "solomon_dataset_127_RC_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_128_C_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C3"
+            ],
+            "n_served": 2,
+            "rejected": [
+              "C1",
+              "C2",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 4
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C3"
+            ],
+            "n_served": 2,
+            "rejected": [
+              "C1",
+              "C2",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 4
+          },
+          "rollout": {
+            "served": [
+              "C3",
+              "C4"
+            ],
+            "n_served": 2,
+            "rejected": [
+              "C0",
+              "C1",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 4
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C3",
+              "C4"
+            ],
+            "n_served": 2,
+            "rejected": [
+              "C0",
+              "C1",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 4
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_129_RC_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_12_C_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_130_RC_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_131_R_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C0",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 5
+          },
+          "rh_open_loop": {
+            "served": [
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C0",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 5
+          },
+          "rollout": {
+            "served": [
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C0",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 5
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C1",
+              "C3",
+              "C4"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C0",
+              "C2"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 5
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_132_R_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_133_C_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          }
+        }
+      }
+    ],
+    "held_out": [
+      {
+        "instance": "solomon_dataset_140_RC_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_141_RC_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_142_R_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_143_C_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 7
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_144_R_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C3",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C3",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C3"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C2",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C3"
+            ],
+            "n_served": 3,
+            "rejected": [
+              "C2",
+              "C4"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 6
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_145_RC_narrow_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C0"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rh_open_loop": {
+            "served": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C0"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rollout": {
+            "served": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C0"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 4,
+            "rejected": [
+              "C0"
+            ],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_146_RC_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 1,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 9
+          }
+        }
+      },
+      {
+        "instance": "solomon_dataset_147_R_wide_1769114883",
+        "fleet_size": 2,
+        "horizon": 12.0,
+        "results": {
+          "myopic": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rh_open_loop": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "rollout": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          },
+          "flexibility_mpc": {
+            "served": [
+              "C0",
+              "C1",
+              "C2",
+              "C3",
+              "C4"
+            ],
+            "n_served": 5,
+            "rejected": [],
+            "commitment_violations": 0,
+            "charge_events": 0,
+            "first_action_signature": "[('v0', ('D0', 'return')), ('v1', ('D0', 'return'))]",
+            "differs_from_rh": false,
+            "n_steps": 8
+          }
+        }
+      }
+    ]
+  },
+  "amazon": [
+    {
+      "instance": "RouteID_00143bdd-0a6b-49ec-bb35-36593d303e77",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BA', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rh_open_loop": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BA', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rollout": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BA', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AD",
+            "AF",
+            "AG",
+            "BA",
+            "BE",
+            "BG",
+            "BP",
+            "BT"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BA', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        }
+      }
+    },
+    {
+      "instance": "RouteID_0016bc70-cb8d-48b0-aa55-8ee50bdcdb59",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AC",
+            "AE",
+            "AS",
+            "BA",
+            "BF",
+            "BJ"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AG",
+            "AN"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AE', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "rh_open_loop": {
+          "served": [
+            "AC",
+            "AE",
+            "AS",
+            "BA",
+            "BF",
+            "BJ"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AG",
+            "AN"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AE', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "rollout": {
+          "served": [
+            "AC",
+            "AE",
+            "AS",
+            "BA",
+            "BF",
+            "BJ"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AG",
+            "AN"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AE', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AC",
+            "AE",
+            "AS",
+            "BA",
+            "BF",
+            "BJ"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AG",
+            "AN"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AE', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        }
+      }
+    },
+    {
+      "instance": "RouteID_001948e9-4675-486d-9ec5-912fd8e0770f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AD",
+            "AP",
+            "AZ",
+            "BF"
+          ],
+          "n_served": 5,
+          "rejected": [
+            "AJ",
+            "AR",
+            "AS"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AP', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 6
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AD",
+            "AP",
+            "AZ",
+            "BF"
+          ],
+          "n_served": 5,
+          "rejected": [
+            "AJ",
+            "AR",
+            "AS"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AP', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 6
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AD",
+            "AP",
+            "AZ",
+            "BF"
+          ],
+          "n_served": 5,
+          "rejected": [
+            "AJ",
+            "AR",
+            "AS"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AP', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 6
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AD",
+            "AP",
+            "AZ",
+            "BF"
+          ],
+          "n_served": 5,
+          "rejected": [
+            "AJ",
+            "AR",
+            "AS"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AP', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 6
+        }
+      }
+    },
+    {
+      "instance": "RouteID_001b4ee3-c4f2-467f-932b-c85524d1021f",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "BB"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AY"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BB', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rh_open_loop": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "BB"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AY"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BB', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rollout": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "BB"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AY"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BB', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AB",
+            "AC",
+            "AG",
+            "AI",
+            "AU",
+            "AW",
+            "BB"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AY"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('BB', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        }
+      }
+    },
+    {
+      "instance": "RouteID_0021a2aa-780f-460d-b09a-f301709e2523",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AB",
+            "AF",
+            "AG",
+            "AI",
+            "AJ",
+            "AP",
+            "AR"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AB",
+            "AF",
+            "AG",
+            "AI",
+            "AJ",
+            "AP",
+            "AR"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AB",
+            "AF",
+            "AG",
+            "AI",
+            "AJ",
+            "AP",
+            "AR"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AB",
+            "AF",
+            "AG",
+            "AI",
+            "AJ",
+            "AP",
+            "AR"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        }
+      }
+    },
+    {
+      "instance": "RouteID_0036cf37-1c93-48f8-b337-3dd6d1a195d8",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AI",
+            "AL",
+            "AX",
+            "BE",
+            "BG",
+            "BI"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AQ",
+            "BD"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "rh_open_loop": {
+          "served": [
+            "AI",
+            "AL",
+            "AX",
+            "BE",
+            "BG",
+            "BI"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AQ",
+            "BD"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "rollout": {
+          "served": [
+            "AI",
+            "AL",
+            "AX",
+            "BE",
+            "BG",
+            "BI"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AQ",
+            "BD"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AI",
+            "AL",
+            "AX",
+            "BE",
+            "BG",
+            "BI"
+          ],
+          "n_served": 6,
+          "rejected": [
+            "AQ",
+            "BD"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AI', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 7
+        }
+      }
+    },
+    {
+      "instance": "RouteID_00437423-5a8f-4fac-8efa-85264f0a3944",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AA",
+            "AH",
+            "AJ",
+            "AN",
+            "AQ",
+            "AS",
+            "AT",
+            "AY"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AH', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rh_open_loop": {
+          "served": [
+            "AA",
+            "AH",
+            "AJ",
+            "AN",
+            "AQ",
+            "AS",
+            "AT",
+            "AY"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AH', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rollout": {
+          "served": [
+            "AA",
+            "AH",
+            "AJ",
+            "AN",
+            "AQ",
+            "AS",
+            "AT",
+            "AY"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AA', 'service'))]",
+          "differs_from_rh": true,
+          "n_steps": 8
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AA",
+            "AH",
+            "AJ",
+            "AN",
+            "AQ",
+            "AS",
+            "AT",
+            "AY"
+          ],
+          "n_served": 8,
+          "rejected": [],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AA', 'service'))]",
+          "differs_from_rh": true,
+          "n_steps": 8
+        }
+      }
+    },
+    {
+      "instance": "RouteID_00573a3d-b909-42ee-8a99-c6474309d96b",
+      "fleet_size": 1,
+      "horizon": 3.0,
+      "results": {
+        "myopic": {
+          "served": [
+            "AB",
+            "AL",
+            "AO",
+            "AQ",
+            "AW",
+            "AY",
+            "AZ"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AG"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AL', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rh_open_loop": {
+          "served": [
+            "AB",
+            "AL",
+            "AO",
+            "AQ",
+            "AW",
+            "AY",
+            "AZ"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AG"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AL', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "rollout": {
+          "served": [
+            "AB",
+            "AL",
+            "AO",
+            "AQ",
+            "AW",
+            "AY",
+            "AZ"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AG"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AL', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        },
+        "flexibility_mpc": {
+          "served": [
+            "AB",
+            "AL",
+            "AO",
+            "AQ",
+            "AW",
+            "AY",
+            "AZ"
+          ],
+          "n_served": 7,
+          "rejected": [
+            "AG"
+          ],
+          "commitment_violations": 0,
+          "charge_events": 0,
+          "first_action_signature": "[('v0', ('AL', 'service'))]",
+          "differs_from_rh": false,
+          "n_steps": 8
+        }
+      }
+    }
+  ]
+}
