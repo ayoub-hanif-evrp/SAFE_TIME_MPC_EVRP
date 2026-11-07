@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from enum import Enum
 
 from safe_time_evrp.dr_dual.actions import Action, ActionKind
-from safe_time_evrp.dr_dual.network import RoadNetwork, make_single_ev_corridors, make_two_ev_shared_theta
-from safe_time_evrp.dr_dual.state import PlantLog, VehicleState, WorldState
+from safe_time_evrp.dr_dual.network import RoadNetwork, make_single_ev_corridors
+from safe_time_evrp.dr_dual.state import VehicleState, WorldState
 from safe_time_evrp.dr_dual.transition import apply_action
 from safe_time_evrp.dual_mpc.belief import DiscreteBelief
 
@@ -381,210 +381,82 @@ def solve_exact_single(
 
 
 def solve_exact_two_ev(net: RoadNetwork | None = None, *, node_limit: int = 100_000) -> ExactOracleResult:
-    """Exact-ish tree for 2-EV shared-theta information value.
+    """Exact optimum within the history-indexed nonanticipative two-EV policy class."""
+    from safe_time_evrp.dr_dual.fleet_oracle import solve_exact_two_ev_nonanticipative
 
-    Stages: (1) EV1 chooses corridor to A1 and serves A1; (2) after time gate, EV2
-    chooses charge-or-not then serves B. EV2 may use updated shared belief.
-    """
-    net = net or make_two_ev_shared_theta()
-    state = initial_state_two(net)
-    expanded = 0
-    best = float("-inf")
-    best_key = None
-    details = []
+    return solve_exact_two_ev_nonanticipative(net, node_limit=node_limit)
 
-    v1_first = [
-        Action(ActionKind.TRAVEL, "v1", segment_id="E1_exploit"),
-        Action(ActionKind.TRAVEL, "v1", segment_id="E1_inform"),
-    ]
-    for first in v1_first:
-        # Evaluate Bayes value
-        total = 0.0
-        ok_all = True
-        for theta, p in zip(state.belief.support, state.belief.probs, strict=True):
-            expanded += 1
-            if expanded > node_limit:
-                return ExactOracleResult(OracleStatus.TIME_LIMIT, None, None, "limit", expanded, "two_ev", {})
-            log = PlantLog()
-            tr = apply_action(net, state, first, theta_star=theta, log=log)
-            if not tr.ok or tr.state is None:
-                ok_all = False
-                break
-            # Serve A1
-            tr2 = apply_action(
-                net, tr.state, Action(ActionKind.SERVE, "v1", customer_id="cust_A1"), theta_star=theta, log=log
-            )
-            if not tr2.ok or tr2.state is None:
-                ok_all = False
-                break
-            s = tr2.state
-            reward = tr.reward_delta + tr2.reward_delta
-            # EV2 decision uses belief in s (updated if inform)
-            # Options: direct D2→B, or D2→S2 charge S2→B
-            best_ev2 = float("-inf")
-            # Direct
-            s_dir = WorldState(s.vehicles, s.accepted, s.completed, s.rejected, s.announced, s.belief, s.stage)
-            # Wait until ready if needed
-            v2 = s_dir.vehicle("v2")
-            cust_b = net.customer("cust_B")
-            if v2.time < cust_b.ready:
-                w = apply_action(
-                    net,
-                    s_dir,
-                    Action(ActionKind.WAIT, "v2", wait_duration=cust_b.ready - v2.time),
-                    theta_star=theta,
-                )
-                if w.ok and w.state:
-                    s_dir = w.state
-            td = apply_action(net, s_dir, Action(ActionKind.TRAVEL, "v2", segment_id="E2_to_B"), theta_star=theta)
-            if td.ok and td.state:
-                sd = apply_action(net, td.state, Action(ActionKind.SERVE, "v2", customer_id="cust_B"), theta_star=theta)
-                if sd.ok and sd.state:
-                    best_ev2 = max(best_ev2, td.reward_delta + sd.reward_delta)
-            # Charge path
-            s_ch = WorldState(s.vehicles, s.accepted, s.completed, s.rejected, s.announced, s.belief, s.stage)
-            t1 = apply_action(net, s_ch, Action(ActionKind.TRAVEL, "v2", segment_id="D2_S2"), theta_star=theta)
-            if t1.ok and t1.state:
-                c1 = apply_action(
-                    net, t1.state, Action(ActionKind.CHARGE_FULL, "v2", charger_id="chg_S2"), theta_star=theta
-                )
-                if c1.ok and c1.state:
-                    t2 = apply_action(
-                        net, c1.state, Action(ActionKind.TRAVEL, "v2", segment_id="S2_B"), theta_star=theta
-                    )
-                    if t2.ok and t2.state:
-                        # wait for ready
-                        st = t2.state
-                        if st.vehicle("v2").time < cust_b.ready:
-                            w2 = apply_action(
-                                net,
-                                st,
-                                Action(
-                                    ActionKind.WAIT,
-                                    "v2",
-                                    wait_duration=cust_b.ready - st.vehicle("v2").time,
-                                ),
-                                theta_star=theta,
-                            )
-                            if w2.ok and w2.state:
-                                st = w2.state
-                        sd2 = apply_action(
-                            net, st, Action(ActionKind.SERVE, "v2", customer_id="cust_B"), theta_star=theta
-                        )
-                        if sd2.ok and sd2.state:
-                            best_ev2 = max(
-                                best_ev2, t1.reward_delta + c1.reward_delta + t2.reward_delta + sd2.reward_delta
-                            )
-            # Safe EV2: if belief not Dirac, only take an option feasible for all remaining thetas
-            rem = s.belief.support_set()
-            if len(rem) > 1:
-                # Must pick action feasible under all rem; evaluate realized under true theta
-                # Check direct feasible for all
-                def direct_ok_for(th: float, _s=s, _cust=cust_b) -> bool:
-                    ss = WorldState(
-                        _s.vehicles, _s.accepted, _s.completed, _s.rejected, _s.announced, _s.belief, _s.stage
-                    )
-                    vv = ss.vehicle("v2")
-                    if vv.time < _cust.ready:
-                        ww = apply_action(
-                            net,
-                            ss,
-                            Action(ActionKind.WAIT, "v2", wait_duration=_cust.ready - vv.time),
-                            theta_star=th,
-                        )
-                        if not ww.ok or ww.state is None:
-                            return False
-                        ss = ww.state
-                    tt = apply_action(net, ss, Action(ActionKind.TRAVEL, "v2", segment_id="E2_to_B"), theta_star=th)
-                    if not tt.ok or tt.state is None:
-                        return False
-                    ss2 = apply_action(
-                        net, tt.state, Action(ActionKind.SERVE, "v2", customer_id="cust_B"), theta_star=th
-                    )
-                    return bool(ss2.ok)
 
-                if all(direct_ok_for(th) for th in rem):
-                    # use direct realized
-                    pass
-                else:
-                    # force charge path if that works for all; else skip B
-                    # For simplicity in ambiguous belief: only add best_ev2 if charge works for all OR skip (0)
-                    def charge_ok_for(th: float, _s=s, _cust=cust_b) -> bool:
-                        ss = WorldState(
-                            _s.vehicles, _s.accepted, _s.completed, _s.rejected, _s.announced, _s.belief, _s.stage
-                        )
-                        t1x = apply_action(net, ss, Action(ActionKind.TRAVEL, "v2", segment_id="D2_S2"), theta_star=th)
-                        if not t1x.ok or t1x.state is None:
-                            return False
-                        c1x = apply_action(
-                            net, t1x.state, Action(ActionKind.CHARGE_FULL, "v2", charger_id="chg_S2"), theta_star=th
-                        )
-                        if not c1x.ok or c1x.state is None:
-                            return False
-                        t2x = apply_action(
-                            net, c1x.state, Action(ActionKind.TRAVEL, "v2", segment_id="S2_B"), theta_star=th
-                        )
-                        if not t2x.ok or t2x.state is None:
-                            return False
-                        st = t2x.state
-                        if st.vehicle("v2").time < _cust.ready:
-                            w2 = apply_action(
-                                net,
-                                st,
-                                Action(
-                                    ActionKind.WAIT,
-                                    "v2",
-                                    wait_duration=_cust.ready - st.vehicle("v2").time,
-                                ),
-                                theta_star=th,
-                            )
-                            if not w2.ok or w2.state is None:
-                                return False
-                            st = w2.state
-                        sd2 = apply_action(net, st, Action(ActionKind.SERVE, "v2", customer_id="cust_B"), theta_star=th)
-                        return bool(sd2.ok)
+def passive_value_after_first(
+    net: RoadNetwork,
+    state: WorldState,
+    first: Action,
+    *,
+    noise: float = 0.0,
+) -> float | None:
+    """Optimized passive score: travel realizes θ, continuation uses forced prior belief."""
+    from safe_time_evrp.dr_dual.common_policy import realize_plan, select_common_policy
 
-                    if all(direct_ok_for(th) for th in rem):
-                        pass
-                    elif all(charge_ok_for(th) for th in rem):
-                        # recompute charge reward under true theta only
-                        pass
-                    else:
-                        best_ev2 = 0.0  # skip B under ambiguity if neither robust
-                        # But if direct fails for some, don't use unsafe direct even if true theta ok
-                        if not all(direct_ok_for(th) for th in rem):
-                            if all(charge_ok_for(th) for th in rem):
-                                # keep charge best_ev2 already computed for true theta
-                                pass
-                            else:
-                                best_ev2 = 0.0
-            if best_ev2 < -1e8:
-                best_ev2 = 0.0
-            total += p * (reward + max(0.0, best_ev2))
-        if not ok_all:
+    total = 0.0
+    for theta, p in zip(state.belief.support, state.belief.probs, strict=True):
+        if p <= 0:
             continue
-        details.append({"first": first.key(), "value": total})
-        if total > best:
-            best = total
-            best_key = first.key()
+        tr = apply_action(net, state, first, theta_star=theta, noise=noise)
+        if not tr.ok or tr.state is None:
+            return None
+        forced = WorldState(
+            tr.state.vehicles,
+            tr.state.accepted,
+            tr.state.completed,
+            tr.state.rejected,
+            tr.state.announced,
+            state.belief,
+            tr.state.stage,
+        )
+        common = select_common_policy(net, forced, noise=noise, objective="expected")
+        if common is None:
+            return None
+        realized = realize_plan(net, forced, list(common.plan), theta, noise=noise)
+        if realized is None:
+            return None
+        total += p * (tr.reward_delta + realized)
+    return total
 
-    # Passive: force exploit if safe
-    passive_key = "travel|v1|E1_exploit|None|None|0.0"
-    dual_differs = best_key != passive_key
 
-    return ExactOracleResult(
-        status=OracleStatus.EXACT_OPTIMUM if best_key else OracleStatus.UNKNOWN,
-        value=best if best_key else None,
-        first_action_key=best_key,
-        policy_note="two_ev_ev1_first_then_ev2_charge_or_direct",
-        nodes_expanded=expanded,
-        scope="two_ev_shared_theta_finite_tree",
-        extras={
-            "details": details,
-            "cross_vehicle_info_changes_decision": dual_differs,
-            "passive_first": passive_key,
-        },
-    )
+def robust_value_after_first(
+    net: RoadNetwork,
+    state: WorldState,
+    first: Action,
+    *,
+    noise: float = 0.0,
+) -> float | None:
+    """Robust fixed-uncertainty value: forced prior, maximize worst-case common plan."""
+    from safe_time_evrp.dr_dual.common_policy import realize_plan, select_common_policy
+
+    worst = float("inf")
+    first_rewards = []
+    for theta in state.belief.support_set():
+        tr = apply_action(net, state, first, theta_star=theta, noise=noise)
+        if not tr.ok or tr.state is None:
+            return None
+        first_rewards.append(tr.reward_delta)
+        forced = WorldState(
+            tr.state.vehicles,
+            tr.state.accepted,
+            tr.state.completed,
+            tr.state.rejected,
+            tr.state.announced,
+            state.belief,
+            tr.state.stage,
+        )
+        common = select_common_policy(net, forced, noise=noise, objective="worst_case")
+        if common is None:
+            return None
+        realized = realize_plan(net, forced, list(common.plan), theta, noise=noise)
+        if realized is None:
+            return None
+        worst = min(worst, tr.reward_delta + realized)
+    return None if worst == float("inf") else worst
 
 
 def solve_exact(kind: str = "single", **kwargs) -> ExactOracleResult:

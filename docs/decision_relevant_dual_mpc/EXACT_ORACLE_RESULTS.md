@@ -1,28 +1,30 @@
-# Exact oracle results
+# Exact oracle scope and results
 
-## Scope label
+## Status label
 
-`EXACT_OPTIMUM` means optimal in the enumerated finite policy tree:
-first travel among named corridors + continuation family
-{stop after A, A→C, A→S charge_full →A→C}.
+`EXACT_OPTIMUM` means optimal within an **explicitly enumerated finite policy class**, not a continuous general EVRP optimum.
 
-Not a continuous general EVRP optimum.
+## Single-EV class
 
-## Single-EV corridors (`dr_single_ev_corridors`)
+- First action: travel on one D→A corridor.
+- Continuation family: serve A; optionally direct AC; optionally AS + full charge + SA + AC.
+- Nonanticipative rule: if posterior support size > 1, one common plan for all remaining θ.
 
-| Policy | First action | Value |
-|--------|--------------|------:|
-| Exact safe dual | `DA_inform` | 12.125 |
-| Optimized passive (ignore posterior in scoring) | `DA_exploit` (differs) | lower robust score |
-| Clairvoyant | θ-dependent | ≥ dual |
+## Two-EV class (repaired)
 
-Commands:
+Implemented in `fleet_oracle.py` (wired through `solve_exact("two")`):
 
-```bash
-python -c "from safe_time_evrp.dr_dual.exact_oracle import solve_exact; print(solve_exact('single'))"
-python -m pytest -q tests/test_dr_dual.py
-```
+1. EV1 chooses exploit/inform corridor; serves A1.
+2. Global observation time `T_obs` = EV1 clock after travel; EV2 is waited to `T_obs` before using the posterior.
+3. History key \(h=(\text{corridor}, \mathrm{supp}(b))\).
+4. For each \(h\), EV2 selects **one** action in `{DIRECT, CHARGE, SKIP}` maximizing conditional expected reward; the same action applies to every θ mapping to \(h\).
 
-## Two-EV shared θ
+**Nonanticipativity:** \(h_t(\theta_1)=h_t(\theta_2)\Rightarrow \pi(h_t(\theta_1))=\pi(h_t(\theta_2))\).
 
-Oracle runs (`solve_exact('two')`). On the current timing/energy calibration, the reported best first action is **not** yet a clean cross-vehicle inform win (`cross_vehicle=false` in artifacts). Documented as **open instance-tuning item**, not as a demonstrated fleet VoI theorem.
+**Regression:** reverse ranking of DIRECT vs CHARGE across θ ⇒ common policy value = 5, clairvoyant per-θ max = 10 (must not report clairvoyant as exact).
+
+## Known limitations
+
+- Not integrated with the legacy event-driven `FleetSimulator` as the primary plant.
+- Depot-return feasibility is **not** enforced by the limited continuation family.
+- Dynamic request release is covered by semantics tests, not yet by the primary exact value table.

@@ -1,34 +1,55 @@
-# Decision-relevant upper bounds (DRUB)
+# Decision-relevant upper bounds
 
 ## Generic pruning (not novel)
 
 If \(L\le V^\star\) is a verified incumbent lower bound and \(\overline Q(a)\ge Q^\star(a)\) with \(\overline Q(a)\le L\), prune \(a\).
 
-## DRUB construction (research object)
+## DRUB (clairvoyant / perfect-information reference)
 
 For first travel action \(a\):
 
 \[
-\overline Q(a)=\mathbb E_{\theta\sim b}\big[r_{\mathrm{travel}}(a,\theta)+V_{\mathrm{OL}}(x_a(\theta),\theta)\big]
+\overline Q_{\mathrm{DRUB}}(a)=\mathbb E_{\theta\sim b}\big[r_{\mathrm{travel}}(a,\theta)+V_{\mathrm{OL}}(x_a(\theta),\theta)\big]
 \]
 
 with \(V_{\mathrm{OL}}\) the best open-loop continuation in the **same finite plan family** as the exact oracle.
 
-### Soundness (conditional)
+**Soundness (conditional on family):** After informative travel with Dirac posterior, DRUB equals the Bayes continuation; after uninformative travel, θ-contingent OL is optimistic vs nonanticipative common continuation, so DRUB ≥ causal \(Q^\star\).
 
-Within that family, under deterministic latent regimes and the stated observation model:
-- After an informative segment with zero noise, the posterior is Dirac and DRUB equals the exact Bayes continuation value.
-- After an uninformative segment, DRUB is optimistic relative to robust causal continuation (θ-contingent OL without further observations), hence still an upper bound on causal \(Q^\star\).
+**Novelty:** none claimed for perfect-information relaxations alone.
 
-### Zero decision-relevance certificate — WITHDRAWN
+## REUB_v0 (direct-only) — INVALID
 
-Equality of known-\(\theta\) optimal values does **not** imply a common nonanticipative policy (P1/P2 counterexample). Do not prune on that test.
+**Counterexample:** post-corridor SOC cannot reach C directly, but A→S→charge→A→C is feasible within C's window. Direct-only envelope omits C and returns a value **strictly below** true causal \(Q^\star\). See `charging_makes_old_resource_bound_invalid()`.
 
-### Incumbent lower bound L
+## REUB_v1 (optimistic charge envelope) — claimed for declared family only
 
-L must be the Bayes value of an **executable** first action under nonanticipative common continuations. Never initialize L from \(\min_\theta\max_\pi R\).
+### Declared model
 
-### What is / is not claimed
+Single EV; customers \(\{A,C\}\); one charger \(S\); continuation family = {stop after A, direct AC, AS+charge+SA+AC}; rewards = customer rewards − energy cost; first action is a D→A corridor.
 
-- **Claimed (conditional):** clairvoyant DRUB ≥ true causal Q in the declared family; pruning with verified executable L retains the exact first action on the single-EV toy; P1/P2 regression.
-- **Not claimed:** novel information-relaxation theory; resource envelope as a certified general UB; scalable runtime gains; cross-vehicle VoI.
+### Construction
+
+\[
+\overline Q_{\mathrm{REUB_v1}}(a)= -c\,e_{\min}(a) + r_A + r_C\cdot\mathbf{1}\{\exists\text{ optimistic direct or charge-then-C path}\}
+\]
+
+where \(e_{\min}\) is the minimum corridor energy over θ-support, and reachability uses **minimum** segment energies / optimistic charge time (full charge from post-min-energy SOC).
+
+### Proposition (family-restricted)
+
+**Claim.** For every first corridor \(a\) in the declared model, \(Q^\star(a)\le \overline Q_{\mathrm{REUB_v1}}(a)\).
+
+**Proof sketch.** Any feasible realization under any θ earns at most \(r_A+r_C\) minus nonnegative energy costs. The first-action energy cost is at least \(c\,e_{\min}\). Customer C's reward appears in \(Q^\star\) only if some plan in the family serves C under the (possibly nonanticipative) continuation; if that plan exists for some θ, the optimistic min-energy / min-time relaxation also declares C reachable, so REUB_v1 includes \(r_C\). If no family plan serves C under any θ, neither \(Q^\star\) nor REUB_v1 includes \(r_C\). Hence REUB_v1 dominates every path reward and its belief expectation \(Q^\star\).
+
+**Limits.** Not proved for general multi-customer graphs, partial charge policies outside the family, or multi-EV coupling. Empirically often **looser** than DRUB on the toy (so not yet a strong acceleration device).
+
+### Certification policy
+
+- Do **not** “certify” REUB by comparing to DRUB on every instance.
+- Certified pruning may use DRUB, REUB_v1, or `min(DRUB, REUB_v1)` (`bound_mode=combined`) only when the chosen bound’s hypothesis applies.
+- Zero-VoI certificate remains **WITHDRAWN_UNSOUND**.
+
+### Incumbent L
+
+L = Bayes value of an **executable** first action under nonanticipative continuations. Never \(\min_\theta\max_\pi R\).

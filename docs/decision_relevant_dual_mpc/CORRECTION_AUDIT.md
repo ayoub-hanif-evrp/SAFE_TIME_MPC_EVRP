@@ -1,33 +1,34 @@
-# Correction after independent audit (post-`e1f9f0a`)
+# Correction audit (post-`93fd812`)
 
-## Withdrawn / repaired claims
+## Prior tip (`93fd812`) — what was already fixed
 
-| Issue | Status |
-|-------|--------|
-| `min_θ max_π` used as incumbent L | **Removed.** L seeded only from executable Bayes value of a concrete first action + nonanticipative common continuation. |
-| `_realize_robust_continuation` picking best plan per true θ | **Repaired.** `select_common_policy` chooses one plan from the belief only; true θ only realizes that plan. |
-| Zero-VoI via equal known-θ optima | **WITHDRAWN_UNSOUND.** Must not prune. See P1/P2 counterexample (`abstract_p1_p2_counterexample`). |
-| Commitment = still accepted | **Repaired.** Require `accepted ⊆ completed`. |
-| `busy_until` no-op | **Repaired.** Rejects actions while busy. |
-| Clairvoyant plan builder receiving θ | **Repaired** in `commitment_safe_under_all_theta`. |
+- Removed illegal `min_θ max_π` incumbent L.
+- Common continuation policy for ambiguous beliefs.
+- Withdrew unsound zero-VoI certificate.
+- Commitment completion / busy / payload checks.
+- Compute counters beyond first-action expansions.
 
-## P1/P2 logical counterexample
+## Remaining defects addressed in this wave
 
-```
-min_θ max_π R = 10
-max_π min_θ R = 0
-max_π E[R]     = 5
-```
+| ID | Defect | Repair |
+|----|--------|--------|
+| P0 | Two-EV oracle θ-dependent EV2 choice | History-indexed policy + `T_obs` sync (`fleet_oracle.py`) |
+| P0 | REUB not a general UB (misses charge-then-C) | Counterexample invalidates v0; REUB_v1 + family proposition; no clairvoyant fallback certification |
+| P0 | Robust baseline used Bayesian valuation | `solve_robust_mpc` / `solve_passive_mpc` with forced-prior scores |
+| P1 | Unpruned still computed bounds | `use_pruning=False` skips all UB evaluations |
+| P1 | Semantics / info cases | Validation tests: announce/accept, replay, 3 EV-info cases |
 
-A false L=10 could prune a sound candidate with Q̄=7; true executable L=5 must not.
+## Honest residual gaps
 
-## Still open
+- REUB_v1 is family-restricted and often looser than DRUB → not yet a strong algorithmic contribution.
+- Toy compute deltas remain small/noisy.
+- No large-benchmark evidence.
 
-- Two-EV shared-time observation gate: not yet a demonstrated cross-vehicle win.
-- Resource envelope UB often fails to dominate clairvoyant DRUB → **not used for certified prune** unless `sound_resource_ub_vs_clairvoyant`.
-- Clairvoyant DRUB remains a standard perfect-information relaxation (reference UB).
+## Separation of contribution
 
-## Assessment change
-
-Previous `PROMISING METHOD` at `e1f9f0a` is **withdrawn pending this repair**.  
-Current status: **CORRECTED PROTOTYPE — CONDITIONAL PROMISE** (see `SCIENTIFIC_STATUS.md`).
+| Component | Status |
+|-----------|--------|
+| Perfect-information / clairvoyant UB pruning | Established algorithm (not novelty) |
+| Nonanticipative dual first-action oracle (tiny) | Corrected prototype |
+| REUB_v1 charge envelope | Provisional family result; needs stronger general theory |
+| Decision-relevant pruning advantage at scale | **Not established** |

@@ -4,45 +4,67 @@
       "action": "travel|v1|DA_exploit|None|None|0.0",
       "q_bar_clairvoyant": 12.15,
       "q_bar_resource": 14.8,
+      "resource_version": "REUB_v1",
       "true_q": 9.8,
+      "clairvoyant_bound_valid": true,
+      "resource_bound_valid_vs_true": true,
       "bound_valid": true,
       "zero_voi_status": "WITHDRAWN_UNSOUND",
-      "resource_sound_vs_clairvoyant": true,
+      "resource_tighter_than_clairvoyant": false,
       "gap_q_bar_minus_true": 2.3499999999999996
     },
     {
       "action": "travel|v1|DA_inform|None|None|0.0",
       "q_bar_clairvoyant": 12.125,
       "q_bar_resource": 14.85,
+      "resource_version": "REUB_v1",
       "true_q": 12.125,
+      "clairvoyant_bound_valid": true,
+      "resource_bound_valid_vs_true": true,
       "bound_valid": true,
       "zero_voi_status": "WITHDRAWN_UNSOUND",
-      "resource_sound_vs_clairvoyant": true,
+      "resource_tighter_than_clairvoyant": false,
       "gap_q_bar_minus_true": 0.0
     },
     {
       "action": "travel|v1|DA_useless_inform|None|None|0.0",
       "q_bar_clairvoyant": 9.774999999999999,
       "q_bar_resource": 9.85,
+      "resource_version": "REUB_v1",
       "true_q": 9.774999999999999,
+      "clairvoyant_bound_valid": true,
+      "resource_bound_valid_vs_true": true,
       "bound_valid": true,
       "zero_voi_status": "WITHDRAWN_UNSOUND",
-      "resource_sound_vs_clairvoyant": true,
+      "resource_tighter_than_clairvoyant": false,
       "gap_q_bar_minus_true": 0.0
     },
     {
       "exact_optimum_first": "travel|v1|DA_inform|None|None|0.0",
       "exact_value": 12.125
+    },
+    {
+      "reub_v0_counterexample": {
+        "v0_direct_only": 10.0,
+        "v1_with_charge": 15.0,
+        "true_q": 15.0,
+        "v0_invalid": true,
+        "v1_valid_on_instance": true,
+        "notes": [
+          "v0 omits C though charge-then-C is feasible \u2192 not a general UB",
+          "v1 includes optimistic charge path"
+        ]
+      }
     }
   ],
   "pruning_ablation": {
-    "with_pruning": {
+    "with_pruning_clairvoyant": {
       "selected": "travel|v1|DA_inform|None|None|0.0",
       "value": 12.125,
       "expanded": 2,
       "pruned": 1,
       "safety_out": 0,
-      "seconds": 0.001503499981481582,
+      "seconds": 0.0015157000161707401,
       "counters": {
         "known_theta_continuation_calls": 4,
         "common_policy_evaluations": 2,
@@ -58,31 +80,70 @@
         "pruned:travel|v1|DA_useless_inform|None|None|0.0:q_bar=9.7750<=L=12.1250"
       ]
     },
+    "with_pruning": {
+      "selected": "travel|v1|DA_inform|None|None|0.0",
+      "value": 12.125,
+      "expanded": 2,
+      "pruned": 1,
+      "safety_out": 0,
+      "seconds": 0.0015157000161707401,
+      "counters": {
+        "known_theta_continuation_calls": 4,
+        "common_policy_evaluations": 2,
+        "bayes_continuation_calls": 2,
+        "bound_evaluations": 2,
+        "resource_bound_evaluations": 0,
+        "transition_calls": 44,
+        "total_heavy_calls": 10
+      },
+      "incumbent_L": 12.125,
+      "notes": [
+        "seed_incumbent:travel|v1|DA_exploit|None|None|0.0:L=9.8000",
+        "pruned:travel|v1|DA_useless_inform|None|None|0.0:q_bar=9.7750<=L=12.1250"
+      ]
+    },
+    "with_pruning_resource": {
+      "selected": "travel|v1|DA_inform|None|None|0.0",
+      "value": 12.125,
+      "expanded": 2,
+      "pruned": 1,
+      "counters": {
+        "known_theta_continuation_calls": 0,
+        "common_policy_evaluations": 2,
+        "bayes_continuation_calls": 2,
+        "bound_evaluations": 0,
+        "resource_bound_evaluations": 2,
+        "transition_calls": 40,
+        "total_heavy_calls": 6
+      }
+    },
     "no_pruning": {
       "selected": "travel|v1|DA_inform|None|None|0.0",
       "value": 12.125,
       "expanded": 3,
       "pruned": 0,
-      "seconds": 0.0016154000186361372,
+      "seconds": 0.001064100011717528,
       "counters": {
-        "known_theta_continuation_calls": 4,
+        "known_theta_continuation_calls": 0,
         "common_policy_evaluations": 2,
         "bayes_continuation_calls": 3,
-        "bound_evaluations": 2,
+        "bound_evaluations": 0,
         "resource_bound_evaluations": 0,
-        "transition_calls": 44,
-        "total_heavy_calls": 11
-      }
+        "transition_calls": 40,
+        "total_heavy_calls": 5
+      },
+      "bound_evals": 0
     },
     "exact_first": "travel|v1|DA_inform|None|None|0.0",
     "exact_value": 12.125,
     "retains_optimum": true,
     "fewer_expansions": true,
+    "unpruned_computes_no_bounds": true,
     "incumbent_is_executable_policy_value": true
   },
   "baselines": {
     "single_ev": {
-      "exact": {
+      "exact_dual": {
         "first": "travel|v1|DA_inform|None|None|0.0",
         "value": 12.125,
         "extras": {
@@ -104,34 +165,224 @@
         "expanded": 2,
         "pruned": 1
       },
-      "dr_dual_no_pruning": {
+      "dr_dual_unpruned": {
         "first": "travel|v1|DA_inform|None|None|0.0",
         "value": 12.125,
-        "expanded": 3
+        "expanded": 3,
+        "bound_evals": 0
       },
-      "robust": {
-        "first": "travel|v1|DA_inform|None|None|0.0",
-        "value": 12.125
+      "robust_mpc": {
+        "first": "travel|v1|DA_exploit|None|None|0.0",
+        "selection_score_worst_case": 9.8,
+        "true_bayes_value": 9.8
+      },
+      "optimized_passive": {
+        "first": "travel|v1|DA_exploit|None|None|0.0",
+        "selection_score_passive": 9.8,
+        "true_bayes_value": 9.8,
+        "matches_exact_passive": true
       },
       "info_gain_heuristic": {
         "first": "travel|v1|DA_inform|None|None|0.0",
-        "value": 12.125
+        "selection_score_abs_phi1": 3.0,
+        "true_bayes_value": 12.125
       }
     },
     "two_ev": {
       "status": "EXACT_OPTIMUM",
       "first": "travel|v1|E1_exploit|None|None|0.0",
       "value": 15.55,
-      "cross_vehicle": false,
+      "nonanticipative": true,
+      "cross_vehicle_info_changes_ev1_first_value": true,
       "details": [
         {
           "first": "travel|v1|E1_exploit|None|None|0.0",
-          "value": 15.55
+          "value": 15.55,
+          "policy_by_history": {
+            "('E1_exploit', (0.0, 1.0))": "charge"
+          }
         },
         {
           "first": "travel|v1|E1_inform|None|None|0.0",
-          "value": 15.5
+          "value": 15.5,
+          "policy_by_history": {
+            "('E1_inform', (0.0,))": "direct",
+            "('E1_inform', (1.0,))": "charge"
+          }
         }
+      ],
+      "reverse_ranking_abstract": {
+        "clairvoyant_per_theta_max": 10.0,
+        "nonanticipative_common_best": 5.0,
+        "must_not_report_clairvoyant_as_exact": true
+      }
+    },
+    "fair_compute": {
+      "rows": [
+        {
+          "network": "dr_single_ev_corridors",
+          "mode": "unpruned",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 40,
+            "total_heavy_calls": 5
+          },
+          "mean_seconds": 0.0010639999915535252,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 0
+        },
+        {
+          "network": "dr_single_ev_corridors",
+          "mode": "prune_clairvoyant",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 44,
+            "total_heavy_calls": 10
+          },
+          "mean_seconds": 0.0014399000016661982,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "dr_single_ev_corridors",
+          "mode": "prune_resource",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 40,
+            "total_heavy_calls": 6
+          },
+          "mean_seconds": 0.0009538666733230153,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "dr_single_ev_corridors",
+          "mode": "prune_combined",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 44,
+            "total_heavy_calls": 12
+          },
+          "mean_seconds": 0.001446366678768148,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 4
+        },
+        {
+          "network": "dr_single_ev_variant",
+          "mode": "unpruned",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 3,
+          "pruned": 0,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 3,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 40,
+            "total_heavy_calls": 5
+          },
+          "mean_seconds": 0.0010757666702071826,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 0
+        },
+        {
+          "network": "dr_single_ev_variant",
+          "mode": "prune_clairvoyant",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 0,
+            "transition_calls": 44,
+            "total_heavy_calls": 10
+          },
+          "mean_seconds": 0.001594866664769749,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "dr_single_ev_variant",
+          "mode": "prune_resource",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 0,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 0,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 40,
+            "total_heavy_calls": 6
+          },
+          "mean_seconds": 0.0009539000263127188,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 2
+        },
+        {
+          "network": "dr_single_ev_variant",
+          "mode": "prune_combined",
+          "selected": "travel|v1|DA_inform|None|None|0.0",
+          "value": 12.125,
+          "expanded": 2,
+          "pruned": 1,
+          "counters": {
+            "known_theta_continuation_calls": 4,
+            "common_policy_evaluations": 2,
+            "bayes_continuation_calls": 2,
+            "bound_evaluations": 2,
+            "resource_bound_evaluations": 2,
+            "transition_calls": 44,
+            "total_heavy_calls": 12
+          },
+          "mean_seconds": 0.0014633000052223604,
+          "trials": 3,
+          "bound_evals_expected_zero_if_unpruned": 4
+        }
+      ],
+      "notes": [
+        "unpruned computes no unused bounds",
+        "ms on toys are noisy"
       ]
     }
   }
