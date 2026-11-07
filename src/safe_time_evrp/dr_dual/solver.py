@@ -122,9 +122,10 @@ def _upper_bound_result(
         res = evaluate_observation_timing_bound(net, state, action, noise=noise)
         return BoundResult(res.status, res.value, res.notes)
     if bound_mode == "generic":
-        from safe_time_evrp.dr_dual.generic.general_bound import evaluate_generic_resource_bound
+        # Quarantined TEI → trivial safe reward UB (never false PROVEN_INFEASIBLE)
+        from safe_time_evrp.dr_dual.generic.general_bound import evaluate_trivial_safe_reward_bound
 
-        return evaluate_generic_resource_bound(net, state, action, noise=noise)
+        return evaluate_trivial_safe_reward_bound(net, state, action, noise=noise)
     if bound_mode == "combined":
         results = [
             evaluate_clairvoyant_bound_result(net, state, action, noise=noise),
@@ -135,9 +136,9 @@ def _upper_bound_result(
         ot = evaluate_observation_timing_bound(net, state, action, noise=noise)
         results.append(BoundResult(ot.status, ot.value, ot.notes))
         try:
-            from safe_time_evrp.dr_dual.generic.general_bound import evaluate_generic_resource_bound
+            from safe_time_evrp.dr_dual.generic.general_bound import evaluate_trivial_safe_reward_bound
 
-            results.append(evaluate_generic_resource_bound(net, state, action, noise=noise))
+            results.append(evaluate_trivial_safe_reward_bound(net, state, action, noise=noise))
         except Exception:
             pass
         vals = [r.value for r in results if r.status is BoundStatus.VALID_BOUND and r.value is not None]
