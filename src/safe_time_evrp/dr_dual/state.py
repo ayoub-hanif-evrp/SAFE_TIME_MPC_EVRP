@@ -28,6 +28,9 @@ class WorldState:
     announced: frozenset[str]
     belief: DiscreteBelief
     stage: int = 0
+    # True after a completed travel whose energy observation violated the model class.
+    # Physics are committed; controller must invoke recovery (no further learning).
+    model_inconsistent: bool = False
 
     def vehicle(self, vid: str) -> VehicleState:
         for v in self.vehicles:

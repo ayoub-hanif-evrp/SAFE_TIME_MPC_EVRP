@@ -42,7 +42,7 @@ def test_otub_valid_and_sometimes_tighter_than_drub():
     inform = Action(ActionKind.TRAVEL, "v1", segment_id="DA_inform")
     for a in (exploit, inform):
         cmp = otub_vs_clairvoyant_on_action(net, state, a)
-        assert cmp["otub_status"] == "OK"
+        assert cmp["otub_status"] == "VALID_BOUND"
         assert cmp["otub_ge_q"]
     # Uninformative: OTUB should not exceed DRUB (common-pattern vs clairvoyant)
     ex = otub_vs_clairvoyant_on_action(net, state, exploit)

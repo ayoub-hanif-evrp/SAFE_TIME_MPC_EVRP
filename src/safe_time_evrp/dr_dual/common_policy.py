@@ -17,6 +17,8 @@ from safe_time_evrp.dr_dual.state import WorldState
 from safe_time_evrp.dr_dual.transition import apply_action
 from safe_time_evrp.dual_mpc.belief import DiscreteBelief
 
+# RoadNetwork imported for typed continuation_candidates
+
 
 @dataclass(frozen=True)
 class CommonPolicyResult:
@@ -26,26 +28,36 @@ class CommonPolicyResult:
     per_theta_rewards: dict[float, float]
 
 
-def continuation_candidates(state_after: WorldState) -> list[list[Action]]:
+def continuation_candidates(state_after: WorldState, net: RoadNetwork | None = None) -> list[list[Action]]:
     base: list[Action] = []
     if "cust_A" not in state_after.completed and state_after.vehicle("v1").node == "A":
         base.append(Action(ActionKind.SERVE, "v1", customer_id="cust_A"))
-    return [
-        list(base),
-        [
-            *base,
-            Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
-            Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
-        ],
-        [
-            *base,
-            Action(ActionKind.TRAVEL, "v1", segment_id="AS"),
-            Action(ActionKind.CHARGE_FULL, "v1", charger_id="chg_S"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="SA"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
-            Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
-        ],
-    ]
+    plans: list[list[Action]] = [list(base)]
+    seg_ids = {s.segment_id for s in net.segments} if net is not None else None
+
+    def has(*ids: str) -> bool:
+        return seg_ids is None or all(i in seg_ids for i in ids)
+
+    if has("AC"):
+        plans.append(
+            [
+                *base,
+                Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
+                Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
+            ]
+        )
+    if has("AS", "SA", "AC") and (net is None or net.chargers):
+        plans.append(
+            [
+                *base,
+                Action(ActionKind.TRAVEL, "v1", segment_id="AS"),
+                Action(ActionKind.CHARGE_FULL, "v1", charger_id="chg_S"),
+                Action(ActionKind.TRAVEL, "v1", segment_id="SA"),
+                Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
+                Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
+            ]
+        )
+    return plans
 
 
 def realize_plan(
@@ -116,7 +128,7 @@ def select_common_policy(
 
     best: CommonPolicyResult | None = None
     best_score = float("-inf")
-    for plan in continuation_candidates(state):
+    for plan in continuation_candidates(state, net):
         if not plan_feasible_for_all(net, state, plan, rem, noise=noise):
             continue
         per: dict[float, float] = {}

@@ -39,6 +39,7 @@ def _replace_vehicle(state: WorldState, new_v: VehicleState) -> WorldState:
         announced=state.announced,
         belief=state.belief,
         stage=state.stage,
+        model_inconsistent=state.model_inconsistent,
     )
 
 
@@ -67,16 +68,9 @@ def apply_action(
         if e > v.soc + 1e-12:
             return TransitionResult(False, None, 0.0, None, None, "energy_infeasible")
         feat = ArcFeature(seg.segment_id, seg.base_energy, seg.informative)
-        # Fail safe if observation is inconsistent with every theta in the declared support.
         # Bounded-noise model class: observation must lie within noise_tol of some predicted energy.
-        # ``noise`` is already folded into ``e``; do not widen the tolerance by |noise| again.
         consistent = any(abs(net.energy(seg, th) - e) <= noise_tol + 1e-9 for th in state.belief.support)
-        if not consistent:
-            if log:
-                log.record(kind="model_inconsistency", segment=seg.segment_id, energy=e)
-            return TransitionResult(
-                False, None, 0.0, e, seg.segment_id, "model_inconsistent_fail_safe", model_inconsistent=True
-            )
+        # Always commit physical travel first — never retroactively cancel completed motion.
         new_v = VehicleState(
             v.vehicle_id,
             seg.destination,
@@ -86,7 +80,52 @@ def apply_action(
             busy_until=v.time + seg.travel_time,
         )
         new_state = _replace_vehicle(state, new_v)
-        # Causal belief update from completed traversal
+        reward = -net.energy_cost * e
+        if log:
+            log.record(
+                kind="travel",
+                vehicle=v.vehicle_id,
+                segment=seg.segment_id,
+                origin=seg.origin,
+                destination=seg.destination,
+                energy=e,
+                theta_star=theta_star,
+                time=new_v.time,
+                time_start=v.time,
+                soc=new_v.soc,
+                node=new_v.node,
+            )
+        if not consistent:
+            # Observation violates model contract after physics committed.
+            failed = WorldState(
+                vehicles=new_state.vehicles,
+                accepted=new_state.accepted,
+                completed=new_state.completed,
+                rejected=new_state.rejected,
+                announced=new_state.announced,
+                belief=state.belief,  # no further learning
+                stage=state.stage + 1,
+                model_inconsistent=True,
+            )
+            if log:
+                log.record(
+                    kind="model_inconsistency",
+                    vehicle=v.vehicle_id,
+                    segment=seg.segment_id,
+                    energy=e,
+                    time=new_v.time,
+                    soc=new_v.soc,
+                    node=new_v.node,
+                )
+            return TransitionResult(
+                False,
+                failed,
+                reward,
+                e,
+                seg.segment_id,
+                "model_inconsistent_after_travel",
+                model_inconsistent=True,
+            )
         new_belief = state.belief.update_from_observation(feat, e, noise_tol=noise_tol + 1e-9)
         new_state = WorldState(
             vehicles=new_state.vehicles,
@@ -96,18 +135,8 @@ def apply_action(
             announced=new_state.announced,
             belief=new_belief,
             stage=state.stage + 1,
+            model_inconsistent=False,
         )
-        reward = -net.energy_cost * e
-        if log:
-            log.record(
-                kind="travel",
-                vehicle=v.vehicle_id,
-                segment=seg.segment_id,
-                energy=e,
-                theta_star=theta_star,
-                time=new_v.time,
-                soc=new_v.soc,
-            )
         return TransitionResult(True, new_state, reward, e, seg.segment_id, "travel_ok")
 
     if action.kind is ActionKind.SERVE:
@@ -137,9 +166,18 @@ def apply_action(
             announced=state.announced,
             belief=state.belief,
             stage=state.stage + 1,
+            model_inconsistent=state.model_inconsistent,
         )
         if log:
-            log.record(kind="serve", customer=action.customer_id, time=end)
+            log.record(
+                kind="serve",
+                vehicle=v.vehicle_id,
+                customer=action.customer_id,
+                node=cust.node,
+                time=end,
+                time_start=start,
+                soc=new_v.soc,
+            )
         return TransitionResult(True, new_state, cust.reward, None, None, "serve_ok")
 
     if action.kind is ActionKind.CHARGE_FULL:
@@ -161,9 +199,18 @@ def apply_action(
             announced=state.announced,
             belief=state.belief,
             stage=state.stage + 1,
+            model_inconsistent=state.model_inconsistent,
         )
         if log:
-            log.record(kind="charge_full", vehicle=v.vehicle_id, duration=duration, soc=net.battery)
+            log.record(
+                kind="charge_full",
+                vehicle=v.vehicle_id,
+                node=v.node,
+                duration=duration,
+                time=new_v.time,
+                time_start=v.time,
+                soc=net.battery,
+            )
         return TransitionResult(True, new_state, 0.0, None, None, "charge_ok")
 
     if action.kind is ActionKind.WAIT:
@@ -184,6 +231,7 @@ def apply_action(
             announced=state.announced,
             belief=state.belief,
             stage=state.stage + 1,
+            model_inconsistent=state.model_inconsistent,
         )
         return TransitionResult(True, new_state, 0.0, None, None, "wait_ok")
 
@@ -199,6 +247,7 @@ def apply_action(
             announced=state.announced,
             belief=state.belief,
             stage=state.stage + 1,
+            model_inconsistent=state.model_inconsistent,
         )
         return TransitionResult(True, new_state, 0.0, None, None, "accept_ok")
 
@@ -214,6 +263,7 @@ def apply_action(
             announced=state.announced,
             belief=state.belief,
             stage=state.stage + 1,
+            model_inconsistent=state.model_inconsistent,
         )
         return TransitionResult(True, new_state, 0.0, None, None, "reject_ok")
 

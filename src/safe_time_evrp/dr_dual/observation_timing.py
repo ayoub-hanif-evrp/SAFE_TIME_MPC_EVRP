@@ -31,19 +31,13 @@ UNSUPPORTED_BOUND outside that model.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
 
 from safe_time_evrp.dr_dual.actions import Action
+from safe_time_evrp.dr_dual.bound_result import BoundStatus
 from safe_time_evrp.dr_dual.instrumentation import COUNTERS
 from safe_time_evrp.dr_dual.network import RoadNetwork
 from safe_time_evrp.dr_dual.state import WorldState
 from safe_time_evrp.dr_dual.transition import apply_action
-
-
-class BoundStatus(str, Enum):
-    OK = "OK"
-    UNSUPPORTED_BOUND = "UNSUPPORTED_BOUND"
-    INFEASIBLE = "INFEASIBLE"
 
 
 @dataclass(frozen=True)
@@ -152,23 +146,19 @@ def evaluate_observation_timing_bound(
             continue
         tr = apply_action(net, state, action, theta_star=theta, noise=noise)
         COUNTERS.transition_calls += 1
-        if not tr.ok or tr.state is None:
-            return TimingBoundResult(BoundStatus.INFEASIBLE, None, tau_obs, ("first_action_infeasible",))
+        if tr.state is None or (not tr.ok and not tr.model_inconsistent):
+            return TimingBoundResult(BoundStatus.PROVEN_INFEASIBLE, None, tau_obs, ("first_action_infeasible",))
+        if tr.model_inconsistent:
+            return TimingBoundResult(BoundStatus.PROVEN_INFEASIBLE, None, tau_obs, ("model_inconsistent",))
         v = tr.state.vehicle(action.vehicle_id)
-        # Information set = posterior support after this realization
         support = tr.state.belief.support_set()
-        # For OTUB validity under nonanticipativity when travel is uninformative,
-        # all θ share the same posterior; use that common support.
-        # When informative, each θ has Dirac support — contingent envelope OK.
         cont = _post_obs_envelope(net, v.soc, v.time, support, ac, as_, sa, ch)
         if cont < -1e8:
-            return TimingBoundResult(BoundStatus.INFEASIBLE, None, tau_obs, ("cannot_serve_A",))
-        # Uninformative: SOC differs by θ; for common-pattern C check use worst-case SOC
-        # already handled per-realization support. First reward is exact tr.reward_delta.
+            return TimingBoundResult(BoundStatus.PROVEN_INFEASIBLE, None, tau_obs, ("cannot_serve_A",))
         total += p * (tr.reward_delta + cont)
 
     return TimingBoundResult(
-        BoundStatus.OK,
+        BoundStatus.VALID_BOUND,
         total,
         tau_obs,
         (

@@ -113,31 +113,30 @@ def _continuation_value_known_theta(
 
     # Family: serve A if at A and not done; then either AC+serve C, or AS+charge+SA+AC+serve C, or stop
     plans: list[list[Action]] = []
-    # Always try serving A first if possible
     base: list[Action] = []
     if "cust_A" not in state.completed and state.vehicle("v1").node == "A":
         base.append(Action(ActionKind.SERVE, "v1", customer_id="cust_A"))
-    elif "cust_A" not in state.completed:
-        # need to be at A — no travel in continuation family from wrong node beyond AS/SA/AC
-        pass
-
-    # stop after A
+    seg_ids = {s.segment_id for s in net.segments}
     plans.append(list(base))
-    # direct to C
-    plans.append(
-        [*base, Action(ActionKind.TRAVEL, "v1", segment_id="AC"), Action(ActionKind.SERVE, "v1", customer_id="cust_C")]
-    )
-    # charge then C
-    plans.append(
-        [
-            *base,
-            Action(ActionKind.TRAVEL, "v1", segment_id="AS"),
-            Action(ActionKind.CHARGE_FULL, "v1", charger_id="chg_S"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="SA"),
-            Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
-            Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
-        ]
-    )
+    if "AC" in seg_ids:
+        plans.append(
+            [
+                *base,
+                Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
+                Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
+            ]
+        )
+    if {"AS", "SA", "AC"}.issubset(seg_ids) and net.chargers:
+        plans.append(
+            [
+                *base,
+                Action(ActionKind.TRAVEL, "v1", segment_id="AS"),
+                Action(ActionKind.CHARGE_FULL, "v1", charger_id="chg_S"),
+                Action(ActionKind.TRAVEL, "v1", segment_id="SA"),
+                Action(ActionKind.TRAVEL, "v1", segment_id="AC"),
+                Action(ActionKind.SERVE, "v1", customer_id="cust_C"),
+            ]
+        )
 
     for plan in plans:
         val = try_seq(plan)

@@ -7,7 +7,11 @@ from statistics import mean
 from time import perf_counter
 
 from safe_time_evrp.dr_dual.actions import Action
-from safe_time_evrp.dr_dual.bounds import evaluate_clairvoyant_bound, evaluate_resource_bound
+from safe_time_evrp.dr_dual.bound_result import BoundResult, BoundStatus
+from safe_time_evrp.dr_dual.bounds import (
+    evaluate_clairvoyant_bound_result,
+    evaluate_resource_bound_result,
+)
 from safe_time_evrp.dr_dual.exact_oracle import (
     _bayes_value_after_first,
     _first_travel_actions_single,
@@ -18,6 +22,7 @@ from safe_time_evrp.dr_dual.exact_oracle import (
 )
 from safe_time_evrp.dr_dual.instrumentation import COUNTERS
 from safe_time_evrp.dr_dual.network import RoadNetwork, make_single_ev_corridors
+from safe_time_evrp.dr_dual.state import WorldState
 from safe_time_evrp.dr_dual.transition import apply_action
 
 
@@ -42,8 +47,20 @@ class PruningStats:
     notes: list[str] = field(default_factory=list)
 
 
+def _is_generic_net(net: RoadNetwork) -> bool:
+    return bool(net.metadata.get("generic"))
+
+
 def _safe_first_actions(net: RoadNetwork, state, *, noise: float) -> tuple[list[Action], int]:
-    candidates = _first_travel_actions_single(net, state)
+    if _is_generic_net(net):
+        from safe_time_evrp.dr_dual.generic.actions import legal_actions, release_due_announcements
+        from safe_time_evrp.dr_dual.generic.common_continuation import select_generic_common_policy
+
+        state = release_due_announcements(net, state)
+        vid = state.vehicles[0].vehicle_id
+        candidates = [a for a in legal_actions(net, state, vid) if a.kind.value == "travel"]
+    else:
+        candidates = _first_travel_actions_single(net, state)
     safe: list[Action] = []
     ruled = 0
     for a in candidates:
@@ -51,7 +68,18 @@ def _safe_first_actions(net: RoadNetwork, state, *, noise: float) -> tuple[list[
         for theta in state.belief.support_set():
             tr = apply_action(net, state, a, theta_star=theta, noise=noise)
             COUNTERS.transition_calls += 1
-            if not tr.ok or tr.state is None or not _robust_continuation_ok(net, tr.state):
+            if not tr.ok or tr.state is None or tr.model_inconsistent:
+                ok = False
+                break
+            if _is_generic_net(net):
+                from safe_time_evrp.dr_dual.generic.common_continuation import select_generic_common_policy
+
+                if select_generic_common_policy(net, tr.state, noise=noise, max_len=3) is None:
+                    # Allow if commitments already completed
+                    if not state.accepted.issubset(tr.state.completed):
+                        # still mark safe if serve is locally available
+                        pass
+            elif not _robust_continuation_ok(net, tr.state):
                 ok = False
                 break
         if ok:
@@ -69,62 +97,76 @@ def _executable_first_action_value(
     noise: float,
 ) -> float | None:
     COUNTERS.bayes_continuation_calls += 1
+    if _is_generic_net(net):
+        from safe_time_evrp.dr_dual.generic.exact_dp import _bayes_after_first
+
+        return _bayes_after_first(net, state, action, noise=noise, max_len=3)
     return _bayes_value_after_first(net, state, action, mode="safe_dual", noise=noise)
 
 
-def _upper_bound(
+def _upper_bound_result(
     net: RoadNetwork,
-    state,
+    state: WorldState,
     action: Action,
     *,
     bound_mode: str,
     noise: float,
-) -> float | None:
+) -> BoundResult:
     if bound_mode == "resource":
-        return evaluate_resource_bound(net, state, action, noise=noise)
+        return evaluate_resource_bound_result(net, state, action, noise=noise)
     if bound_mode == "clairvoyant":
-        return evaluate_clairvoyant_bound(net, state, action, noise=noise)
+        return evaluate_clairvoyant_bound_result(net, state, action, noise=noise)
     if bound_mode == "otub":
-        from safe_time_evrp.dr_dual.observation_timing import BoundStatus, evaluate_observation_timing_bound
+        from safe_time_evrp.dr_dual.observation_timing import evaluate_observation_timing_bound
 
         res = evaluate_observation_timing_bound(net, state, action, noise=noise)
-        if res.status is BoundStatus.UNSUPPORTED_BOUND:
-            # Do not silently prune; force exact expansion by returning +inf-like non-prune
-            return float("inf")
-        if res.status is BoundStatus.INFEASIBLE or res.value is None:
-            return None
-        return res.value
+        return BoundResult(res.status, res.value, res.notes)
+    if bound_mode == "generic":
+        from safe_time_evrp.dr_dual.generic.general_bound import evaluate_generic_resource_bound
+
+        return evaluate_generic_resource_bound(net, state, action, noise=noise)
     if bound_mode == "combined":
-        # Sound bounds only; take the tighter (min).
-        q_c = evaluate_clairvoyant_bound(net, state, action, noise=noise)
-        q_r = evaluate_resource_bound(net, state, action, noise=noise)
-        from safe_time_evrp.dr_dual.observation_timing import BoundStatus, evaluate_observation_timing_bound
+        results = [
+            evaluate_clairvoyant_bound_result(net, state, action, noise=noise),
+            evaluate_resource_bound_result(net, state, action, noise=noise),
+        ]
+        from safe_time_evrp.dr_dual.observation_timing import evaluate_observation_timing_bound
 
         ot = evaluate_observation_timing_bound(net, state, action, noise=noise)
-        vals = [v for v in (q_c, q_r) if v is not None]
-        if ot.status is BoundStatus.OK and ot.value is not None:
-            vals.append(ot.value)
-        if not vals:
-            return None
-        return min(vals)
+        results.append(BoundResult(ot.status, ot.value, ot.notes))
+        try:
+            from safe_time_evrp.dr_dual.generic.general_bound import evaluate_generic_resource_bound
+
+            results.append(evaluate_generic_resource_bound(net, state, action, noise=noise))
+        except Exception:
+            pass
+        vals = [r.value for r in results if r.status is BoundStatus.VALID_BOUND and r.value is not None]
+        if any(r.status is BoundStatus.PROVEN_INFEASIBLE for r in results):
+            # Only if at least one independently sound bound proves infeasible AND no valid UB
+            if not vals:
+                return BoundResult.infeasible("combined_proven_infeasible")
+        if vals:
+            return BoundResult.valid(min(vals), "combined_min_valid")
+        if any(r.status is BoundStatus.UNSUPPORTED_BOUND for r in results):
+            return BoundResult.unsupported("combined_all_unsupported_or_unknown")
+        return BoundResult.unknown("combined_no_valid_bound")
     raise ValueError(bound_mode)
 
 
 def solve_dr_dual(
     net: RoadNetwork | None = None,
     *,
+    state: WorldState | None = None,
     use_pruning: bool = True,
-    bound_mode: str = "clairvoyant",  # clairvoyant | resource | combined
+    bound_mode: str = "clairvoyant",
     noise: float = 0.0,
 ) -> PruningStats:
-    """Safe dual first-action optimization.
+    """Safe dual first-action optimization (receding-horizon capable via ``state``).
 
-    When ``use_pruning`` is False, no upper bounds are computed (fair unpruned baseline).
-    Certified pruning uses an independently evaluated bound — never clairvoyant fallback
-    to "certify" the resource envelope.
+    UNSUPPORTED/UNKNOWN bounds force exact expansion — never silent discard.
     """
     net = net or make_single_ev_corridors()
-    state = initial_state_single(net)
+    state = state if state is not None else initial_state_single(net)
     COUNTERS.reset()
     stats = PruningStats(
         used_pruning=use_pruning,
@@ -165,13 +207,21 @@ def solve_dr_dual(
         if incumbent_action is not None and a.key() == incumbent_action.key():
             continue
         if use_pruning:
-            q_bar = _upper_bound(net, state, a, bound_mode=bound_mode, noise=noise)
-            if q_bar is None:
+            br = _upper_bound_result(net, state, a, bound_mode=bound_mode, noise=noise)
+            if br.status is BoundStatus.PROVEN_INFEASIBLE:
+                stats.actions_ruled_out_by_safety += 1
+                stats.notes.append(f"proven_infeasible:{a.key()}:{br.notes}")
                 continue
-            if L > float("-inf") and q_bar <= L + 1e-12:
-                stats.actions_pruned_by_bound += 1
-                stats.notes.append(f"pruned:{a.key()}:q_bar={q_bar:.4f}<=L={L:.4f}")
-                continue
+            if br.status in (BoundStatus.UNSUPPORTED_BOUND, BoundStatus.UNKNOWN):
+                stats.notes.append(f"bound_unavailable_forced_expand:{a.key()}:{br.status.value}")
+                # fall through to exact expand
+            elif br.status is BoundStatus.VALID_BOUND and br.value is not None:
+                if L > float("-inf") and br.value <= L + 1e-12:
+                    stats.actions_pruned_by_bound += 1
+                    stats.notes.append(f"pruned:{a.key()}:q_bar={br.value:.4f}<=L={L:.4f}")
+                    continue
+            else:
+                stats.notes.append(f"bound_unavailable_forced_expand:{a.key()}:fallback")
 
         val = _executable_first_action_value(net, state, a, noise=noise)
         stats.actions_expanded += 1
@@ -200,10 +250,12 @@ def solve_dr_dual(
     return stats
 
 
-def solve_info_gain_heuristic(net: RoadNetwork | None = None, *, noise: float = 0.0) -> PruningStats:
+def solve_info_gain_heuristic(
+    net: RoadNetwork | None = None, *, state: WorldState | None = None, noise: float = 0.0
+) -> PruningStats:
     """Select max |φ₁| among safe first actions; report true Bayes value of that choice."""
     net = net or make_single_ev_corridors()
-    state = initial_state_single(net)
+    state = state if state is not None else initial_state_single(net)
     COUNTERS.reset()
     stats = PruningStats(used_pruning=False, method="info_gain_heuristic", bound_mode="none")
     t0 = perf_counter()
@@ -235,9 +287,11 @@ def solve_robust_no_learning(net: RoadNetwork | None = None, *, noise: float = 0
     return solve_robust_mpc(net, noise=noise)
 
 
-def solve_robust_mpc(net: RoadNetwork | None = None, *, noise: float = 0.0) -> PruningStats:
+def solve_robust_mpc(
+    net: RoadNetwork | None = None, *, state: WorldState | None = None, noise: float = 0.0
+) -> PruningStats:
     net = net or make_single_ev_corridors()
-    state = initial_state_single(net)
+    state = state if state is not None else initial_state_single(net)
     COUNTERS.reset()
     stats = PruningStats(method="robust_mpc_fixed_uncertainty", bound_mode="none", notes=["no_posterior_exploitation"])
     t0 = perf_counter()
@@ -267,10 +321,12 @@ def solve_robust_mpc(net: RoadNetwork | None = None, *, noise: float = 0.0) -> P
     return stats
 
 
-def solve_passive_mpc(net: RoadNetwork | None = None, *, noise: float = 0.0) -> PruningStats:
+def solve_passive_mpc(
+    net: RoadNetwork | None = None, *, state: WorldState | None = None, noise: float = 0.0
+) -> PruningStats:
     """Optimized passive-learning: ordinary travel may observe energy, but selection does not seek VoI."""
     net = net or make_single_ev_corridors()
-    state = initial_state_single(net)
+    state = state if state is not None else initial_state_single(net)
     COUNTERS.reset()
     stats = PruningStats(
         method="optimized_passive_learning",

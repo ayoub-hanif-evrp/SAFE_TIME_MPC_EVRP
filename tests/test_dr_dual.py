@@ -48,8 +48,13 @@ def test_model_inconsistency_fails_safe():
         noise=1.0,
         noise_tol=0.0,
     )
+    # Physics committed; model contract fails after travel — never undo location/time/SOC.
     assert not tr.ok
     assert tr.model_inconsistent
+    assert tr.state is not None
+    assert tr.state.vehicle("v1").node == "A"
+    assert tr.state.model_inconsistent
+    assert tr.energy_observed is not None
 
 
 def test_exact_single_selects_inform():
