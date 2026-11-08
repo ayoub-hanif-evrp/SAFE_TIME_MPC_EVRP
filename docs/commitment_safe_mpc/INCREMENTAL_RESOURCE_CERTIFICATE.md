@@ -1,26 +1,26 @@
-# Incremental route-resource certificates
+# Incremental route-resource certificates (repaired)
 
 Module: `route_resource_profile.py`
 
+## Freight-manifest prefix theorem (nominal)
+
+Under deterministic nominal linear energy, identical vehicle anchors, and identical
+**depot/reload freight manifests**, if a candidate shares visits \(v_{1:k}\) with a
+validated profile **and** the active tour manifest at each index \(i \le k\) matches,
+then the resource state after position \(k\) equals the stored profile state.
+
+**Counterexample (invalid reuse):** \(D \to A \to D\) vs \(D \to A \to B \to D\) share
+visit \(A\), but depot manifests \(\{A\}\) vs \(\{A,B\}\) differ, so reusable prefix is 0.
+
 ## Modes
 
-| Mode | Behavior |
+| Mode | Hot path |
 |------|----------|
-| `FULL_EVALUATION` | Always `evaluate_route` from the vehicle anchor |
-| `INCREMENTAL_EVALUATION` | Reuse an exact matching visit prefix / anchor; recompute the affected suffix; fall back to full on uncertainty |
+| `FULL_EVALUATION` | `evaluate_route` from anchor |
+| `INCREMENTAL_EVALUATION` | Recover exact prefix state; **`propagate_from_state` on suffix only** — no full `evaluate_route` on the candidate |
 
-Approximate prechecks never certify feasibility. Uncertain → full evaluation.
+Uncertain / mismatched manifests → recompute from anchor via `propagate_from_state` (still not a silent approximate certify).
 
-## Soundness target
+## Work counters
 
-For supported states/plans with a valid certificate version:
-
-`VALID_INCREMENTAL(state, plan, certificate) ⇔ VALID_FULL(state, plan)`
-
-on feasibility, served set, distance, charge time, depot return, and commitment coverage.
-
-Equivalence regressions: `tests/test_commitment_safe_m1.py`.
-
-## Work bound
-
-In the worst case, suffix recomputation is still O(route length). No O(1)/O(log n) claim.
+`prefix_visits_reused`, `suffix_visits_recomputed`, `full_calls_avoided`, `evaluate_route_calls`, propagate/profile seconds.

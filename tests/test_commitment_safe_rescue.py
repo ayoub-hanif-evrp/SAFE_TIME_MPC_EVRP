@@ -116,17 +116,20 @@ def test_b1_rescues_and_refuses_obligation_breaking_extra():
     assert not rep.ok
 
 
-def test_locked_suffix_must_be_empty():
+def test_locked_travel_without_service_continuation_rejected():
+    """Busy travel toward A does not cover A unless the post-action suffix serves A."""
     inst = _packing_rescue_instance()
     bat = inst.vehicle_type.battery_capacity
-    anchor = Anchor("D", 0.0, bat, 0.0, frozenset())
-    locked = VehicleView("v1", "traveling", "D", bat, 0.0, (), anchor, "A")
-    idle = VehicleView("v2", "idle", "D", bat, 0.0, (), anchor, None)
+    # Post-action anchor at A with A onboard; empty suffix leaves A unserved.
+    post = Anchor("A", 5.0, bat - 1.0, 1.0, frozenset({"A"}))
+    locked = VehicleView("v1", "traveling", "D", bat, 1.0, ("A",), post, "A")
+    idle_anchor = Anchor("D", 0.0, bat, 0.0, frozenset())
+    idle = VehicleView("v2", "idle", "D", bat, 0.0, (), idle_anchor, None)
     obs = Observation(0.0, (locked, idle), ("A", "B"), ("A",), (), (), (), ())
-    bad = {"v1": [Visit("B", "service")], "v2": []}
+    bad = {"v1": [], "v2": []}
     rep = validate_continuation(inst, obs, bad)
     assert not rep.ok
-    assert any("locked_action" in r for r in rep.reasons)
+    assert any("missing_commitments" in r or "locked_travel_without" in r for r in rep.reasons)
 
 
 def test_station_capacity_refused():

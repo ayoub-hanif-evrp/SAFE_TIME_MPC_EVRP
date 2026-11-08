@@ -1,20 +1,31 @@
-# Incremental proof sketch and counterexamples
+# Incremental proof sketch and counterexamples (repaired)
 
-## Proposition (nominal, exact forward prefixes)
+## Proposition
 
-Under deterministic nominal linear energy, identical vehicle anchors, and an exact forward resource profile for visit sequence \(v_{1:n}\), if a candidate shares the prefix \(v_{1:k}\) with identical visit objects, then the resource state after position \(k\) equals the stored profile state after \(k\). Feasibility of the candidate then depends only on the suffix \(v_{k+1:n'}\) started from that state (equivalently: full re-evaluation from the anchor yields the same feasibility decision when the prefix and anchors match).
+Under the deterministic nominal model, with exact forward resource profiles that
+record per-visit states **and** tour freight manifests:
 
-## What is proved in code
+If anchors match, energy-model version matches, visits \(v_{1:k}\) are identical,
+and manifests agree for all \(i \le k\), then
 
-Regression tests require agreement of incremental vs full modes on feasible bit, served identities, and distance for supported toy edits. The implementation still calls authoritative `evaluate_route` for the decision (never approx-certifies).
+\[
+\text{state after } k \text{ (candidate)} = \text{stored profile state after } k.
+\]
 
-## Counterexamples / falsifiers
+Suffix feasibility from that state equals full evaluation from the anchor for the
+complete candidate (same served set, distance, charge, depot return), because the
+deterministic dynamics are Markov in the resource state.
 
-1. **Anchor drift:** any change in node/time/SOC/load/onboard invalidates prefix reuse.  
-2. **Charge target change** on an otherwise identical charge visit breaks Visit equality → prefix ends earlier.  
-3. **Shared station capacity:** not supported by the plant; validators refuse `station_capacity is not None` (`MODEL_CONTRACT_VIOLATED`).  
-4. **Locked busy actions:** nonempty suffixes on locked vehicles are contract violations.
+## Counterexamples enforced in tests
 
-## Novelty honesty
+1. Depot freight change (\(D{-}A{-}D\) vs \(D{-}A{-}B{-}D\)) → prefix length 0.  
+2. Anchor SOC/time/onboard drift → prefix length 0.  
+3. Onboard-only “coverage” without future service → validator rejects (`missing_commitments`).  
+4. Locked travel toward A without service continuation → rejected.
 
-Prefix reuse of resource labels is standard in routing/EVRP labeling literature. The investigated distinction is which **MPC events** invalidate which certificates under irreversible commitments — not “we invented concatenation.”
+## What remains standard prior art
+
+Prefix/resource concatenation (Vidal et al.), fast ALNS move evaluation (Erdelić et al.),
+EVRP labeling. The investigated MPC-specific piece is **event-aware certificate
+advancement** across replans under irreversible commitments — still compared honestly
+in `SCIENTIFIC_VERDICT.md`.

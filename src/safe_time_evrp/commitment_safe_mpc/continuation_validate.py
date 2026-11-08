@@ -2,6 +2,14 @@
 
 This is **not** a robust recursive-feasibility certificate against energy disturbances.
 Log replay of executed events does not prove unused future suffixes safe.
+
+Busy-vehicle contract
+---------------------
+When ``locked_destination`` is set, ``VehicleView.anchor`` is the plant's verified
+*post-action* anchor. A planned suffix is allowed and is evaluated from that anchor
+(executed after the noninterruptible action). Onboard goods or a locked destination
+alone do **not** count as commitment coverage — only ``IN_SERVICE`` (service already
+started) or a future validated ``service`` visit does.
 """
 
 from __future__ import annotations
@@ -46,12 +54,14 @@ def validate_continuation(
     charge_time = 0.0
     routes_checked = 0
     charge_visits = 0
+
+    # Pending obligations: accepted but not completed. IN_SERVICE is covered by the
+    # already-started noninterruptible service (completion event is scheduled).
     pending = set(observation.accepted) - set(observation.completed) - set(observation.in_service)
     if require_new:
         pending |= set(require_new)
-    obligations = len(pending)
+    obligations = len(pending) + len(set(observation.in_service) & set(observation.accepted))
 
-    # Plant has no endogenous charger queue; refuse finite shared-capacity contracts.
     if instance.station_capacity is not None:
         return ValidationReport(
             status="MODEL_CONTRACT_VIOLATED",
@@ -72,11 +82,6 @@ def validate_continuation(
 
     for vehicle in observation.vehicles:
         visits = list(routes.get(vehicle.id, []))
-        # Busy / locked actions are non-interruptible: suffix must be empty.
-        if vehicle.locked_destination is not None and visits:
-            reasons.append(
-                f"locked_action_interrupted:{vehicle.id}:locked={vehicle.locked_destination}:suffix={len(visits)}"
-            )
         for v in visits:
             if v.purpose == "charge":
                 charge_visits += 1
@@ -85,10 +90,10 @@ def validate_continuation(
                     reasons.append(f"serves_rejected:{v.node_id}")
                 if v.node_id not in visible and v.node_id not in pending:
                     reasons.append(f"serves_unreleased_or_unknown:{v.node_id}")
+
         routes_checked += 1
-        if vehicle.locked_destination is not None:
-            # Locked vehicle: empty suffix is the only admissible provisional plan.
-            continue
+        # Busy vehicles: evaluate suffix from the verified post-action anchor.
+        # Idle vehicles: evaluate from current anchor.
         result = evaluate_route(instance, vehicle.anchor, visits, model)
         if not result.feasible:
             reasons.append(f"route_infeasible:{vehicle.id}:{result.reason}")
@@ -97,24 +102,29 @@ def validate_continuation(
         distance += result.distance
         charge_time += result.charge_time
 
+        # Traveling toward a locked customer without a future service of that customer
+        # leaves the commitment uncovered if they are still pending.
+        if (
+            vehicle.locked_destination is not None
+            and vehicle.locked_destination in pending
+            and vehicle.locked_destination not in result.served
+            and vehicle.status == "traveling"
+        ):
+            reasons.append(f"locked_travel_without_service_continuation:{vehicle.id}:{vehicle.locked_destination}")
+
     if len(served_all) != len(set(served_all)):
         reasons.append("duplicate_service")
 
-    missing = pending - set(served_all) - set(observation.in_service)
-    # Commitments currently under a locked in-service / onboard action count as covered.
-    locked_covered = set()
-    for vehicle in observation.vehicles:
-        locked_covered |= set(vehicle.anchor.onboard)
-        if vehicle.locked_destination is not None:
-            locked_covered.add(vehicle.locked_destination)
-    missing -= locked_covered
+    # Coverage: future service visits ∪ already IN_SERVICE. Never onboard/locked alone.
+    covered = set(served_all) | set(observation.in_service)
+    missing = pending - covered
     if missing:
         reasons.append(f"missing_commitments:{sorted(missing)}")
 
     if reasons:
         status = (
             "MODEL_CONTRACT_VIOLATED"
-            if any("unreleased" in r or "station_capacity" in r or "locked_action" in r for r in reasons)
+            if any("unreleased" in r or "station_capacity" in r or "locked_travel_without" in r for r in reasons)
             else "UNKNOWN"
         )
         return ValidationReport(
