@@ -1,12 +1,13 @@
 # Scientific verdict
 
-**Current:** Phase A software/policy-class repair only.  
+**Current:** Phase A + Phase B complete.  
 **Paper claim:** **NOT YET** — no demonstrated incremental-certificate contribution.
 
 ### What is established
 
 - Quarantined invalid TEI; honest restricted oracle labels.  
 - D1–D4 aligned under a declared shared restricted policy class (4/4).  
+- Authoritative `FleetSimulator` plant + independent replay; Phase B demo criteria all met.  
 - Research scope redirected to commitment-safe / computation-aware MPC for D-EVRP.
 
 ### What is required for a positive verdict

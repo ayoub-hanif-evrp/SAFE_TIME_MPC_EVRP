@@ -1,0 +1,71 @@
+{
+  "result": {
+    "instance_name": "phase_b_commitment_demo",
+    "replay_ok": true,
+    "replay_code": "ok",
+    "final_requests": {
+      "C1": "completed",
+      "C2": "completed",
+      "C3": "completed",
+      "C4": "completed"
+    },
+    "n_decisions": 16,
+    "n_vehicles_that_served": 2,
+    "n_charge_starts": 2,
+    "n_dynamic_releases_after_zero": 2,
+    "accepted_unfulfilled": [],
+    "completed": [
+      "C1",
+      "C2",
+      "C3",
+      "C4"
+    ],
+    "triggers": [
+      "request_release",
+      "arrive",
+      "service_end",
+      "arrive",
+      "charge_end",
+      "arrive",
+      "service_end",
+      "arrive",
+      "charge_end",
+      "arrive",
+      "request_release",
+      "arrive",
+      "service_end",
+      "arrive",
+      "service_end",
+      "arrive"
+    ],
+    "criteria": {
+      "two_vehicles_operate": true,
+      "dynamic_arrivals": true,
+      "charging_occurred": true,
+      "multiple_replans": true,
+      "accepted_commitments_fulfilled": true,
+      "independent_replay_accepts": true
+    },
+    "notes": []
+  },
+  "replay": {
+    "ok": true,
+    "code": "ok",
+    "completed": [
+      "C1",
+      "C2",
+      "C3",
+      "C4"
+    ],
+    "accepted_unfulfilled": [],
+    "announced": [
+      "C1",
+      "C2",
+      "C3",
+      "C4"
+    ]
+  },
+  "all_criteria_met": true,
+  "plant": "safe_time_evrp.environment.simulator.FleetSimulator",
+  "replay_module": "safe_time_evrp.validation.replay.validate_log"
+}

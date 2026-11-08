@@ -294,6 +294,13 @@ def _replay(instance: Instance, log: list[LogRecord], scale: float) -> ReplayRep
             current["busy"] = None
             _check_levels(vehicle, current, "charge")
             continue
+        if kind == "charge_skip":
+            # Already at target SOC — no state change; must be at the station.
+            station_id = record.data.get("station", current["node"])
+            station = instance.node(station_id)
+            if station.kind is not NodeKind.CHARGER or current["node"] != station_id:
+                raise ReplayRejection("impossible_charge", f"charge_skip away from station {station_id}")
+            continue
         raise ReplayRejection("fleet_accounting", f"unrecognized event {kind}")
 
     for current in state.values():

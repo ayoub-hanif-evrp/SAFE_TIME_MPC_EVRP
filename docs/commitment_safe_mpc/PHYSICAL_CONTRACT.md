@@ -1,30 +1,70 @@
-# Physical contract (Phase B target)
+# Physical contract — authoritative D-EVRP plant
 
-Status: **stub — authoritative plant unification is the next milestone.**
+**Status:** Phase B complete for plant selection and a verified closed-loop demo.
 
-## Required semantics
+## Authoritative modules
 
-1. Multi-EV positions, SOC, load, busy/noninterruptible activity  
-2. Time-stamped customer announcements  
-3. Separate announce / accept / assign / dispatch / serve-complete  
-4. Hard time windows  
-5. Travel time and energy  
-6. Charging per declared model  
-7. Noninterruptible physical actions  
-8. Depot return / terminal rules  
-9. One global chronological event queue  
-10. Replan only on observable events  
+| Role | Module |
+|------|--------|
+| Plant | `safe_time_evrp.environment.simulator.FleetSimulator` |
+| Closed-loop driver (baseline MPC) | `safe_time_evrp.controllers.episode.run_episode` |
+| Phase B demo driver | `safe_time_evrp.commitment_safe_mpc.phase_b_demo` |
+| Independent replay | `safe_time_evrp.validation.replay.validate_log` |
+| Facade | `safe_time_evrp.commitment_safe_mpc.plant` |
 
-Controllers must never observe hidden future request identities or release times. Accepted commitments ≠ provisional route assignments.
+`dr_dual` atomic transitions remain an **oracle / dual-control sandbox**, not the fleet plant.
 
-## Current SAFE_TIME plant pieces
+Reference engineering (adapt contracts only; do not merge trees): nearby `MPC_MCTS_Multi_agents_EVRP` (`evrp/simulator.py`, `observation.py`, `research_v3a/*`). The historical name “MPC_EVRP” in older notes maps to that sibling project when present.
 
-- `dr_dual/transition.py` + `WorldState` (atomic actions used by restricted oracle)  
-- `dr_dual/replay.py` (independent first-travel / log checks)  
-- `dr_dual/generic/actions.py` (`global_clock`, fleet ACCEPT, `episode_complete`)  
+## Mandatory semantics (implemented)
 
-## Reference (adapt, do not merge)
+1. Multiple EVs with position, SOC, load, activity status  
+2. Customer requests announced at scheduled release times (`schedule_release`)  
+3. Request lifecycle: hidden → announced → accepted/deferred/rejected → in_service → completed / accepted_unfulfilled  
+4. Hard customer time windows (checked at service start)  
+5. Travel time and energy (nominal linear model; optional disturbance factors)  
+6. Full charging (and partial when `charge_target` set)  
+7. Noninterruptible travel / service / charge; interruptible window wait  
+8. Depot return / terminal accounting in episode end  
+9. One global chronological event heap (`self.time`)  
+10. Replan triggers on observable events (`request_release`, `arrive`, `service_end`, `charge_end`, …)
 
-`MPC_EVRP`: `evrp/simulator.py`, `observation.py`, `mpc.py`, `research_v3a/simulator.py`, `research_v3a/replay.py`
+## Information boundary
 
-Phase B will select the most reliable SAFE_TIME event plant and fill gaps from MPC_EVRP only where demonstrated.
+`Observation` has **no** hidden-future customer field. Controllers see only released/open, accepted, completed, rejected, in_service, deferred, and vehicle views (including locked destinations for noninterruptible actions).
+
+Accepted commitments are distinct from provisional route suffixes on the `Decision`.
+
+## Independent replay checks
+
+`validate_log` recomputes, without trusting the optimizer:
+
+- Global time order  
+- Travel energy/timing and SOC  
+- Load / payload  
+- Service windows and duplicate service  
+- Charging feasibility (including `charge_skip`)  
+- Early access to unreleased requests  
+- Interrupted travel  
+- Accepted vs completed partitions  
+
+## Phase B demonstration
+
+Command:
+
+```bash
+python -m safe_time_evrp.commitment_safe_mpc.phase_b_demo
+```
+
+Artifact: `docs/commitment_safe_mpc/phase_b_demo.json`
+
+Criteria met on the synthetic instance:
+
+- two vehicles serve customers  
+- dynamic releases (C3, C4 at t=50)  
+- charging occurs  
+- multiple replans  
+- all accepted commitments completed  
+- independent replay accepts the log  
+
+The demo controller is a **plant-verification** policy with an explicit feasible charge plan, not the research ALNS baseline (Phase C).
