@@ -25,15 +25,20 @@
         ],
         "n_charge_starts": 0,
         "n_replans": 11,
-        "total_distance": 81.2310562561766,
-        "optimize_seconds": 0.001257800031453371,
-        "mean_decision_seconds": 0.00011434545740485191,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 81.2310562561766,
+        "optimize_seconds": 0.0005899000680074096,
+        "mean_decision_seconds": 5.3627278909764506e-05,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": null,
         "alns_iterations": null,
         "alns_improved_over_constructor": null,
-        "alns_candidates": null
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       },
       "alns": {
         "controller": "alns",
@@ -53,15 +58,20 @@
         ],
         "n_charge_starts": 0,
         "n_replans": 11,
-        "total_distance": 81.2310562561766,
-        "optimize_seconds": 0.009999000234529376,
-        "mean_decision_seconds": 0.0009090000213208524,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 81.2310562561766,
+        "optimize_seconds": 0.0074223000556230545,
+        "mean_decision_seconds": 0.0006747545505111867,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": 0,
         "alns_iterations": 330,
         "alns_improved_over_constructor": false,
-        "alns_candidates": 60
+        "alns_candidates": 60,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       }
     },
     {
@@ -87,15 +97,20 @@
         "rejected": [],
         "n_charge_starts": 0,
         "n_replans": 12,
-        "total_distance": 176.5685424949238,
-        "optimize_seconds": 0.0010752000380307436,
-        "mean_decision_seconds": 8.960000316922863e-05,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 176.5685424949238,
+        "optimize_seconds": 0.00047619990073144436,
+        "mean_decision_seconds": 3.96833250609537e-05,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": null,
         "alns_iterations": null,
         "alns_improved_over_constructor": null,
-        "alns_candidates": null
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       },
       "alns": {
         "controller": "alns",
@@ -114,15 +129,20 @@
         "rejected": [],
         "n_charge_starts": 0,
         "n_replans": 12,
-        "total_distance": 176.5685424949238,
-        "optimize_seconds": 0.024035200127400458,
-        "mean_decision_seconds": 0.0020029333439500383,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 176.5685424949238,
+        "optimize_seconds": 0.014321399736218154,
+        "mean_decision_seconds": 0.0011934499780181795,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": 0,
         "alns_iterations": 360,
         "alns_improved_over_constructor": false,
-        "alns_candidates": 90
+        "alns_candidates": 90,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       }
     },
     {
@@ -148,15 +168,20 @@
         ],
         "n_charge_starts": 0,
         "n_replans": 9,
-        "total_distance": 90.0,
-        "optimize_seconds": 0.0007800000021234155,
-        "mean_decision_seconds": 8.666666690260172e-05,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 90.0,
+        "optimize_seconds": 0.00036800012458115816,
+        "mean_decision_seconds": 4.0888902731239796e-05,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": null,
         "alns_iterations": null,
         "alns_improved_over_constructor": null,
-        "alns_candidates": null
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       },
       "alns": {
         "controller": "alns",
@@ -175,15 +200,20 @@
         ],
         "n_charge_starts": 0,
         "n_replans": 9,
-        "total_distance": 90.0,
-        "optimize_seconds": 0.01012809993699193,
-        "mean_decision_seconds": 0.0011253444374435479,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 90.0,
+        "optimize_seconds": 0.006937699858099222,
+        "mean_decision_seconds": 0.0007708555397888025,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": 0,
         "alns_iterations": 270,
         "alns_improved_over_constructor": false,
-        "alns_candidates": 60
+        "alns_candidates": 60,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       }
     },
     {
@@ -211,15 +241,20 @@
         "rejected": [],
         "n_charge_starts": 1,
         "n_replans": 18,
-        "total_distance": 408.45793616376875,
-        "optimize_seconds": 0.0024159998865798116,
-        "mean_decision_seconds": 0.00013422221592110064,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 408.45793616376875,
+        "optimize_seconds": 0.0007933997549116611,
+        "mean_decision_seconds": 4.4077764161758954e-05,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": null,
         "alns_iterations": null,
         "alns_improved_over_constructor": null,
-        "alns_candidates": null
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       },
       "alns": {
         "controller": "alns",
@@ -240,23 +275,100 @@
         "rejected": [],
         "n_charge_starts": 1,
         "n_replans": 18,
-        "total_distance": 394.3158005400378,
-        "optimize_seconds": 0.07652360002975911,
-        "mean_decision_seconds": 0.004251311112764395,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 394.3158005400378,
+        "optimize_seconds": 0.03424649965018034,
+        "mean_decision_seconds": 0.0019025833138989077,
         "no_feasible_continuation_count": 0,
         "replay_ok": true,
         "alns_improvements": 2,
         "alns_iterations": 540,
         "alns_improved_over_constructor": false,
-        "alns_candidates": 180
+        "alns_candidates": 180,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      }
+    },
+    {
+      "case_id": "B_adversarial_overaccept",
+      "tags": [
+        "adversarial",
+        "commitment_vs_new_accept"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 277.14504817756017,
+        "optimize_seconds": 0.0005770998541265726,
+        "mean_decision_seconds": 5.246362310241569e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 277.14504817756017,
+        "optimize_seconds": 0.015749200247228146,
+        "mean_decision_seconds": 0.0014317454770207405,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 150,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
       }
     }
   ],
   "summary": {
-    "n_cases": 4,
-    "both_replay_ok": 4,
-    "alns_cases_with_search_iterations": 4,
+    "n_cases": 5,
+    "both_replay_ok": 5,
+    "alns_cases_with_search_iterations": 5,
     "alns_cases_with_improvements": 1,
+    "metric_note": "executed_distance is physical depart arcs; planned_distance_sum_diagnostic is not operational.",
     "note": "ALNS need not dominate insertion on every case; search activity is required."
   }
 }

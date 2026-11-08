@@ -1,4 +1,4 @@
-"""Matched comparison: insertion MPC vs reactive ALNS–MPC (B0)."""
+"""Matched comparison: insertion MPC vs reactive ALNS–MPC (B0) [vs B1 when requested]."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ from safe_time_evrp.commitment_safe_mpc.alns_mpc import ReactiveAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.baseline_suite import BaselineCase, build_baseline_suite
 from safe_time_evrp.controllers.episode import run_episode
 from safe_time_evrp.controllers.mpc import EventTriggeredMPC
+from safe_time_evrp.models.instance import Instance
+from safe_time_evrp.models.state import LogRecord
 from safe_time_evrp.validation.replay import validate_log
 
 
@@ -24,7 +26,10 @@ class ControllerEpisodeStats:
     rejected: list[str]
     n_charge_starts: int
     n_replans: int
-    total_distance: float
+    executed_distance: float
+    charged_energy: float
+    executed_charge_time: float
+    planned_distance_sum_diagnostic: float
     optimize_seconds: float
     mean_decision_seconds: float
     no_feasible_continuation_count: int
@@ -33,25 +38,72 @@ class ControllerEpisodeStats:
     alns_iterations: int | None = None
     alns_improved_over_constructor: bool | None = None
     alns_candidates: int | None = None
+    validation_seconds: float | None = None
+    certified_feasible_decisions: int | None = None
 
 
-def _summarize(case: BaselineCase, controller_name: str, controller, result) -> ControllerEpisodeStats:
+def executed_distance_from_log(instance: Instance, log: list[LogRecord]) -> float:
+    """Sum physical depart arcs using the authoritative instance tables."""
+    total = 0.0
+    for record in log:
+        if record.kind != "depart":
+            continue
+        origin = record.data["origin"]
+        destination = record.data["destination"]
+        if "distance" in record.data:
+            total += float(record.data["distance"])
+        else:
+            total += instance.arc(origin, destination).distance
+    return total
+
+
+def charged_energy_and_time(log: list[LogRecord]) -> tuple[float, float]:
+    energy = 0.0
+    duration = 0.0
+    for record in log:
+        if record.kind == "charge_start":
+            duration += float(record.data.get("duration", 0.0))
+            # Energy gained ≈ target - soc when both logged
+            if "target" in record.data and "soc" in record.data:
+                energy += max(0.0, float(record.data["target"]) - float(record.data["soc"]))
+        elif record.kind == "charge_end" and "energy" in record.data:
+            energy += float(record.data["energy"])
+    return energy, duration
+
+
+def _summarize(case: BaselineCase, controller_name: str, result) -> ControllerEpisodeStats:
     report = validate_log(case.instance, result.log)
     charge_starts = sum(1 for r in result.log if r.kind == "charge_start")
-    distances = [d.total_distance for d in result.decisions if d.total_distance]
+    planned_sum = sum(d.total_distance for d in result.decisions if d.total_distance)
     opt_times = [d.optimize_seconds for d in result.decisions]
+    exec_dist = executed_distance_from_log(case.instance, result.log)
+    ch_e, ch_t = charged_energy_and_time(result.log)
     alns_imp = alns_it = alns_cand = None
     alns_beat = None
-    if controller_name == "alns":
+    val_s = None
+    cert_n = None
+    if controller_name in {"alns", "b1"}:
         imp = it = cand = 0
         beat = False
+        vs = 0.0
+        cert = 0
         for d in result.decisions:
-            audit = (d.audit or {}).get("alns") or {}
-            imp += int(audit.get("improvements") or 0)
-            it += int(audit.get("iterations") or 0)
-            cand += int(audit.get("candidates_evaluated") or 0)
-            beat = beat or bool(audit.get("improved_over_constructor"))
+            audit = d.audit or {}
+            alns = audit.get("alns") or {}
+            imp += int(alns.get("improvements") or 0)
+            it += int(alns.get("iterations") or 0)
+            cand += int(alns.get("candidates_evaluated") or 0)
+            beat = beat or bool(alns.get("improved_over_constructor"))
+            vs += float(audit.get("validation_seconds") or 0.0)
+            if (
+                audit.get("validation_status") == "CERTIFIED_FEASIBLE"
+                or alns.get("feasibility_status") == "CERTIFIED_FEASIBLE"
+            ):
+                cert += 1
         alns_imp, alns_it, alns_cand, alns_beat = imp, it, cand, beat
+        if controller_name == "b1":
+            val_s = vs
+            cert_n = cert
     final = result.final_requests
     return ControllerEpisodeStats(
         controller=controller_name,
@@ -64,7 +116,10 @@ def _summarize(case: BaselineCase, controller_name: str, controller, result) -> 
         rejected=[cid for cid, st in final.items() if st == "rejected"],
         n_charge_starts=charge_starts,
         n_replans=len(result.decisions),
-        total_distance=sum(distances),
+        executed_distance=exec_dist,
+        charged_energy=ch_e,
+        executed_charge_time=ch_t,
+        planned_distance_sum_diagnostic=planned_sum,
         optimize_seconds=result.optimize_seconds,
         mean_decision_seconds=mean(opt_times) if opt_times else 0.0,
         no_feasible_continuation_count=result.no_feasible_continuation_count,
@@ -73,10 +128,18 @@ def _summarize(case: BaselineCase, controller_name: str, controller, result) -> 
         alns_iterations=alns_it,
         alns_improved_over_constructor=alns_beat,
         alns_candidates=alns_cand,
+        validation_seconds=val_s,
+        certified_feasible_decisions=cert_n,
     )
 
 
-def run_matched_case(case: BaselineCase, *, alns_iterations: int = 30, alns_time: float = 0.2) -> dict:
+def run_matched_case(
+    case: BaselineCase,
+    *,
+    alns_iterations: int = 30,
+    alns_time: float = 0.2,
+    include_b1: bool = False,
+) -> dict:
     insertion = EventTriggeredMPC(case.instance, case.horizon)
     alns = ReactiveAlnsMpc(
         case.instance,
@@ -103,52 +166,80 @@ def run_matched_case(case: BaselineCase, *, alns_iterations: int = 30, alns_time
         t_max=case.t_max,
         controller=alns,
     )
-    return {
+    out = {
         "case_id": case.case_id,
         "tags": list(case.tags),
-        "insertion": asdict(_summarize(case, "insertion", insertion, ins_res)),
-        "alns": asdict(_summarize(case, "alns", alns, alns_res)),
+        "insertion": asdict(_summarize(case, "insertion", ins_res)),
+        "alns": asdict(_summarize(case, "alns", alns_res)),
     }
+    if include_b1:
+        from safe_time_evrp.commitment_safe_mpc.full_validation_mpc import FullValidationAlnsMpc
+
+        b1 = FullValidationAlnsMpc(
+            case.instance,
+            case.horizon,
+            iterations=alns_iterations,
+            time_limit_seconds=alns_time,
+            seed=7,
+        )
+        b1_res = run_episode(
+            case.instance,
+            case.releases,
+            fleet_size=case.fleet_size,
+            horizon=case.horizon,
+            max_replan_interval=case.max_replan_interval,
+            t_max=case.t_max,
+            controller=b1,
+        )
+        out["b1"] = asdict(_summarize(case, "b1", b1_res))
+    return out
 
 
-def run_baseline_study() -> dict:
-    rows = [run_matched_case(case) for case in build_baseline_suite()]
+def run_baseline_study(*, include_b1: bool = False) -> dict:
+    rows = [run_matched_case(case, include_b1=include_b1) for case in build_baseline_suite()]
     alns_search = sum(1 for r in rows if (r["alns"].get("alns_iterations") or 0) > 0)
     alns_improve = sum(1 for r in rows if r["alns"].get("alns_improvements"))
     replay_ok = sum(1 for r in rows if r["insertion"]["replay_ok"] and r["alns"]["replay_ok"])
-    return {
-        "rows": rows,
-        "summary": {
-            "n_cases": len(rows),
-            "both_replay_ok": replay_ok,
-            "alns_cases_with_search_iterations": alns_search,
-            "alns_cases_with_improvements": alns_improve,
-            "note": "ALNS need not dominate insertion on every case; search activity is required.",
-        },
+    summary = {
+        "n_cases": len(rows),
+        "both_replay_ok": replay_ok,
+        "alns_cases_with_search_iterations": alns_search,
+        "alns_cases_with_improvements": alns_improve,
+        "metric_note": "executed_distance is physical depart arcs; planned_distance_sum_diagnostic is not operational.",
+        "note": "ALNS need not dominate insertion on every case; search activity is required.",
     }
+    if include_b1:
+        summary["b1_replay_ok"] = sum(1 for r in rows if r.get("b1", {}).get("replay_ok"))
+    return {"rows": rows, "summary": summary}
 
 
-def write_baseline_artifacts(out_dir: Path) -> dict:
+def write_baseline_artifacts(out_dir: Path, *, include_b1: bool = False) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
-    payload = run_baseline_study()
-    (out_dir / "baseline_comparison.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    payload = run_baseline_study(include_b1=include_b1)
+    name = "baseline_comparison_b0_b1.json" if include_b1 else "baseline_comparison.json"
+    (out_dir / name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    if include_b1:
+        (out_dir / "baseline_comparison.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
 
 
 if __name__ == "__main__":
-    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"))
+    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"), include_b1=False)
     print(json.dumps(art["summary"], indent=2))
     for row in art["rows"]:
         a, b = row["insertion"], row["alns"]
         print(
             row["case_id"],
-            "ins_completed",
+            "ins_exec",
+            round(a["executed_distance"], 2),
+            "alns_exec",
+            round(b["executed_distance"], 2),
+            "completed",
             len(a["completed"]),
-            "alns_completed",
             len(b["completed"]),
-            "alns_iters",
+            "iters",
             b.get("alns_iterations"),
-            "improvements",
+            "imp",
             b.get("alns_improvements"),
             "replay",
             a["replay_ok"],

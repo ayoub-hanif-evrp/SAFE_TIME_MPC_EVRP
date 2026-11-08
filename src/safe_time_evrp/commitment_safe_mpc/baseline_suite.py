@@ -62,11 +62,33 @@ def _competing_assign() -> Instance:
     )
 
 
+def _adversarial_overaccept() -> Instance:
+    """Tight windows: accepting an extra late customer can break an early commitment."""
+    vehicle = VehicleType(40.0, 10.0, 1.0, 1.0, 1.0, "full")
+    nodes = [
+        Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 300), 0),
+        Node("S", NodeKind.CHARGER, 4, 0, 0, TimeWindow(0, 300), 0),
+        Node("C1", NodeKind.CUSTOMER, 8, 0, 1, TimeWindow(0, 40), 2),
+        Node("C2", NodeKind.CUSTOMER, 20, 0, 1, TimeWindow(0, 55), 2),
+        Node("C3", NodeKind.CUSTOMER, 0, 15, 1, TimeWindow(0, 200), 2),
+    ]
+    return build_euclidean_instance(
+        "baseline_adversarial_overaccept",
+        nodes,
+        vehicle,
+        source_format="synthetic",
+        source_name="baseline-suite",
+        assumptions=("synthetic_euclidean", "extra_accept_may_break_commitment"),
+        metadata={"suite": "baseline_b0", "adversarial": "1"},
+    )
+
+
 def build_baseline_suite() -> list[BaselineCase]:
     easy = make_reference_instance("easy")
     phase_b = make_phase_b_instance()
     tight = _tight_battery()
     compete = _competing_assign()
+    adv = _adversarial_overaccept()
     return [
         BaselineCase(
             "B_phase_b",
@@ -107,5 +129,15 @@ def build_baseline_suite() -> list[BaselineCase]:
             35.0,
             400.0,
             ("competing", "dynamic"),
+        ),
+        BaselineCase(
+            "B_adversarial_overaccept",
+            adv,
+            [("C1", 0.0), ("C2", 0.0), ("C3", 0.0)],
+            1,
+            200.0,
+            40.0,
+            300.0,
+            ("adversarial", "commitment_vs_new_accept"),
         ),
     ]

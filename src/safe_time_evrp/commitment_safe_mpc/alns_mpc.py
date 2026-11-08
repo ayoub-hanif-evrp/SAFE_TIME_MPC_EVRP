@@ -6,6 +6,9 @@ decoded with SAFE ``evaluate_route`` / charge-aware insertion variants.
 Not a robust-safety certificate: validation is under nominal physics only.
 New customers enter ``newly_accepted`` only after a verified continuation covers
 them together with all existing accepted commitments.
+
+Planning deadline checks are **cooperative** (between iterations); they are not a
+hard real-time / process-kill guarantee.
 """
 
 from __future__ import annotations
@@ -40,6 +43,8 @@ class ALNSDiagnostics:
     constructor_distance: float | None = None
     best_distance: float | None = None
     improved_over_constructor: bool = False
+    wall_seconds: float | None = None
+    feasibility_status: str = "UNKNOWN"
     notes: list[str] = field(default_factory=list)
 
 
@@ -65,14 +70,28 @@ def _customers_in_routes(routes: dict[str, list[Visit]]) -> dict[str, list[str]]
     return out
 
 
+def _append_variants(
+    route: list[Visit],
+    customer_id: str,
+    stations: list[str],
+    depot_id: str,
+) -> list[list[Visit]]:
+    """Charge/reload variants that append the next service without reordering prior services."""
+    return _variants(route, len(route), customer_id, stations, depot_id)
+
+
 def _decode_sequences(
     instance: Instance,
     observation: Observation,
     sequences: dict[str, list[str]],
     energy: NominalLinearEnergy,
     diag: ALNSDiagnostics,
-) -> tuple[dict[str, list[Visit]], float, float, list[str]] | None:
-    """Decode fixed customer sequences with charge/reload variants via evaluate_route."""
+) -> tuple[dict[str, list[Visit]], float, float, list[str], dict[str, list[str]]] | None:
+    """Decode ordered customer sequences; service order matches the sequence.
+
+    Charge/reload may be inserted immediately before (or after) the *next* service
+    only — prior customers are never reordered.
+    """
     routes: dict[str, list[Visit]] = {v.id: [] for v in observation.vehicles}
     total_d = 0.0
     total_c = 0.0
@@ -80,22 +99,29 @@ def _decode_sequences(
     stations = instance.charger_ids()
     for vehicle in observation.vehicles:
         seq = sequences.get(vehicle.id, [])
+        # Enforce uniqueness inside a vehicle sequence
+        if len(seq) != len(set(seq)):
+            return None
         route: list[Visit] = []
         for customer_id in seq:
             placed = False
             best = None
             best_key = None
-            for pos in range(len(route) + 1):
-                for candidate in _variants(route, pos, customer_id, stations, instance.depot_id):
-                    diag.route_evaluations += 1
-                    result = evaluate_route(instance, vehicle.anchor, candidate, energy)
-                    if not result.feasible or customer_id not in result.served:
-                        continue
-                    key = (result.distance, result.charge_time, pos)
-                    if best_key is None or key < best_key:
-                        best_key = key
-                        best = result.visits[:-1]
-                        placed = True
+            for candidate in _append_variants(route, customer_id, stations, instance.depot_id):
+                diag.route_evaluations += 1
+                result = evaluate_route(instance, vehicle.anchor, candidate, energy)
+                if not result.feasible or customer_id not in result.served:
+                    continue
+                # Prior services must remain in order
+                prior = [v.node_id for v in route if v.purpose == "service"]
+                got = [v.node_id for v in result.visits if v.purpose == "service"]
+                if got[: len(prior)] != prior or got[len(prior) : len(prior) + 1] != [customer_id]:
+                    continue
+                key = (result.distance, result.charge_time)
+                if best_key is None or key < best_key:
+                    best_key = key
+                    best = result.visits[:-1]
+                    placed = True
             if not placed:
                 return None
             assert best is not None
@@ -108,12 +134,43 @@ def _decode_sequences(
         total_d += final.distance
         total_c += final.charge_time
         served.extend(final.served)
-    return routes, total_d, total_c, served
+    # Global uniqueness
+    if len(served) != len(set(served)):
+        return None
+    canonical = _customers_in_routes(routes)
+    return routes, total_d, total_c, served, canonical
 
 
 def _score(distance: float, charge_time: float, served: int) -> tuple[float, float, int]:
-    # Lexicographic: more served is better (negated), then distance, then charge
     return (-served, distance, charge_time)
+
+
+def _insertion_options(
+    sequences: dict[str, list[str]],
+    customer_id: str,
+    observation: Observation,
+    public: Instance,
+    energy: NominalLinearEnergy,
+    diag: ALNSDiagnostics,
+) -> list[tuple[float, float, str, int]]:
+    """Feasible (distance, charge, vehicle_id, position) sorted by cost."""
+    options: list[tuple[float, float, str, int]] = []
+    for vehicle in observation.vehicles:
+        base = sequences[vehicle.id]
+        if customer_id in base:
+            continue
+        for pos in range(len(base) + 1):
+            trial = {v: list(s) for v, s in sequences.items()}
+            trial[vehicle.id] = base[:pos] + [customer_id] + base[pos:]
+            decoded = _decode_sequences(public, observation, trial, energy, diag)
+            if decoded is None:
+                continue
+            _routes, dist, charge, served, _canon = decoded
+            if customer_id not in served:
+                continue
+            options.append((dist, charge, vehicle.id, pos))
+    options.sort()
+    return options
 
 
 class ReactiveAlnsMpc:
@@ -162,16 +219,18 @@ class ReactiveAlnsMpc:
             diag.best_feasible_seconds = diag.first_feasible_seconds
             diag.constructor_distance = incumbent.distance
             diag.best_distance = incumbent.distance
+            diag.feasibility_status = "CERTIFIED_FEASIBLE"
         else:
-            # Try previous suffix as incumbent if it still covers commitments
             recovered = self._recover_incumbent(observation, public, diag)
             if recovered is not None:
                 incumbent = recovered
                 diag.first_feasible_seconds = perf_counter() - started
                 diag.best_feasible_seconds = diag.first_feasible_seconds
+                diag.feasibility_status = "CERTIFIED_FEASIBLE"
                 diag.notes.append("recovered_previous_suffix")
             else:
                 diag.notes.append("no_feasible_incumbent_after_constructor")
+                diag.feasibility_status = "UNKNOWN"
 
         if incumbent is not None and incumbent.feasible_commitments:
             destroy_w = {name: 1.0 for name in DESTROY_OPS}
@@ -183,7 +242,7 @@ class ReactiveAlnsMpc:
             current = incumbent
             for it in range(self.iterations):
                 if perf_counter() - started >= self.time_limit_seconds:
-                    diag.notes.append("time_limit")
+                    diag.notes.append("time_limit_cooperative")
                     break
                 diag.iterations += 1
                 d_op = self._roulette(DESTROY_OPS, destroy_w)
@@ -204,7 +263,7 @@ class ReactiveAlnsMpc:
                     diag.rejected_moves += 1
                     reward = 0.0
                 else:
-                    routes, dist, charge, served = decoded
+                    routes, dist, charge, served, canonical = decoded
                     if not self._covers_commitments(observation, served):
                         diag.rejected_moves += 1
                         reward = 0.0
@@ -212,9 +271,8 @@ class ReactiveAlnsMpc:
                         newly, rejected, deferred, accepted = self._acceptance_sets(
                             observation, public, served, seed_plan.deferred
                         )
-                        # Only accept news that appear in the verified served set
                         cand = _FleetSolution(
-                            sequences=trial_seq,
+                            sequences=canonical,
                             routes=routes,
                             distance=dist,
                             charge_time=charge,
@@ -227,26 +285,21 @@ class ReactiveAlnsMpc:
                         )
                         cur_score = _score(current.distance, current.charge_time, len(current.served))
                         new_score = _score(cand.distance, cand.charge_time, len(cand.served))
+                        inc_score = _score(incumbent.distance, incumbent.charge_time, len(incumbent.served))
                         if new_score < cur_score:
                             current = cand
                             diag.improvements += 1
                             diag.best_feasible_seconds = perf_counter() - started
                             diag.best_distance = cand.distance
-                            reward = (
-                                5.0
-                                if new_score < _score(incumbent.distance, incumbent.charge_time, len(incumbent.served))
-                                else 2.0
-                            )
-                            if new_score < _score(incumbent.distance, incumbent.charge_time, len(incumbent.served)):
+                            reward = 5.0 if new_score < inc_score else 2.0
+                            if new_score < inc_score:
                                 incumbent = cand
+                        elif self.rng.random() < 0.05:
+                            current = cand
+                            reward = 1.0
                         else:
-                            # Accept equal-or-worse with small probability (SA-like)
-                            if self.rng.random() < 0.05:
-                                current = cand
-                                reward = 1.0
-                            else:
-                                diag.rejected_moves += 1
-                                reward = 0.5
+                            diag.rejected_moves += 1
+                            reward = 0.5
                 destroy_reward[d_op] += reward
                 repair_reward[r_op] += reward
                 if (it + 1) % self.segment_length == 0:
@@ -261,8 +314,9 @@ class ReactiveAlnsMpc:
                 diag.improved_over_constructor = diag.best_distance + 1e-9 < diag.constructor_distance
 
         elapsed = perf_counter() - started
+        diag.wall_seconds = elapsed
         if incumbent is None or not incumbent.feasible_commitments:
-            routes = self._safe_returns(observation)
+            routes = self._idle_preserve_locked(observation, public, diag)
             return Decision(
                 time=observation.time,
                 routes=routes,
@@ -279,8 +333,8 @@ class ReactiveAlnsMpc:
                 optimize_seconds=elapsed,
                 trigger=trigger,
                 locked_destinations={v.id: v.locked_destination for v in observation.vehicles},
-                notes=["alns_no_feasible_continuation", *diag.notes],
-                audit={"alns": diag.__dict__},
+                notes=["alns_no_feasible_continuation", "status=UNKNOWN", *diag.notes],
+                audit={"alns": self._audit_dict(diag)},
             )
 
         self.previous_routes = {vid: list(vs) for vid, vs in incumbent.routes.items()}
@@ -305,23 +359,30 @@ class ReactiveAlnsMpc:
                 f"iterations={diag.iterations}",
                 f"improvements={diag.improvements}",
                 f"improved_over_constructor={diag.improved_over_constructor}",
+                f"status={diag.feasibility_status}",
                 *diag.notes[:4],
             ],
-            audit={
-                "alns": {
-                    "iterations": diag.iterations,
-                    "candidates_evaluated": diag.candidates_evaluated,
-                    "improvements": diag.improvements,
-                    "rejected_moves": diag.rejected_moves,
-                    "route_evaluations": diag.route_evaluations,
-                    "constructor_distance": diag.constructor_distance,
-                    "best_distance": diag.best_distance,
-                    "improved_over_constructor": diag.improved_over_constructor,
-                    "first_feasible_seconds": diag.first_feasible_seconds,
-                    "best_feasible_seconds": diag.best_feasible_seconds,
-                }
-            },
+            audit={"alns": self._audit_dict(diag)},
         )
+
+    @staticmethod
+    def _audit_dict(diag: ALNSDiagnostics) -> dict:
+        return {
+            "iterations": diag.iterations,
+            "candidates_evaluated": diag.candidates_evaluated,
+            "improvements": diag.improvements,
+            "rejected_moves": diag.rejected_moves,
+            "route_evaluations": diag.route_evaluations,
+            "constructor_distance": diag.constructor_distance,
+            "best_distance": diag.best_distance,
+            "improved_over_constructor": diag.improved_over_constructor,
+            "first_feasible_seconds": diag.first_feasible_seconds,
+            "best_feasible_seconds": diag.best_feasible_seconds,
+            "wall_seconds": diag.wall_seconds,
+            "feasibility_status": diag.feasibility_status,
+            "destroy_counts": dict(diag.destroy_counts),
+            "repair_counts": dict(diag.repair_counts),
+        }
 
     def _from_insertion(
         self,
@@ -332,7 +393,6 @@ class ReactiveAlnsMpc:
     ) -> _FleetSolution | None:
         if not plan.feasible_commitments:
             return None
-        # Re-validate: every newly_accepted must appear in served under evaluate_route
         served: list[str] = []
         distance = 0.0
         charge = 0.0
@@ -347,6 +407,8 @@ class ReactiveAlnsMpc:
             served.extend(result.served)
             distance += result.distance
             charge += result.charge_time
+        if len(served) != len(set(served)):
+            return None
         if not self._covers_commitments(observation, served):
             return None
         newly = [c for c in plan.newly_accepted if c in served]
@@ -415,6 +477,7 @@ class ReactiveAlnsMpc:
         served: list[str],
         deferred_seed: list[str],
     ) -> tuple[list[str], list[str], list[str], list[str]]:
+        del public
         served_set = set(served)
         pending_commit = set(observation.accepted) - set(observation.completed) - set(observation.in_service)
         newly = []
@@ -444,7 +507,6 @@ class ReactiveAlnsMpc:
         owned: list[tuple[str, int, str]] = [
             (vid, pos, cid) for vid, seq in sequences.items() for pos, cid in enumerate(seq)
         ]
-        # Never destroy customers already onboard / locked (noninterruptible)
         locked_customers: set[str] = set()
         for vehicle in observation.vehicles:
             locked_customers |= set(vehicle.anchor.onboard)
@@ -470,7 +532,7 @@ class ReactiveAlnsMpc:
                     abs(public.node(row[2]).window.due - anchor.window.due),
                 ),
             )[:k]
-        else:  # worst_distance proxy: later due first (harder) as crude worst
+        else:
             chosen = sorted(removable, key=lambda row: -public.node(row[2]).window.due)[:k]
 
         remove_set = {(vid, cid) for vid, _, cid in chosen}
@@ -488,46 +550,41 @@ class ReactiveAlnsMpc:
         accepted: list[str],
         diag: ALNSDiagnostics,
     ) -> dict[str, list[str]]:
-        # Priority: accepted commitments first
+        """Greedy vs regret-k customer selection among the unassigned pool."""
         pending_commit = set(accepted) - set(observation.completed) - set(observation.in_service)
-        pool = [cid for _, cid in removed]
-        pool = sorted(set(pool), key=lambda cid: (0 if cid in pending_commit else 1, public.node(cid).window.due, cid))
+        pool = sorted(
+            set(cid for _, cid in removed),
+            key=lambda cid: (0 if cid in pending_commit else 1, public.node(cid).window.due, cid),
+        )
         seq = {vid: list(s) for vid, s in sequences.items()}
-        for customer_id in pool:
-            options: list[tuple[float, float, str, int]] = []
-            for vehicle in observation.vehicles:
-                base = seq[vehicle.id]
-                for pos in range(len(base) + 1):
-                    trial = {v: list(s) for v, s in seq.items()}
-                    trial[vehicle.id] = base[:pos] + [customer_id] + base[pos:]
-                    decoded = _decode_sequences(public, observation, trial, self.energy, diag)
-                    if decoded is None:
-                        continue
-                    _routes, dist, charge, served = decoded
-                    if customer_id not in served:
-                        continue
-                    options.append((dist, charge, vehicle.id, pos))
-            if not options:
-                continue
-            options.sort()
-            if op == "greedy":
-                pick = options[0]
-            elif op == "regret2":
-                if len(options) == 1:
-                    pick = options[0]
+        k = 2 if op == "regret2" else 3 if op == "regret3" else 1
+
+        while pool:
+            scored: list[tuple[float, float, str, str, int]] = []
+            # (select_key, best_dist, cid, vid, pos) — select_key maximized for regret, minimized for greedy
+            for customer_id in list(pool):
+                options = _insertion_options(seq, customer_id, observation, public, self.energy, diag)
+                if not options:
+                    continue
+                best_dist = options[0][0]
+                if op == "greedy":
+                    # Prefer lower best insertion cost; commitments already ordered first in pool
+                    scored.append((-best_dist, best_dist, customer_id, options[0][2], options[0][3]))
                 else:
-                    # maximize gap between best and second
-                    regret = sorted(
-                        ((options[min(1, len(options) - 1)][0] - options[0][0], options[0]) for _ in [0]),
-                        reverse=True,
-                    )
-                    # standard: choose customer with max regret — here single customer, pick best
-                    pick = options[0]
-                    del regret
-            else:  # regret3 → still insert at best position (customer already chosen)
-                pick = options[0]
-            _d, _c, vid, pos = pick
-            seq[vid] = seq[vid][:pos] + [customer_id] + seq[vid][pos:]
+                    idx = min(k - 1, len(options) - 1)
+                    kth = options[idx][0]
+                    regret = kth - best_dist if len(options) > 1 else best_dist
+                    scored.append((regret, best_dist, customer_id, options[0][2], options[0][3]))
+            if not scored:
+                break
+            if op == "greedy":
+                # max of (-best_dist) ⇒ min best_dist
+                scored.sort(key=lambda row: (-row[0], row[1], row[2]))
+            else:
+                scored.sort(key=lambda row: (-row[0], row[1], row[2]))
+            _sel, _bd, cid, vid, pos = scored[0]
+            seq[vid] = seq[vid][:pos] + [cid] + seq[vid][pos:]
+            pool = [c for c in pool if c != cid]
         return seq
 
     def _roulette(self, names: tuple[str, ...], weights: dict[str, float]) -> str:
@@ -547,14 +604,26 @@ class ReactiveAlnsMpc:
             score = rewards[name] / counts[name]
             weights[name] = max(0.05, (1.0 - rho) * weights[name] + rho * score)
 
-    def _safe_returns(self, observation: Observation) -> dict[str, list[Visit]]:
-        depot = self._full_instance.depot_id
+    def _idle_preserve_locked(
+        self, observation: Observation, public: Instance, diag: ALNSDiagnostics
+    ) -> dict[str, list[Visit]]:
+        """Do not invent unverified depot returns; only propose proven-reachable returns."""
+        depot = public.depot_id
         out: dict[str, list[Visit]] = {}
         for vehicle in observation.vehicles:
             if vehicle.locked_destination is not None:
                 out[vehicle.id] = []
-            elif vehicle.node != depot:
-                out[vehicle.id] = [Visit(depot, "return")]
+                continue
+            if vehicle.node == depot:
+                out[vehicle.id] = []
+                continue
+            candidate = [Visit(depot, "return")]
+            diag.route_evaluations += 1
+            result = evaluate_route(public, vehicle.anchor, candidate, self.energy)
+            if result.feasible:
+                out[vehicle.id] = result.visits
+                diag.notes.append(f"verified_return:{vehicle.id}")
             else:
                 out[vehicle.id] = []
+                diag.notes.append(f"return_unreachable:{vehicle.id}:{result.reason}")
         return out
