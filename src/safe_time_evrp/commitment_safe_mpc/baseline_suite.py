@@ -83,6 +83,92 @@ def _adversarial_overaccept() -> Instance:
     )
 
 
+def _grid_customers(n: int, *, seed_name: str, span: float = 40.0) -> Instance:
+    """Diverse Euclidean grid with a charger; battery tight enough to force some charging."""
+    vehicle = VehicleType(35.0, 30.0, 1.0, 0.5, 1.0, "full")
+    nodes = [
+        Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 2000), 0),
+        Node("S", NodeKind.CHARGER, span * 0.25, span * 0.25, 0, TimeWindow(0, 2000), 0),
+    ]
+    # Spread customers in a ring/grid mix for geometric diversity.
+    cols = max(3, int(n**0.5) + 1)
+    for i in range(n):
+        x = ((i % cols) + 1) * (span / (cols + 1))
+        y = ((i // cols) + 1) * (span / (cols + 1))
+        if i % 3 == 0:
+            x, y = y, -x * 0.5
+        due = 200 + 40 * i
+        nodes.append(Node(f"C{i + 1}", NodeKind.CUSTOMER, x, y, 1, TimeWindow(0, due), 2))
+    return build_euclidean_instance(
+        seed_name,
+        nodes,
+        vehicle,
+        source_format="synthetic",
+        source_name="baseline-scaled",
+        assumptions=("synthetic_euclidean", "scaled_dynamic_development"),
+        metadata={"suite": "scaled"},
+    )
+
+
+def _scaled_releases(n: int) -> list[tuple[str, float]]:
+    releases: list[tuple[str, float]] = []
+    for i in range(n):
+        # Stagger arrivals: first third at 0, rest dynamically.
+        t = 0.0 if i < max(3, n // 3) else 15.0 * (i - n // 3 + 1)
+        releases.append((f"C{i + 1}", t))
+    return releases
+
+
+def build_scaled_suite() -> list[BaselineCase]:
+    """10–30 customer multi-vehicle dynamic development cases."""
+    cases: list[BaselineCase] = []
+    for n, fleet, tag in ((12, 2, "scaled_12"), (20, 3, "scaled_20"), (28, 3, "scaled_28")):
+        inst = _grid_customers(n, seed_name=f"baseline_{tag}", span=30.0 + n)
+        cases.append(
+            BaselineCase(
+                f"B_{tag}",
+                inst,
+                _scaled_releases(n),
+                fleet,
+                500.0,
+                40.0,
+                900.0,
+                ("scaled", "dynamic", "multi_vehicle", tag),
+            )
+        )
+    # Packing rescue stress (constructor misses a feasible customer)
+    vehicle = VehicleType(500.0, 2.0, 1.0, 1.0, 1.0, "full")
+    nodes = [
+        Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 5000), 0),
+        Node("S", NodeKind.CHARGER, 0, 1, 0, TimeWindow(0, 5000), 0),
+        Node("A", NodeKind.CUSTOMER, 5, 0, 1, TimeWindow(0, 40), 1),
+        Node("B", NodeKind.CUSTOMER, 0, 5, 1, TimeWindow(0, 45), 1),
+        Node("C", NodeKind.CUSTOMER, 50, 0, 2, TimeWindow(0, 55), 1),
+    ]
+    pack = build_euclidean_instance(
+        "baseline_rescue_pack",
+        nodes,
+        vehicle,
+        source_format="synthetic",
+        source_name="baseline-scaled",
+        assumptions=("request_rescue_fixture",),
+        metadata={"suite": "scaled", "adversarial": "1"},
+    )
+    cases.append(
+        BaselineCase(
+            "B_rescue_pack",
+            pack,
+            [("A", 0.0), ("B", 0.0), ("C", 0.0)],
+            2,
+            400.0,
+            50.0,
+            400.0,
+            ("rescue", "constructor_miss"),
+        )
+    )
+    return cases
+
+
 def build_baseline_suite() -> list[BaselineCase]:
     easy = make_reference_instance("easy")
     phase_b = make_phase_b_instance()
