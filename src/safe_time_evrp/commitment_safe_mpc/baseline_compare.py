@@ -82,7 +82,7 @@ def _summarize(case: BaselineCase, controller_name: str, result) -> ControllerEp
     alns_beat = None
     val_s = None
     cert_n = None
-    if controller_name in {"alns", "b1"}:
+    if controller_name in {"alns", "b1", "m1", "m1_no_reuse", "m1_full_eval"}:
         imp = it = cand = 0
         beat = False
         vs = 0.0
@@ -105,7 +105,7 @@ def _summarize(case: BaselineCase, controller_name: str, result) -> ControllerEp
             ):
                 cert += 1
         alns_imp, alns_it, alns_cand, alns_beat = imp, it, cand, beat
-        if controller_name == "b1":
+        if controller_name in {"b1", "m1", "m1_no_reuse", "m1_full_eval"}:
             val_s = vs
             cert_n = cert
     final = result.final_requests
@@ -143,6 +143,7 @@ def run_matched_case(
     alns_iterations: int = 30,
     alns_time: float = 0.2,
     include_b1: bool = False,
+    include_m1: bool = False,
 ) -> dict:
     insertion = EventTriggeredMPC(case.instance, case.horizon)
     alns = ReactiveAlnsMpc(
@@ -196,11 +197,38 @@ def run_matched_case(
             controller=b1,
         )
         out["b1"] = asdict(_summarize(case, "b1", b1_res))
+    if include_m1:
+        from safe_time_evrp.commitment_safe_mpc.m1_mpc import CertificateCarryingAlnsMpc
+        from safe_time_evrp.commitment_safe_mpc.route_resource_profile import EvalMode
+
+        for key, kwargs in (
+            ("m1", {"eval_mode": EvalMode.INCREMENTAL_EVALUATION, "reuse_certificates": True}),
+            ("m1_no_reuse", {"eval_mode": EvalMode.INCREMENTAL_EVALUATION, "reuse_certificates": False}),
+            ("m1_full_eval", {"eval_mode": EvalMode.FULL_EVALUATION, "reuse_certificates": True}),
+        ):
+            ctrl = CertificateCarryingAlnsMpc(
+                case.instance,
+                case.horizon,
+                iterations=alns_iterations,
+                time_limit_seconds=alns_time,
+                seed=7,
+                **kwargs,
+            )
+            res = run_episode(
+                case.instance,
+                case.releases,
+                fleet_size=case.fleet_size,
+                horizon=case.horizon,
+                max_replan_interval=case.max_replan_interval,
+                t_max=case.t_max,
+                controller=ctrl,
+            )
+            out[key] = asdict(_summarize(case, key, res))
     return out
 
 
-def run_baseline_study(*, include_b1: bool = False) -> dict:
-    rows = [run_matched_case(case, include_b1=include_b1) for case in build_baseline_suite()]
+def run_baseline_study(*, include_b1: bool = False, include_m1: bool = False) -> dict:
+    rows = [run_matched_case(case, include_b1=include_b1, include_m1=include_m1) for case in build_baseline_suite()]
     alns_search = sum(1 for r in rows if (r["alns"].get("alns_iterations") or 0) > 0)
     alns_improve = sum(1 for r in rows if r["alns"].get("alns_improvements"))
     replay_ok = sum(1 for r in rows if r["insertion"]["replay_ok"] and r["alns"]["replay_ok"])
@@ -214,13 +242,20 @@ def run_baseline_study(*, include_b1: bool = False) -> dict:
     }
     if include_b1:
         summary["b1_replay_ok"] = sum(1 for r in rows if r.get("b1", {}).get("replay_ok"))
+    if include_m1:
+        summary["m1_replay_ok"] = sum(1 for r in rows if r.get("m1", {}).get("replay_ok"))
     return {"rows": rows, "summary": summary}
 
 
-def write_baseline_artifacts(out_dir: Path, *, include_b1: bool = False) -> dict:
+def write_baseline_artifacts(out_dir: Path, *, include_b1: bool = False, include_m1: bool = False) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
-    payload = run_baseline_study(include_b1=include_b1)
-    name = "baseline_comparison_b0_b1.json" if include_b1 else "baseline_comparison.json"
+    payload = run_baseline_study(include_b1=include_b1, include_m1=include_m1)
+    if include_m1:
+        name = "baseline_comparison_m1_ablation.json"
+    elif include_b1:
+        name = "baseline_comparison_b0_b1.json"
+    else:
+        name = "baseline_comparison.json"
     (out_dir / name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
 
@@ -229,7 +264,10 @@ if __name__ == "__main__":
     import sys
 
     include_b1 = "--b1" in sys.argv
-    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"), include_b1=include_b1)
+    include_m1 = "--m1" in sys.argv
+    if include_m1:
+        include_b1 = True
+    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"), include_b1=include_b1, include_m1=include_m1)
     print(json.dumps(art["summary"], indent=2))
     for row in art["rows"]:
         a, b = row["insertion"], row["alns"]

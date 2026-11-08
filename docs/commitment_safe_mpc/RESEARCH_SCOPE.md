@@ -25,9 +25,9 @@ Previous negative results (toy pruning screens, invalid TEI, degenerate 8×9.75 
 1. **Phase A (done):** green CI; D1–D4 policy-class alignment + diagnostic table.
 2. **Phase B (done):** authoritative `FleetSimulator` + `validate_log`; Phase B demo criteria met.
 3. **Phase C (done):** reactive ALNS–MPC (B0) + public information boundary; matched vs insertion; B0 hardened (regret-k, arcs, executed metrics, safe failure).
-4. **Phase D (done):** full-validation safe MPC (B1) wrapping the same ALNS engine; matched Insertion/B0/B1; revalidation cost profile.
-5. **Phase E (next):** incremental certificate-carrying MPC (M1) — **not started**.
-6. **Phase F:** exact small checks + matched development experiments; scientific verdict.
+4. **Phase D (done):** full-validation safe MPC (B1); request-rescue ALNS; bottleneck profile.
+5. **Phase E (implemented, claim not established):** M1 incremental eval + event certificates + ablations.
+6. **Phase F (in progress):** matched development evidence; larger benchmarks only after honest gates.
 
 ## Companion documents
 

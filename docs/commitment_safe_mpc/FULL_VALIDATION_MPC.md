@@ -18,6 +18,8 @@
 
 Nominal-physics continuation witness under the public observation. **Not** robust recursive feasibility against energy/time disturbances or future demand.
 
+Locked vehicles must propose an **empty** suffix. Finite `station_capacity` is refused (`MODEL_CONTRACT_VIOLATED`) because the plant has no charger queue. Per-decision validation timing uses `validation_seconds_this_decision` (not summed cumulatives). Independent `primitive_route_check` cross-checks small routes; log replay does not prove unused future suffixes.
+
 ## Commands
 
 ```bash

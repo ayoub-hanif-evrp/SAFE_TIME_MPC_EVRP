@@ -30,6 +30,11 @@
 | `B1_CORRECTNESS_RESULTS.md` | Accept-after-validate; adversarial commitment-break refused by validator |
 | `revalidation_cost_profile.json` / `REVALIDATION_COST_PROFILE.md` | Redundant full rechecks measured for future M1 |
 
-## Later phases
+## Request-rescue + M1 (development)
 
-M1 incremental certificates, Desaulniers / EVRP-TW-D (provenance-valid only) — **not started**.
+| Artifact | Result |
+|----------|--------|
+| `ALNS_REQUEST_RESCUE.md` / rescue tests | Constructor `{A,B}` → ALNS recovers `{A,B,C}` |
+| `compute_bottleneck_profile.json` | Inner route eval dominates outer B1 validation |
+| `baseline_comparison_m1_ablation.json` | Insertion/B0/B1/M1 (+2 ablations) matched study |
+| Scientific claim | **Not established** — see `SCIENTIFIC_VERDICT.md` |

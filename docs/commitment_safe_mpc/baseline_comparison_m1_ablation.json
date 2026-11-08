@@ -1,0 +1,1028 @@
+{
+  "rows": [
+    {
+      "case_id": "B_phase_b",
+      "tags": [
+        "phase_b",
+        "charge",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 81.2310562561766,
+        "optimize_seconds": 0.0007078999187797308,
+        "mean_decision_seconds": 6.435453807088462e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 81.2310562561766,
+        "optimize_seconds": 0.03280500019900501,
+        "mean_decision_seconds": 0.0029822727453640914,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 120,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "b1": {
+        "controller": "b1",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 64.98484500494129,
+        "optimize_seconds": 0.03345030010677874,
+        "mean_decision_seconds": 0.003040936373343522,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 120,
+        "validation_seconds": 0.00019340019207447767,
+        "certified_feasible_decisions": 11
+      },
+      "m1": {
+        "controller": "m1",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 64.98484500494129,
+        "optimize_seconds": 0.03386470000259578,
+        "mean_decision_seconds": 0.003078609091145071,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 120,
+        "validation_seconds": 0.00012489978689700365,
+        "certified_feasible_decisions": 11
+      },
+      "m1_no_reuse": {
+        "controller": "m1_no_reuse",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 64.98484500494129,
+        "optimize_seconds": 0.03822959982790053,
+        "mean_decision_seconds": 0.0034754181661727753,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 120,
+        "validation_seconds": 0.0001458000624552369,
+        "certified_feasible_decisions": 11
+      },
+      "m1_full_eval": {
+        "controller": "m1_full_eval",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "executed_distance": 32.492422502470646,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 64.98484500494129,
+        "optimize_seconds": 0.03698969993274659,
+        "mean_decision_seconds": 0.0033626999938860536,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 120,
+        "validation_seconds": 0.00018220022320747375,
+        "certified_feasible_decisions": 11
+      }
+    },
+    {
+      "case_id": "B_easy_dynamic",
+      "tags": [
+        "toy",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 176.5685424949238,
+        "optimize_seconds": 0.0007265001768246293,
+        "mean_decision_seconds": 6.054168140205244e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 176.5685424949238,
+        "optimize_seconds": 0.04584200005047023,
+        "mean_decision_seconds": 0.0038201666708725193,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "b1": {
+        "controller": "b1",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 136.5685424949238,
+        "optimize_seconds": 0.07814449991565198,
+        "mean_decision_seconds": 0.0065120416596376645,
+        "no_feasible_continuation_count": 4,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 150,
+        "validation_seconds": 0.00024729990400373936,
+        "certified_feasible_decisions": 12
+      },
+      "m1": {
+        "controller": "m1",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 136.5685424949238,
+        "optimize_seconds": 0.08276709995698184,
+        "mean_decision_seconds": 0.006897258329748486,
+        "no_feasible_continuation_count": 4,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 150,
+        "validation_seconds": 0.0001849000109359622,
+        "certified_feasible_decisions": 12
+      },
+      "m1_no_reuse": {
+        "controller": "m1_no_reuse",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 136.5685424949238,
+        "optimize_seconds": 0.08267179992981255,
+        "mean_decision_seconds": 0.0068893166608177125,
+        "no_feasible_continuation_count": 4,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 150,
+        "validation_seconds": 0.00017690029926598072,
+        "certified_feasible_decisions": 12
+      },
+      "m1_full_eval": {
+        "controller": "m1_full_eval",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "executed_distance": 68.2842712474619,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 136.5685424949238,
+        "optimize_seconds": 0.08225009986199439,
+        "mean_decision_seconds": 0.006854174988499532,
+        "no_feasible_continuation_count": 4,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 150,
+        "validation_seconds": 0.00017169991042464972,
+        "certified_feasible_decisions": 12
+      }
+    },
+    {
+      "case_id": "B_tight_battery",
+      "tags": [
+        "tight_battery",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 90.0,
+        "optimize_seconds": 0.0004724001046270132,
+        "mean_decision_seconds": 5.248890051411258e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 90.0,
+        "optimize_seconds": 0.03269309981260449,
+        "mean_decision_seconds": 0.003632566645844943,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "b1": {
+        "controller": "b1",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 80.0,
+        "optimize_seconds": 0.03178319986909628,
+        "mean_decision_seconds": 0.003531466652121809,
+        "no_feasible_continuation_count": 1,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": 0.0001830998808145523,
+        "certified_feasible_decisions": 9
+      },
+      "m1": {
+        "controller": "m1",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 80.0,
+        "optimize_seconds": 0.03165080025792122,
+        "mean_decision_seconds": 0.0035167555842134687,
+        "no_feasible_continuation_count": 1,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": 0.00012239976786077023,
+        "certified_feasible_decisions": 9
+      },
+      "m1_no_reuse": {
+        "controller": "m1_no_reuse",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 80.0,
+        "optimize_seconds": 0.02999179996550083,
+        "mean_decision_seconds": 0.003332422218388981,
+        "no_feasible_continuation_count": 1,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": 0.0001004999503493309,
+        "certified_feasible_decisions": 9
+      },
+      "m1_full_eval": {
+        "controller": "m1_full_eval",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "executed_distance": 40.0,
+        "charged_energy": 0.0,
+        "executed_charge_time": 0.0,
+        "planned_distance_sum_diagnostic": 80.0,
+        "optimize_seconds": 0.030505699920468032,
+        "mean_decision_seconds": 0.003389522213385337,
+        "no_feasible_continuation_count": 1,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90,
+        "validation_seconds": 0.0001126001589000225,
+        "certified_feasible_decisions": 9
+      }
+    },
+    {
+      "case_id": "B_competing",
+      "tags": [
+        "competing",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 408.45793616376875,
+        "optimize_seconds": 0.0010903003858402371,
+        "mean_decision_seconds": 6.0572243657790954e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 394.3158005400378,
+        "optimize_seconds": 0.10923899989575148,
+        "mean_decision_seconds": 0.006068833327541749,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "b1": {
+        "controller": "b1",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 285.50461735799473,
+        "optimize_seconds": 0.13645120023284107,
+        "mean_decision_seconds": 0.007580622235157837,
+        "no_feasible_continuation_count": 8,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 240,
+        "validation_seconds": 0.0003607997205108404,
+        "certified_feasible_decisions": 18
+      },
+      "m1": {
+        "controller": "m1",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 285.50461735799473,
+        "optimize_seconds": 0.13934040011372417,
+        "mean_decision_seconds": 0.0077411333396513425,
+        "no_feasible_continuation_count": 8,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 240,
+        "validation_seconds": 0.00028220005333423615,
+        "certified_feasible_decisions": 18
+      },
+      "m1_no_reuse": {
+        "controller": "m1_no_reuse",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 285.50461735799473,
+        "optimize_seconds": 0.13744349987246096,
+        "mean_decision_seconds": 0.007635749992914498,
+        "no_feasible_continuation_count": 8,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 240,
+        "validation_seconds": 0.00029840029310435057,
+        "certified_feasible_decisions": 18
+      },
+      "m1_full_eval": {
+        "controller": "m1_full_eval",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "executed_distance": 104.5685424949238,
+        "charged_energy": 31.071067811865476,
+        "executed_charge_time": 31.071067811865476,
+        "planned_distance_sum_diagnostic": 285.50461735799473,
+        "optimize_seconds": 0.13691760040819645,
+        "mean_decision_seconds": 0.007606533356010914,
+        "no_feasible_continuation_count": 8,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 240,
+        "validation_seconds": 0.00030869978945702314,
+        "certified_feasible_decisions": 18
+      }
+    },
+    {
+      "case_id": "B_adversarial_overaccept",
+      "tags": [
+        "adversarial",
+        "commitment_vs_new_accept"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 277.14504817756017,
+        "optimize_seconds": 0.0005821000086143613,
+        "mean_decision_seconds": 5.2918182601305574e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 277.14504817756017,
+        "optimize_seconds": 0.04766289982944727,
+        "mean_decision_seconds": 0.004332990893586116,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": null,
+        "certified_feasible_decisions": null
+      },
+      "b1": {
+        "controller": "b1",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 226.62087348130012,
+        "optimize_seconds": 0.04272570030298084,
+        "mean_decision_seconds": 0.003884154572998258,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": 0.00015959935262799263,
+        "certified_feasible_decisions": 11
+      },
+      "m1": {
+        "controller": "m1",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 226.62087348130012,
+        "optimize_seconds": 0.042982000042684376,
+        "mean_decision_seconds": 0.003907454549334943,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": 9.759992826730013e-05,
+        "certified_feasible_decisions": 11
+      },
+      "m1_no_reuse": {
+        "controller": "m1_no_reuse",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 226.62087348130012,
+        "optimize_seconds": 0.045141799724660814,
+        "mean_decision_seconds": 0.004103799974969165,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": 9.949994273483753e-05,
+        "certified_feasible_decisions": 11
+      },
+      "m1_full_eval": {
+        "controller": "m1_full_eval",
+        "case_id": "B_adversarial_overaccept",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 1,
+        "n_replans": 11,
+        "executed_distance": 50.524174696260026,
+        "charged_energy": 20.0,
+        "executed_charge_time": 20.0,
+        "planned_distance_sum_diagnostic": 226.62087348130012,
+        "optimize_seconds": 0.04630000004544854,
+        "mean_decision_seconds": 0.004209090913222594,
+        "no_feasible_continuation_count": 2,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180,
+        "validation_seconds": 0.00011580006685107946,
+        "certified_feasible_decisions": 11
+      }
+    }
+  ],
+  "summary": {
+    "n_cases": 5,
+    "both_replay_ok": 5,
+    "alns_cases_with_search_iterations": 5,
+    "alns_cases_with_improvements": 1,
+    "metric_note": "executed_distance is physical depart arcs; planned_distance_sum_diagnostic is not operational.",
+    "note": "ALNS need not dominate insertion on every case; search activity is required.",
+    "b1_replay_ok": 5,
+    "m1_replay_ok": 5
+  }
+}
