@@ -1,24 +1,25 @@
-# Scientific verdict
+# Scientific verdict (post M1 repair)
 
-**Current:** Request-rescue B0, hardened B1, and M1 (incremental eval + event certificates) are implemented with development evidence.  
-**Paper claim:** **NOT YET** — no demonstrated large-scale MPC advantage; incremental resource reuse is largely standard prior art; EVRP-MPC-specific theorem not established beyond exact-prefix agreement tests.
+**Question:** Have we obtained a mathematically sound M1 that actually avoids substantial computation and improves commitment-safe D-EVRP decisions under limited MPC time?
 
-### Final scientific questions
+**Answer (from code + tests + development runs):** **Partially.**
 
-1. **Can ALNS recover constructor-excluded requests?** Yes — packing fixture: constructor `{A,B}`, ALNS/B1/M1 recover `{A,B,C}` (`test_commitment_safe_rescue.py`, `ALNS_REQUEST_RESCUE.md`).  
-2. **Does B1 enforce the declared contract?** Yes for locked empty-suffix, station-capacity refusal, accept-after-validate, no official-reject resurrection; nominal physics only.  
-3. **Runtime fraction in candidate evaluation vs final validation?** Candidate `evaluate_route` dominates; B1 validation fraction is small on toys (`compute_bottleneck_profile.json`).  
-4. **Incremental ≡ full on supported cases?** Required by regression tests for feasibility/served/distance on supported edits; uncertain cases fall back to full.  
-5. **What theorem is established?** Exact-prefix resource agreement sketch + code equivalence tests — not a new complexity theorem.  
-6. **How much compute does M1 save?** See ablation JSON; do not claim large savings from toys alone.  
-7. **Does saving improve service at fixed budget?** Development suite: rescue improves coverage vs constructor; M1 vs B1 service often tied on tiny cases — no automatic quality win.  
-8. **Robust across instances?** Not established beyond development/scaled synthetics.  
-9. **Prior art?** Vidal timing/concatenation; Erdelić fast EVRP-ALNS; Sivagnanam prompt confirmation; EVRP time/SOC labeling — prefix reuse and anytime routing are standard. Distinctive target remains event-aware commitment invalidation under electric constraints, still unproven as novelty.  
-10. **Ready for large EVRP benchmarks / paper?** Infrastructure yes; scientific claim no.
+### Fixed
 
-### Prior art (targeted)
+1. **False certificates:** onboard/locked-destination can no longer mark commitments covered (`test_m1_correctness_repair.py`).  
+2. **Freight-aware prefix theorem:** depot manifest mismatch blocks false reuse.  
+3. **Real incremental hot path:** suffix `propagate_from_state` without full `evaluate_route` on the candidate; counters track visits reused/recomputed and `evaluate_route_calls`.  
+4. **Event advancement:** certificates truncate completed services and update anchors instead of requiring identical timestamps.  
+5. **Profiles:** episode aggregates from every decision audit.
 
-- Vidal et al. 2015, Networks DOI 10.1002/net.21587  
-- Erdelić et al. 2026, CIE DOI 10.1016/j.cie.2025.111758  
-- Sivagnanam et al. 2026, arXiv 2603.07422  
-- EVRP BPC labeling DOI 10.1287/trsc.2024.0725  
+### Not established
+
+- Robust speedup vs B1 on the five tiny cases (often still similar wall time because ALNS search dominates).  
+- Better completed-service at fixed budget on large instances.  
+- Novelty beyond standard resource-prefix techniques; event-aware advancement is the candidate distinction, not yet a published theorem with large-scale evidence.
+
+### Remaining computational blocker
+
+Even with real suffix propagation, ALNS still evaluates many candidates (destroy/repair decode). Gains appear only when prefixes are frequently reusable *and* budgets are tight enough that saved evals convert into extra search. Profile `full_calls_avoided` / `suffix_visits_recomputed` in `compute_bottleneck_profile.json` before claiming a frontier win.
+
+**Paper claim:** still **NOT YET**.
