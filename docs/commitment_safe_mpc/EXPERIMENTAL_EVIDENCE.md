@@ -37,4 +37,5 @@
 | `ALNS_REQUEST_RESCUE.md` / rescue tests | Constructor `{A,B}` → ALNS recovers `{A,B,C}` |
 | `compute_bottleneck_profile.json` | Inner route eval dominates outer B1 validation |
 | `baseline_comparison_m1_ablation.json` | Insertion/B0/B1/M1 (+2 ablations) matched study |
+| `budget_frontier.json` / `COMPUTATION_SERVICE_FRONTIER.md` | Priority-7: 285 runs on 10–50 cust; M1 faster 13/15 vs B1, service win 2/15 |
 | Scientific claim | **Not established** — see `SCIENTIFIC_VERDICT.md` |

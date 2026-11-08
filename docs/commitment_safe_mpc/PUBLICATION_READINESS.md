@@ -18,4 +18,4 @@
 
 ## Gate to larger benchmarks
 
-Green CI; rescue + equivalence tests green; ablation JSON regenerated; scientific questions answered without manufactured wins.
+Green CI; rescue + equivalence + frontier smoke tests green; `budget_frontier.json` regenerated; Priority-7 shows real compute savings without stable service wins — no manufactured claim.

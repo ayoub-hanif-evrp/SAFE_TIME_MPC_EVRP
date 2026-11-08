@@ -1,8 +1,8 @@
-# Scientific verdict (post M1 repair)
+# Scientific verdict (post Priority-7 frontier)
 
 **Question:** Have we obtained a mathematically sound M1 that actually avoids substantial computation and improves commitment-safe D-EVRP decisions under limited MPC time?
 
-**Answer (from code + tests + development runs):** **Partially.**
+**Answer (from code + tests + frontier study):** **Partially — compute yes; decision quality not established.**
 
 ### Fixed
 
@@ -12,14 +12,21 @@
 4. **Event advancement:** certificates truncate completed services and update anchors instead of requiring identical timestamps.  
 5. **Profiles:** episode aggregates from every decision audit.
 
+### Priority-7 frontier evidence (`budget_frontier.json`)
+
+- Suite: 10/20/30/50-customer tight-SOC dynamic cases + rescue pack; budgets 0.05/0.15/0.40 s; seeds 3/7/11; matched Insertion/B0/B1/M1(+ablations); 285 runs.  
+- M1 faster than B1 on **13/15** case×budget cells; thousands–tens of thousands of `full_calls_avoided`.  
+- M1 higher mean completed than B1 on only **2/15** cells; several cells show M1 worse (e.g. frontier_30 @ 0.15 s: −3 completed).  
+- Conclusion: incremental eval is genuine and usually cheap; **saved compute does not reliably buy better service under fixed budgets on this suite.**
+
 ### Not established
 
-- Robust speedup vs B1 on the five tiny cases (often still similar wall time because ALNS search dominates).  
-- Better completed-service at fixed budget on large instances.  
-- Novelty beyond standard resource-prefix techniques; event-aware advancement is the candidate distinction, not yet a published theorem with large-scale evidence.
+- Stable service/reliability dominance vs B1 under fixed compute.  
+- Novelty beyond standard resource-prefix techniques; event-aware advancement remains the candidate distinction without large-scale holdout evidence.  
+- Robust recursive feasibility under disturbance.
 
-### Remaining computational blocker
+### Remaining scientific blocker
 
-Even with real suffix propagation, ALNS still evaluates many candidates (destroy/repair decode). Gains appear only when prefixes are frequently reusable *and* budgets are tight enough that saved evals convert into extra search. Profile `full_calls_avoided` / `suffix_visits_recomputed` in `compute_bottleneck_profile.json` before claiming a frontier win.
+Need either (a) regimes where extra ALNS iterations from saved evals systematically improve accept/charge decisions, or (b) a different mechanism that changes the decision set — not only the inner evaluator. Non-monotonic completed vs budget on frontier_30 also flags seed/search variance; larger multi-seed campaigns required before any paper claim.
 
 **Paper claim:** still **NOT YET**.

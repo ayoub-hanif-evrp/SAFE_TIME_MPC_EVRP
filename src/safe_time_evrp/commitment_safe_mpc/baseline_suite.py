@@ -119,24 +119,7 @@ def _scaled_releases(n: int) -> list[tuple[str, float]]:
     return releases
 
 
-def build_scaled_suite() -> list[BaselineCase]:
-    """10–30 customer multi-vehicle dynamic development cases."""
-    cases: list[BaselineCase] = []
-    for n, fleet, tag in ((12, 2, "scaled_12"), (20, 3, "scaled_20"), (28, 3, "scaled_28")):
-        inst = _grid_customers(n, seed_name=f"baseline_{tag}", span=30.0 + n)
-        cases.append(
-            BaselineCase(
-                f"B_{tag}",
-                inst,
-                _scaled_releases(n),
-                fleet,
-                500.0,
-                40.0,
-                900.0,
-                ("scaled", "dynamic", "multi_vehicle", tag),
-            )
-        )
-    # Packing rescue stress (constructor misses a feasible customer)
+def _rescue_pack_case() -> BaselineCase:
     vehicle = VehicleType(500.0, 2.0, 1.0, 1.0, 1.0, "full")
     nodes = [
         Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 5000), 0),
@@ -154,18 +137,87 @@ def build_scaled_suite() -> list[BaselineCase]:
         assumptions=("request_rescue_fixture",),
         metadata={"suite": "scaled", "adversarial": "1"},
     )
-    cases.append(
-        BaselineCase(
-            "B_rescue_pack",
-            pack,
-            [("A", 0.0), ("B", 0.0), ("C", 0.0)],
-            2,
-            400.0,
-            50.0,
-            400.0,
-            ("rescue", "constructor_miss"),
-        )
+    return BaselineCase(
+        "B_rescue_pack",
+        pack,
+        [("A", 0.0), ("B", 0.0), ("C", 0.0)],
+        2,
+        400.0,
+        50.0,
+        400.0,
+        ("rescue", "constructor_miss"),
     )
+
+
+def build_scaled_suite() -> list[BaselineCase]:
+    """10–30 customer multi-vehicle dynamic development cases."""
+    cases: list[BaselineCase] = []
+    for n, fleet, tag in ((12, 2, "scaled_12"), (20, 3, "scaled_20"), (28, 3, "scaled_28")):
+        inst = _grid_customers(n, seed_name=f"baseline_{tag}", span=30.0 + n)
+        cases.append(
+            BaselineCase(
+                f"B_{tag}",
+                inst,
+                _scaled_releases(n),
+                fleet,
+                500.0,
+                40.0,
+                900.0,
+                ("scaled", "dynamic", "multi_vehicle", tag),
+            )
+        )
+    cases.append(_rescue_pack_case())
+    return cases
+
+
+def build_frontier_suite() -> list[BaselineCase]:
+    """Priority-7 development frontier: 10/20/30/50 customers, multi-EV, dynamic, tight SOC."""
+    cases: list[BaselineCase] = []
+    specs = (
+        (10, 2, "frontier_10", 28.0, 28.0),
+        (20, 3, "frontier_20", 32.0, 30.0),
+        (30, 3, "frontier_30", 34.0, 32.0),
+        (50, 4, "frontier_50", 36.0, 34.0),
+    )
+    for n, fleet, tag, battery, span in specs:
+        vehicle = VehicleType(battery, 40.0, 1.0, 0.5, 1.0, "full")
+        nodes = [
+            Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 3000), 0),
+            Node("S", NodeKind.CHARGER, span * 0.2, span * 0.2, 0, TimeWindow(0, 3000), 0),
+            Node("S2", NodeKind.CHARGER, -span * 0.15, span * 0.3, 0, TimeWindow(0, 3000), 0),
+        ]
+        cols = max(3, int(n**0.5) + 1)
+        for i in range(n):
+            x = ((i % cols) + 1) * (span / (cols + 1))
+            y = ((i // cols) + 1) * (span / (cols + 1))
+            if i % 4 == 0:
+                x, y = -y * 0.7, x * 0.6
+            elif i % 4 == 1:
+                x, y = x * 1.1, -y * 0.5
+            due = 120 + 25 * i
+            nodes.append(Node(f"C{i + 1}", NodeKind.CUSTOMER, x, y, 1, TimeWindow(0, due), 2))
+        inst = build_euclidean_instance(
+            f"baseline_{tag}",
+            nodes,
+            vehicle,
+            source_format="synthetic",
+            source_name="frontier-suite",
+            assumptions=("synthetic_euclidean", "frontier_tight_soc", "dynamic_releases"),
+            metadata={"suite": "frontier"},
+        )
+        cases.append(
+            BaselineCase(
+                f"B_{tag}",
+                inst,
+                _scaled_releases(n),
+                fleet,
+                600.0,
+                35.0,
+                1200.0 if n < 50 else 1600.0,
+                ("frontier", "dynamic", "multi_vehicle", "tight_soc", tag),
+            )
+        )
+    cases.append(_rescue_pack_case())
     return cases
 
 

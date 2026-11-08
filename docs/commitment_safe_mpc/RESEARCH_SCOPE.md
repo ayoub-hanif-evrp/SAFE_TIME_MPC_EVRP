@@ -27,7 +27,7 @@ Previous negative results (toy pruning screens, invalid TEI, degenerate 8×9.75 
 3. **Phase C (done):** reactive ALNS–MPC (B0) + public information boundary; matched vs insertion; B0 hardened (regret-k, arcs, executed metrics, safe failure).
 4. **Phase D (done):** full-validation safe MPC (B1); request-rescue ALNS; bottleneck profile.
 5. **Phase E (implemented, claim not established):** M1 incremental eval + event certificates + ablations.
-6. **Phase F (in progress):** matched development evidence; larger benchmarks only after honest gates.
+6. **Phase F / Priority 7 (development evidence done):** fixed-budget frontier on 10–50 cust (`budget_frontier.json`); M1 compute savings real, service dominance not established; larger holdout only after a new mechanism or clearer regime.
 
 ## Companion documents
 
