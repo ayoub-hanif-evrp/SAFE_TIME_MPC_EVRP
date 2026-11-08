@@ -483,6 +483,12 @@ class ReactiveAlnsMpc:
             "incremental_evals": self.eval_stats.incremental_evals,
             "prefix_reuses": self.eval_stats.prefix_reuses,
             "fallbacks_to_full": self.eval_stats.fallbacks_to_full,
+            "prefix_visits_reused": self.eval_stats.prefix_visits_reused,
+            "suffix_visits_recomputed": self.eval_stats.suffix_visits_recomputed,
+            "full_calls_avoided": self.eval_stats.full_calls_avoided,
+            "evaluate_route_calls": self.eval_stats.evaluate_route_calls,
+            "propagate_seconds": self.eval_stats.propagate_seconds,
+            "profile_build_seconds": self.eval_stats.profile_build_seconds,
         }
         return payload
 

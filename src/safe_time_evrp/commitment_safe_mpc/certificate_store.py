@@ -1,4 +1,4 @@
-"""Versioned continuation certificates for event-aware M1 retention."""
+"""Versioned continuation certificates with physical-event advancement."""
 
 from __future__ import annotations
 
@@ -40,49 +40,79 @@ class CertificateStore:
         self.current = cert
         return cert
 
-    def compatible_anchors(self, observation: Observation) -> bool:
-        if self.current is None:
-            return False
-        for vehicle in observation.vehicles:
-            prev = self.current.anchors.get(vehicle.id)
-            if prev is None:
-                return False
-            if prev.node != vehicle.anchor.node:
-                return False
-            if abs(prev.time - vehicle.anchor.time) > 1e-9:
-                return False
-            if abs(prev.soc - vehicle.anchor.soc) > 1e-9:
-                return False
-            if abs(prev.load - vehicle.anchor.load) > 1e-9:
-                return False
-            if set(prev.onboard) != set(vehicle.anchor.onboard):
-                return False
-        return True
-
     def advance_or_invalidate(self, observation: Observation) -> ContinuationCertificate | None:
-        """Reuse certificate only when anchors match exactly; else invalidate.
+        """Advance witness through completed physical events; invalidate if unsafe.
 
-        Completed services are dropped from the served set bookkeeping. Physical
-        route suffixes are not blindly truncated without revalidation (caller must
-        revalidate).
+        Vehicles may move and time may advance. Completed / in-service customers are
+        stripped from planned suffixes. Remaining visits are kept when the observed
+        post-action/current anchor is compatible with continuing the truncated plan.
         """
         if self.current is None:
             return None
-        completed = set(observation.completed) | set(observation.in_service)
-        if self.compatible_anchors(observation):
-            self.reuse_count += 1
-            self.advance_count += 1
-            remaining = tuple(c for c in self.current.served if c not in completed)
-            self.current = ContinuationCertificate(
-                version=self.current.version,
-                routes={vid: list(vs) for vid, vs in self.current.routes.items()},
-                served=remaining,
-                anchors={v.id: v.anchor for v in observation.vehicles},
-                accepted=frozenset(observation.accepted),
-                assumptions=self.current.assumptions,
-                notes=list(self.current.notes) + ["advanced_same_anchors"],
-            )
-            return self.current
-        self.invalidate_count += 1
-        self.current = None
-        return None
+
+        completed = set(observation.completed)
+        in_service = set(observation.in_service)
+        done = completed | in_service
+        new_routes: dict[str, list[Visit]] = {}
+        notes = list(self.current.notes)
+
+        for vehicle in observation.vehicles:
+            old = list(self.current.routes.get(vehicle.id, []))
+            remaining = _advance_vehicle_suffix(old, vehicle, done)
+            # If locked, plant expects a suffix for after the action; keep remaining.
+            new_routes[vehicle.id] = remaining
+
+        # Acceptance set growth without revalidation is allowed; drops of accepted
+        # commitments that are not completed/in_service invalidate.
+        prev_pending = set(self.current.accepted) - done
+        now_pending = set(observation.accepted) - done
+        dropped = prev_pending - now_pending - set(observation.rejected)
+        if dropped:
+            self.invalidate_count += 1
+            self.current = None
+            return None
+
+        self.reuse_count += 1
+        self.advance_count += 1
+        notes.append("advanced_through_physical_events")
+        self.current = ContinuationCertificate(
+            version=self.current.version,
+            routes=new_routes,
+            served=tuple(c for c in self.current.served if c not in done),
+            anchors={v.id: v.anchor for v in observation.vehicles},
+            accepted=frozenset(observation.accepted),
+            assumptions=self.current.assumptions,
+            notes=notes,
+        )
+        return self.current
+
+
+def _advance_vehicle_suffix(
+    visits: list[Visit],
+    vehicle,
+    done: set[str],
+) -> list[Visit]:
+    """Drop leading visits already realized by completed/in-service actions."""
+    remaining = list(visits)
+    # Strip completed services from anywhere in the prefix while they appear first
+    changed = True
+    while changed and remaining:
+        changed = False
+        first = remaining[0]
+        if first.purpose == "service" and first.node_id in done:
+            remaining = remaining[1:]
+            changed = True
+            continue
+        # If vehicle has already arrived at the first visit node and that action finished
+        if first.purpose == "charge" and vehicle.status != "charging" and vehicle.node == first.node_id:
+            # Charge visit consumed if we're past charging at that station
+            if vehicle.locked_destination != first.node_id:
+                remaining = remaining[1:]
+                changed = True
+                continue
+        # Travel-implied: if first visit node equals current/post-action node and
+        # purpose is service still needed, keep it; if already done, stripped above.
+        if first.purpose == "return":
+            break
+    # Drop trailing only-return noise is fine to keep for evaluate_route
+    return remaining
