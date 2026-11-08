@@ -1,13 +1,15 @@
 # Scientific verdict
 
-**Current:** Phase A + Phase B complete.  
-**Paper claim:** **NOT YET** — no demonstrated incremental-certificate contribution.
+**Current:** Phase A–C complete (infrastructure + B0 ALNS–MPC).  
+**Paper claim:** **NOT YET** — ALNS is a baseline, not the contribution; no incremental-certificate theorem.
 
 ### What is established
 
 - Quarantined invalid TEI; honest restricted oracle labels.  
 - D1–D4 aligned under a declared shared restricted policy class (4/4).  
 - Authoritative `FleetSimulator` plant + independent replay; Phase B demo criteria all met.  
+- Public planning snapshot (no unreleased customer leak).  
+- Reactive ALNS–MPC (B0) with genuine destroy/repair/adapt search; 4/4 matched replay-ok vs insertion.  
 - Research scope redirected to commitment-safe / computation-aware MPC for D-EVRP.
 
 ### What is required for a positive verdict

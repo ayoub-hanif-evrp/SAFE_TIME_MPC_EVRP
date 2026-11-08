@@ -1,0 +1,262 @@
+{
+  "rows": [
+    {
+      "case_id": "B_phase_b",
+      "tags": [
+        "phase_b",
+        "charge",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "total_distance": 81.2310562561766,
+        "optimize_seconds": 0.001257800031453371,
+        "mean_decision_seconds": 0.00011434545740485191,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_phase_b",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2",
+          "C4"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 11,
+        "total_distance": 81.2310562561766,
+        "optimize_seconds": 0.009999000234529376,
+        "mean_decision_seconds": 0.0009090000213208524,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 330,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 60
+      }
+    },
+    {
+      "case_id": "B_easy_dynamic",
+      "tags": [
+        "toy",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "total_distance": 176.5685424949238,
+        "optimize_seconds": 0.0010752000380307436,
+        "mean_decision_seconds": 8.960000316922863e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_easy_dynamic",
+        "completed": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 0,
+        "n_replans": 12,
+        "total_distance": 176.5685424949238,
+        "optimize_seconds": 0.024035200127400458,
+        "mean_decision_seconds": 0.0020029333439500383,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 360,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 90
+      }
+    },
+    {
+      "case_id": "B_tight_battery",
+      "tags": [
+        "tight_battery",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "total_distance": 90.0,
+        "optimize_seconds": 0.0007800000021234155,
+        "mean_decision_seconds": 8.666666690260172e-05,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_tight_battery",
+        "completed": [
+          "C1",
+          "C3"
+        ],
+        "accepted_final": [
+          "C1",
+          "C3"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [
+          "C2"
+        ],
+        "n_charge_starts": 0,
+        "n_replans": 9,
+        "total_distance": 90.0,
+        "optimize_seconds": 0.01012809993699193,
+        "mean_decision_seconds": 0.0011253444374435479,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 0,
+        "alns_iterations": 270,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 60
+      }
+    },
+    {
+      "case_id": "B_competing",
+      "tags": [
+        "competing",
+        "dynamic"
+      ],
+      "insertion": {
+        "controller": "insertion",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "total_distance": 408.45793616376875,
+        "optimize_seconds": 0.0024159998865798116,
+        "mean_decision_seconds": 0.00013422221592110064,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": null,
+        "alns_iterations": null,
+        "alns_improved_over_constructor": null,
+        "alns_candidates": null
+      },
+      "alns": {
+        "controller": "alns",
+        "case_id": "B_competing",
+        "completed": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_final": [
+          "C1",
+          "C2",
+          "C3",
+          "C4"
+        ],
+        "accepted_unfulfilled": [],
+        "rejected": [],
+        "n_charge_starts": 1,
+        "n_replans": 18,
+        "total_distance": 394.3158005400378,
+        "optimize_seconds": 0.07652360002975911,
+        "mean_decision_seconds": 0.004251311112764395,
+        "no_feasible_continuation_count": 0,
+        "replay_ok": true,
+        "alns_improvements": 2,
+        "alns_iterations": 540,
+        "alns_improved_over_constructor": false,
+        "alns_candidates": 180
+      }
+    }
+  ],
+  "summary": {
+    "n_cases": 4,
+    "both_replay_ok": 4,
+    "alns_cases_with_search_iterations": 4,
+    "alns_cases_with_improvements": 1,
+    "note": "ALNS need not dominate insertion on every case; search activity is required."
+  }
+}

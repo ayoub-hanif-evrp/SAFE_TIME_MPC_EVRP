@@ -1,15 +1,16 @@
 # Baseline comparison protocol
 
-Status: **protocol defined; B0/B1/M1 not yet implemented on the unified plant.**
+Status: **B0 implemented** — insertion MPC vs reactive ALNS–MPC on the authoritative plant.
 
 | ID | Controller | Role |
 |----|------------|------|
-| B0 | Reactive ALNS–MPC | Strong operational baseline (from `MPC_EVRP` ALNS via adapter) |
-| B1 | Full-Validation Safe MPC | Same optimizer; every update fully commitment-validated (ablation) |
-| M1 | Incremental Certificate-Carrying MPC | Proposed contribution |
+| Insertion | `EventTriggeredMPC` | Constructive baseline |
+| B0 | `ReactiveAlnsMpc` | Strong reactive ALNS–MPC |
+| B1 | Full-Validation Safe MPC | **Next** — same engine + explicit continuation witness |
+| M1 | Incremental Certificate-Carrying MPC | Proposed contribution (after B1) |
 
 ## Fairness requirements
 
-Same plant, visible information, fleet/battery constraints, acceptance rules, objective, compute budget, matched demand/disturbance realizations.
+Same plant, visible information (public snapshot), fleet/battery constraints, acceptance plant rules, matched demand realizations. Independent replay on all episodes.
 
-Never compare only against myopic or deliberately weak heuristics.
+See `BASELINE_FAIRNESS_AUDIT.md` and `BASELINE_IMPLEMENTATION_RESULTS.md`.
