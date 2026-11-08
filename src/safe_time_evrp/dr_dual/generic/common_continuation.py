@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from safe_time_evrp.dr_dual.actions import Action
 from safe_time_evrp.dr_dual.generic.actions import legal_fleet_actions, release_due_announcements
+from safe_time_evrp.dr_dual.generic.policy_class import (
+    RESTRICTED_CONTINUATION_MAX_BRANCH,
+    RESTRICTED_CONTINUATION_MAX_LEN,
+    RESTRICTED_PLAN_CAP,
+)
 from safe_time_evrp.dr_dual.instrumentation import COUNTERS
 from safe_time_evrp.dr_dual.network import RoadNetwork
 from safe_time_evrp.dr_dual.state import WorldState
@@ -87,7 +92,7 @@ def _candidate_plans(net: RoadNetwork, state: WorldState, *, max_len: int, max_b
                 nxt.append([*pref, a])
         frontier = nxt
         plans.extend(nxt)
-        if len(plans) > 500:
+        if len(plans) > RESTRICTED_PLAN_CAP:
             break
     if [[]] not in plans:
         plans.insert(0, [])
@@ -106,8 +111,8 @@ def select_generic_common_policy(
     state: WorldState,
     *,
     noise: float = 0.0,
-    max_len: int = 6,
-    max_branch: int = 6,
+    max_len: int = RESTRICTED_CONTINUATION_MAX_LEN,
+    max_branch: int = RESTRICTED_CONTINUATION_MAX_BRANCH,
 ) -> tuple[tuple[Action, ...], float] | None:
     COUNTERS.common_policy_evaluations += 1
     rem = state.belief.support_set()

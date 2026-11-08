@@ -97,9 +97,7 @@ def old_bound_undercounts_future_announcement() -> dict:
         "trivial_status": trivial.status.value,
         "trivial_value": trivial.value,
         "legacy_undercounts": (
-            cont["ok"]
-            and legacy.value is not None
-            and legacy.value + 1e-9 < cont["expected_reward"]
+            cont["ok"] and legacy.value is not None and legacy.value + 1e-9 < cont["expected_reward"]
         ),
         "trivial_dominates_continuation": (
             cont["ok"] and trivial.value is not None and trivial.value + 1e-9 >= cont["expected_reward"]

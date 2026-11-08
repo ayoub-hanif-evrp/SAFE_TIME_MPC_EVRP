@@ -11,7 +11,6 @@ from safe_time_evrp.dr_dual.generic.actions import (
     pending_future_releases,
     release_due_announcements,
 )
-from safe_time_evrp.dr_dual.generic.closed_loop import run_closed_loop
 from safe_time_evrp.dr_dual.generic.counterexamples import (
     five_action_multi_customer_continuation,
     old_bound_undercounts_future_announcement,
@@ -26,7 +25,6 @@ from safe_time_evrp.dr_dual.generic.model import initial_generic_state, make_tin
 from safe_time_evrp.dr_dual.replay import replay_plant_log_independent
 from safe_time_evrp.dr_dual.state import PlantLog, WorldState
 from safe_time_evrp.dr_dual.transition import apply_action
-from safe_time_evrp.dual_mpc.belief import DiscreteBelief
 
 
 def test_five_action_continuation_reproduces():
@@ -77,7 +75,7 @@ def test_closed_loop_awaits_future_releases():
     net = make_tiny_generic_instance(n_customers=3)
     # After only serving cust_0 at depot early — episode must not end if releases remain
     state = initial_generic_state(net)
-    assert pending_future_releases(net, state) or True  # cust_1, cust_2 at t>0
+    assert pending_future_releases(net, state)
     # Simulate completed cust_0 still at D before travel — still future releases
     state2 = WorldState(
         state.vehicles,
@@ -158,10 +156,10 @@ def test_hidden_theta_not_in_history():
     net = make_tiny_generic_instance(n_customers=2)
     s = initial_generic_state(net)
     hk = history_key(s)
-    # history encodes belief support set, never a realized hidden theta scalar alone
-    assert isinstance(hk[-2], tuple) or isinstance(hk[-2], frozenset) or True
     flat = str(hk)
     assert "theta_star" not in flat
+    # Belief support is exposed; hidden realized θ is not a dedicated history field
+    assert any(isinstance(x, (tuple, frozenset)) for x in hk)
 
 
 def test_two_charge_reachability_not_false_infeasible():
@@ -170,8 +168,17 @@ def test_two_charge_reachability_not_false_infeasible():
     net = make_tiny_generic_instance(n_customers=3)
     # Cutoff must be UNKNOWN, not a proof
     status = _optimistic_reach(
-        net, "D", "N1", soc=2.0, t0=0.0, info=frozenset({0.0, 1.0}),
-        due=100.0, service=1.0, ready=0.0, max_charges=2, state_limit=1,
+        net,
+        "D",
+        "N1",
+        soc=2.0,
+        t0=0.0,
+        info=frozenset({0.0, 1.0}),
+        due=100.0,
+        service=1.0,
+        ready=0.0,
+        max_charges=2,
+        state_limit=1,
     )
     assert status == "unknown"
 

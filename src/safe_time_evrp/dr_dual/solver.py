@@ -53,14 +53,15 @@ def _is_generic_net(net: RoadNetwork) -> bool:
 
 def _safe_first_actions(net: RoadNetwork, state, *, noise: float) -> tuple[list[Action], int]:
     if _is_generic_net(net):
-        from safe_time_evrp.dr_dual.generic.actions import legal_actions, release_due_announcements
-        from safe_time_evrp.dr_dual.generic.common_continuation import select_generic_common_policy
+        from safe_time_evrp.dr_dual.generic.actions import legal_fleet_actions, release_due_announcements
+        from safe_time_evrp.dr_dual.generic.policy_class import RESTRICTED_CONTINUATION_MAX_LEN
 
         state = release_due_announcements(net, state)
-        vid = state.vehicles[0].vehicle_id
-        candidates = [a for a in legal_actions(net, state, vid) if a.kind.value == "travel"]
+        candidates = [a for a in legal_fleet_actions(net, state) if a.kind.value == "travel"]
+        cont_len = RESTRICTED_CONTINUATION_MAX_LEN
     else:
         candidates = _first_travel_actions_single(net, state)
+        cont_len = 3
     safe: list[Action] = []
     ruled = 0
     for a in candidates:
@@ -74,11 +75,8 @@ def _safe_first_actions(net: RoadNetwork, state, *, noise: float) -> tuple[list[
             if _is_generic_net(net):
                 from safe_time_evrp.dr_dual.generic.common_continuation import select_generic_common_policy
 
-                if select_generic_common_policy(net, tr.state, noise=noise, max_len=3) is None:
-                    # Allow if commitments already completed
-                    if not state.accepted.issubset(tr.state.completed):
-                        # still mark safe if serve is locally available
-                        pass
+                # Soft check only — hard feasibility is decided by executable value
+                select_generic_common_policy(net, tr.state, noise=noise, max_len=cont_len)
             elif not _robust_continuation_ok(net, tr.state):
                 ok = False
                 break
@@ -99,8 +97,9 @@ def _executable_first_action_value(
     COUNTERS.bayes_continuation_calls += 1
     if _is_generic_net(net):
         from safe_time_evrp.dr_dual.generic.exact_dp import _bayes_after_first
+        from safe_time_evrp.dr_dual.generic.policy_class import RESTRICTED_CONTINUATION_MAX_LEN
 
-        return _bayes_after_first(net, state, action, noise=noise, max_len=3)
+        return _bayes_after_first(net, state, action, noise=noise, max_len=RESTRICTED_CONTINUATION_MAX_LEN)
     return _bayes_value_after_first(net, state, action, mode="safe_dual", noise=noise)
 
 

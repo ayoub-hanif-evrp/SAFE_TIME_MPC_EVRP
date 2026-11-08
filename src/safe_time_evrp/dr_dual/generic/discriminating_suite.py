@@ -154,7 +154,9 @@ def make_info_changes_action() -> RoadNetwork:
 
 def build_discriminating_suite() -> list[DiscInstance]:
     return [
-        DiscInstance("D1_multi_accept", make_multi_customer_accept(), ("multi_customer",), ("serve_two", "accept_after_announce")),
+        DiscInstance(
+            "D1_multi_accept", make_multi_customer_accept(), ("multi_customer",), ("serve_two", "accept_after_announce")
+        ),
         DiscInstance("D2_two_ev", make_two_ev_split(), ("two_ev",), ("both_vehicles",)),
         DiscInstance("D3_charge", make_charge_required(), ("charge",), ("necessary_charge",)),
         DiscInstance("D4_info", make_info_changes_action(), ("info",), ("observation_changes_action",)),

@@ -10,6 +10,7 @@ from time import perf_counter
 from safe_time_evrp.dr_dual.generic.discriminating_suite import build_discriminating_suite
 from safe_time_evrp.dr_dual.generic.exact_dp import solve_generic_exact
 from safe_time_evrp.dr_dual.generic.model import initial_generic_state
+from safe_time_evrp.dr_dual.generic.policy_class import RESTRICTED_CONTINUATION_MAX_LEN
 from safe_time_evrp.dr_dual.solver import (
     solve_dr_dual,
     solve_info_gain_heuristic,
@@ -24,7 +25,7 @@ def run_scaling_study(*, trials: int = 3) -> dict:
     for inst in suite:
         net = inst.net
         state = initial_generic_state(net)
-        exact = solve_generic_exact(net, max_len=6)
+        exact = solve_generic_exact(net, max_len=RESTRICTED_CONTINUATION_MAX_LEN)
         modes = {
             "unpruned": (False, "clairvoyant"),
             "clairvoyant": (True, "clairvoyant"),

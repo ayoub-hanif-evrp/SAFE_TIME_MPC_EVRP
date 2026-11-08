@@ -101,8 +101,15 @@ def evaluate_generic_resource_bound_legacy_unsafe(
         for cid in pending:
             cust = net.customer(cid)
             ok = _optimistic_reach(
-                net, vv.node, cust.node, vv.soc, vv.time, info,
-                due=cust.due, service=cust.service_time, ready=cust.ready,
+                net,
+                vv.node,
+                cust.node,
+                vv.soc,
+                vv.time,
+                info,
+                due=cust.due,
+                service=cust.service_time,
+                ready=cust.ready,
             )
             if ok == "reachable":
                 reward += cust.reward
@@ -128,7 +135,7 @@ def evaluate_trivial_safe_reward_bound(
     if action.segment_id is None:
         return BoundResult.unsupported("trivial_bound_needs_travel")
     try:
-        seg = next(s for s in net.segments if s.segment_id == action.segment_id)
+        next(s for s in net.segments if s.segment_id == action.segment_id)
     except StopIteration:
         return BoundResult.unsupported("unknown_segment")
     # Horizon: max customer due (conservative for eligibility of releases)

@@ -7,9 +7,10 @@ from enum import Enum
 
 from safe_time_evrp.dr_dual.actions import Action, ActionKind
 from safe_time_evrp.dr_dual.exact_oracle import ExactOracleResult, OracleStatus
-from safe_time_evrp.dr_dual.generic.actions import legal_actions, release_due_announcements
+from safe_time_evrp.dr_dual.generic.actions import legal_fleet_actions, release_due_announcements
 from safe_time_evrp.dr_dual.generic.common_continuation import realize_plan, select_generic_common_policy
 from safe_time_evrp.dr_dual.generic.model import initial_generic_state, make_tiny_generic_instance
+from safe_time_evrp.dr_dual.generic.policy_class import RESTRICTED_CONTINUATION_MAX_LEN
 from safe_time_evrp.dr_dual.instrumentation import COUNTERS
 from safe_time_evrp.dr_dual.network import RoadNetwork
 from safe_time_evrp.dr_dual.state import WorldState
@@ -37,9 +38,9 @@ class GenericExactResult:
 
 
 def _first_actions(net: RoadNetwork, state: WorldState) -> list[Action]:
+    """First-stage travels for every free vehicle (declared restricted class)."""
     state = release_due_announcements(net, state)
-    vid = state.vehicles[0].vehicle_id
-    return [a for a in legal_actions(net, state, vid) if a.kind is ActionKind.TRAVEL]
+    return [a for a in legal_fleet_actions(net, state) if a.kind is ActionKind.TRAVEL]
 
 
 def _bayes_after_first(
@@ -94,7 +95,7 @@ def solve_generic_exact(
     net: RoadNetwork | None = None,
     *,
     noise: float = 0.0,
-    max_len: int = 6,
+    max_len: int = RESTRICTED_CONTINUATION_MAX_LEN,
     node_limit: int = 50_000,
     claim_full_finite: bool = False,
 ) -> GenericExactResult:
@@ -130,10 +131,7 @@ def solve_generic_exact(
             best = val
             best_key = first.key()
 
-    scope = (
-        f"RESTRICTED: first_travel + common_continuation max_len={max_len} "
-        f"(not general dynamic EVRP optimum)"
-    )
+    scope = f"RESTRICTED: first_travel + common_continuation max_len={max_len} (not general dynamic EVRP optimum)"
     if best_key is None:
         # Truncated search found nothing — NOT a proof of infeasibility of the full model
         return GenericExactResult(

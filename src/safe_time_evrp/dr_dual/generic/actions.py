@@ -84,7 +84,11 @@ def fleet_accept_actions(net: RoadNetwork, state: WorldState) -> list[Action]:
     # Use first free vehicle as the decision agent ID (acceptance is not location-bound)
     vid = free[0].vehicle_id
     for c in net.customers:
-        if c.customer_id in state.announced and c.customer_id not in state.accepted and c.customer_id not in state.rejected:
+        if (
+            c.customer_id in state.announced
+            and c.customer_id not in state.accepted
+            and c.customer_id not in state.rejected
+        ):
             if c.customer_id not in state.completed:
                 out.append(Action(ActionKind.ACCEPT, vid, customer_id=c.customer_id))
                 out.append(Action(ActionKind.REJECT, vid, customer_id=c.customer_id))
@@ -102,11 +106,7 @@ def legal_actions(net: RoadNetwork, state: WorldState, vehicle_id: str) -> list[
         out.append(Action(ActionKind.TRAVEL, vehicle_id, segment_id=seg.segment_id))
     for c in net.customers:
         # SERVE only when physically at the customer node and accepted
-        if (
-            c.node == v.node
-            and c.customer_id in state.accepted
-            and c.customer_id not in state.completed
-        ):
+        if c.node == v.node and c.customer_id in state.accepted and c.customer_id not in state.completed:
             out.append(Action(ActionKind.SERVE, vehicle_id, customer_id=c.customer_id))
     ch = net.charger_at(v.node)
     if ch is not None and v.soc < net.battery - 1e-9:
