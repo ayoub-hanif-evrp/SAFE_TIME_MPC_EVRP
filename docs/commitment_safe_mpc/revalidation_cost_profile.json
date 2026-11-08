@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "case_id": "B_phase_b",
+      "decisions": 11,
+      "routes_revalidated": 42,
+      "charge_checks": 0,
+      "obligations_rechecked": 10,
+      "validation_seconds": 0.00017449993174523115,
+      "previous_witness_still_feasible": 8,
+      "previous_witness_invalidated": 2
+    },
+    {
+      "case_id": "B_easy_dynamic",
+      "decisions": 12,
+      "routes_revalidated": 46,
+      "charge_checks": 0,
+      "obligations_rechecked": 13,
+      "validation_seconds": 0.00020620017312467098,
+      "previous_witness_still_feasible": 8,
+      "previous_witness_invalidated": 3
+    },
+    {
+      "case_id": "B_tight_battery",
+      "decisions": 9,
+      "routes_revalidated": 34,
+      "charge_checks": 0,
+      "obligations_rechecked": 8,
+      "validation_seconds": 0.00014299969188869,
+      "previous_witness_still_feasible": 6,
+      "previous_witness_invalidated": 2
+    },
+    {
+      "case_id": "B_competing",
+      "decisions": 18,
+      "routes_revalidated": 70,
+      "charge_checks": 4,
+      "obligations_rechecked": 28,
+      "validation_seconds": 0.00033879990223795176,
+      "previous_witness_still_feasible": 13,
+      "previous_witness_invalidated": 4
+    },
+    {
+      "case_id": "B_adversarial_overaccept",
+      "decisions": 11,
+      "routes_revalidated": 21,
+      "charge_checks": 10,
+      "obligations_rechecked": 20,
+      "validation_seconds": 0.0001625996083021164,
+      "previous_witness_still_feasible": 8,
+      "previous_witness_invalidated": 2
+    }
+  ]
+}

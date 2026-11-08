@@ -22,6 +22,14 @@
 | Controllers | Insertion vs `ReactiveAlnsMpc` |
 | Hardening | Arc-preserving public snapshot; genuine regret-k; sequence-consistent decode; safe `UNKNOWN` failure; cooperative budget |
 
+## Phase D / B1 (complete)
+
+| Artifact | Result |
+|----------|--------|
+| `baseline_comparison_b0_b1.json` | Insertion/B0/B1: 5/5 replay-ok; executed distances matched; B1 certifies feasible decisions |
+| `B1_CORRECTNESS_RESULTS.md` | Accept-after-validate; adversarial commitment-break refused by validator |
+| `revalidation_cost_profile.json` / `REVALIDATION_COST_PROFILE.md` | Redundant full rechecks measured for future M1 |
+
 ## Later phases
 
-B1 full-validation witnesses, M1 incremental certificates, Desaulniers / EVRP-TW-D (provenance-valid only) — next after B0 green.
+M1 incremental certificates, Desaulniers / EVRP-TW-D (provenance-valid only) — **not started**.

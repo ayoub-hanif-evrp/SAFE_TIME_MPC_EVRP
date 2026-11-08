@@ -218,17 +218,18 @@ def write_baseline_artifacts(out_dir: Path, *, include_b1: bool = False) -> dict
     payload = run_baseline_study(include_b1=include_b1)
     name = "baseline_comparison_b0_b1.json" if include_b1 else "baseline_comparison.json"
     (out_dir / name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    if include_b1:
-        (out_dir / "baseline_comparison.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
 
 
 if __name__ == "__main__":
-    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"), include_b1=False)
+    import sys
+
+    include_b1 = "--b1" in sys.argv
+    art = write_baseline_artifacts(Path("docs/commitment_safe_mpc"), include_b1=include_b1)
     print(json.dumps(art["summary"], indent=2))
     for row in art["rows"]:
         a, b = row["insertion"], row["alns"]
-        print(
+        line = [
             row["case_id"],
             "ins_exec",
             round(a["executed_distance"], 2),
@@ -244,4 +245,21 @@ if __name__ == "__main__":
             "replay",
             a["replay_ok"],
             b["replay_ok"],
-        )
+        ]
+        if include_b1 and "b1" in row:
+            c = row["b1"]
+            line.extend(
+                [
+                    "b1_exec",
+                    round(c["executed_distance"], 2),
+                    "b1_done",
+                    len(c["completed"]),
+                    "cert",
+                    c.get("certified_feasible_decisions"),
+                    "val_s",
+                    round(c.get("validation_seconds") or 0.0, 4),
+                    "b1_replay",
+                    c["replay_ok"],
+                ]
+            )
+        print(*line)
