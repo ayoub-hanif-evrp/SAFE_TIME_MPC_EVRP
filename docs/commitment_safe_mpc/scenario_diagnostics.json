@@ -1,0 +1,134 @@
+{
+  "policy_class": "first_fleet_travel+common_continuation_max_len=6",
+  "rows": [
+    {
+      "instance_id": "D1_multi_accept",
+      "tags": [
+        "multi_customer"
+      ],
+      "expected_traits": [
+        "serve_two",
+        "accept_after_announce"
+      ],
+      "first_action_set": [
+        "travel|v1|D_N0_exploit|None|None|0.0",
+        "travel|v1|D_N0_inform|None|None|0.0"
+      ],
+      "exact_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "exact_value": 14.625,
+      "exact_status": "EXACT_OPTIMUM_RESTRICTED",
+      "unpruned_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "unpruned_value": 14.625,
+      "generic_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "generic_value": 14.625,
+      "agrees_unpruned": true,
+      "agrees_generic": true,
+      "disagreement_cause": "none",
+      "trajectory_ok_theta0": true,
+      "trajectory_ok_theta1": true,
+      "trajectory_notes": [
+        "theta=0.0:ok_cont_reward=14.8000_plan_len=5",
+        "theta=1.0:ok_cont_reward=14.7500_plan_len=5"
+      ],
+      "policy_class": "first_fleet_travel+common_continuation_max_len=6"
+    },
+    {
+      "instance_id": "D2_two_ev",
+      "tags": [
+        "two_ev"
+      ],
+      "expected_traits": [
+        "both_vehicles"
+      ],
+      "first_action_set": [
+        "travel|v1|D_N0_exploit|None|None|0.0",
+        "travel|v1|D_N0_inform|None|None|0.0",
+        "travel|v2|D2_N1|None|None|0.0",
+        "travel|v2|D2_H0|None|None|0.0"
+      ],
+      "exact_first": "travel|v2|D2_N1|None|None|0.0",
+      "exact_value": 17.475,
+      "exact_status": "EXACT_OPTIMUM_RESTRICTED",
+      "unpruned_first": "travel|v2|D2_N1|None|None|0.0",
+      "unpruned_value": 17.475,
+      "generic_first": "travel|v2|D2_N1|None|None|0.0",
+      "generic_value": 17.475,
+      "agrees_unpruned": true,
+      "agrees_generic": true,
+      "disagreement_cause": "none",
+      "trajectory_ok_theta0": true,
+      "trajectory_ok_theta1": true,
+      "trajectory_notes": [
+        "theta=0.0:ok_cont_reward=17.7000_plan_len=5",
+        "theta=1.0:ok_cont_reward=17.6500_plan_len=5"
+      ],
+      "policy_class": "first_fleet_travel+common_continuation_max_len=6"
+    },
+    {
+      "instance_id": "D3_charge",
+      "tags": [
+        "charge"
+      ],
+      "expected_traits": [
+        "necessary_charge"
+      ],
+      "first_action_set": [
+        "travel|v1|D_N0_exploit|None|None|0.0",
+        "travel|v1|D_N0_inform|None|None|0.0"
+      ],
+      "exact_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "exact_value": 9.65,
+      "exact_status": "EXACT_OPTIMUM_RESTRICTED",
+      "unpruned_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "unpruned_value": 9.65,
+      "generic_first": "travel|v1|D_N0_exploit|None|None|0.0",
+      "generic_value": 9.65,
+      "agrees_unpruned": true,
+      "agrees_generic": true,
+      "disagreement_cause": "none",
+      "trajectory_ok_theta0": true,
+      "trajectory_ok_theta1": true,
+      "trajectory_notes": [
+        "theta=0.0:ok_cont_reward=9.9000_plan_len=2",
+        "theta=1.0:ok_cont_reward=9.9000_plan_len=2"
+      ],
+      "policy_class": "first_fleet_travel+common_continuation_max_len=6"
+    },
+    {
+      "instance_id": "D4_info",
+      "tags": [
+        "info"
+      ],
+      "expected_traits": [
+        "observation_changes_action"
+      ],
+      "first_action_set": [
+        "travel|v1|D_N0_exploit|None|None|0.0",
+        "travel|v1|D_N0_inform|None|None|0.0"
+      ],
+      "exact_first": "travel|v1|D_N0_inform|None|None|0.0",
+      "exact_value": 12.525,
+      "exact_status": "EXACT_OPTIMUM_RESTRICTED",
+      "unpruned_first": "travel|v1|D_N0_inform|None|None|0.0",
+      "unpruned_value": 12.525,
+      "generic_first": "travel|v1|D_N0_inform|None|None|0.0",
+      "generic_value": 12.525,
+      "agrees_unpruned": true,
+      "agrees_generic": true,
+      "disagreement_cause": "none",
+      "trajectory_ok_theta0": true,
+      "trajectory_ok_theta1": true,
+      "trajectory_notes": [
+        "theta=0.0:ok_cont_reward=15.6500_plan_len=5",
+        "theta=1.0:ok_cont_reward=9.9000_plan_len=2"
+      ],
+      "policy_class": "first_fleet_travel+common_continuation_max_len=6"
+    }
+  ],
+  "summary": {
+    "n": 4,
+    "unpruned_agree": 4,
+    "generic_agree": 4,
+    "trajectories_ok": 4
+  }
+}

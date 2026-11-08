@@ -1,9 +1,11 @@
 # Scientific status
 
 **Branch:** `research/decision-relevant-dual-mpc`  
-**Cycle:** Urgent correctness recovery (model / oracle / bound alignment)
+**Cycle:** Refocus → commitment-safe / computation-aware MPC for D-EVRP (Phase A complete)
 
-## Verdict: **NOT YET SUBSTANTIVE** — correctness repair in progress; pruning hypothesis remains unsupported
+Primary scope document: `docs/commitment_safe_mpc/RESEARCH_SCOPE.md`
+
+## Verdict: **NOT YET SUBSTANTIVE** for the paper claim — Phase A CI + D1–D4 policy-class alignment done; dual-bound pruning remains unsupported
 
 ### What holds after repair
 
