@@ -49,6 +49,7 @@ def run_episode(
     t_max: float,
     energy: NominalLinearEnergy | None = None,
     max_events: int = 20_000,
+    controller=None,
 ) -> EpisodeResult:
     if max_replan_interval <= 0:
         raise ValueError("replanning interval must be positive")
@@ -56,7 +57,8 @@ def run_episode(
     simulator = FleetSimulator(instance, fleet_size, model)
     for customer_id, release_time in releases:
         simulator.schedule_release(customer_id, release_time)
-    controller = EventTriggeredMPC(instance, horizon, model)
+    if controller is None:
+        controller = EventTriggeredMPC(instance, horizon, model)
     decisions: list[Decision] = []
     optimize_seconds = 0.0
     simulation_seconds = 0.0

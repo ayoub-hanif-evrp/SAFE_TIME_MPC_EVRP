@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from time import perf_counter
 
+from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
 from safe_time_evrp.environment.energy import NominalLinearEnergy
 from safe_time_evrp.environment.physics import evaluate_route
 from safe_time_evrp.models.instance import Instance
@@ -32,6 +33,8 @@ class EventTriggeredMPC:
     ) -> None:
         if horizon <= 0:
             raise ValueError("planning horizon must be positive")
+        self._full_instance = instance
+        # Back-compat attribute: may be a public snapshot during decide()
         self.instance = instance
         self.horizon = horizon
         self.energy = energy or NominalLinearEnergy()
@@ -39,8 +42,10 @@ class EventTriggeredMPC:
 
     def decide(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
+        snapshot = make_public_snapshot(self._full_instance, observation, self.horizon)
+        public = snapshot.instance
         plan = construct_routes(
-            self.instance,
+            public,
             observation,
             horizon=self.horizon,
             energy=self.energy,
@@ -93,27 +98,32 @@ class EventTriggeredMPC:
             notes=notes,
         )
 
+    def _public(self, observation: Observation) -> Instance:
+        return make_public_snapshot(self._full_instance, observation, self.horizon).instance
+
     def _incumbent_covers(self, observation: Observation) -> bool:
         if not self.previous_routes:
             return False
+        public = self._public(observation)
         pending = set(observation.accepted)
         served: set[str] = set()
         for vehicle in observation.vehicles:
             visits = self.previous_routes.get(vehicle.id, [])
-            result = evaluate_route(self.instance, vehicle.anchor, visits, self.energy)
+            result = evaluate_route(public, vehicle.anchor, visits, self.energy)
             if not result.feasible:
                 return False
             served.update(result.served)
         return pending <= served
 
     def _safe_returns(self, observation: Observation) -> dict[str, list[Visit]]:
+        public = self._public(observation)
         routes: dict[str, list[Visit]] = {}
         for vehicle in observation.vehicles:
             if vehicle.status in {"traveling", "serving", "charging"}:
                 routes[vehicle.id] = list((self.previous_routes or {}).get(vehicle.id, []))
                 continue
-            candidate = [Visit(self.instance.depot_id, "return")]
-            result = evaluate_route(self.instance, vehicle.anchor, candidate, self.energy)
+            candidate = [Visit(public.depot_id, "return")]
+            result = evaluate_route(public, vehicle.anchor, candidate, self.energy)
             routes[vehicle.id] = result.visits if result.feasible else []
         return routes
 
@@ -122,12 +132,13 @@ class EventTriggeredMPC:
         observation: Observation,
         routes: dict[str, list[Visit]],
     ) -> tuple[list[str], float, float]:
+        public = self._public(observation)
         served: list[str] = []
         distance = 0.0
         charge_time = 0.0
         for vehicle in observation.vehicles:
             result = evaluate_route(
-                self.instance,
+                public,
                 vehicle.anchor,
                 routes.get(vehicle.id, []),
                 self.energy,
