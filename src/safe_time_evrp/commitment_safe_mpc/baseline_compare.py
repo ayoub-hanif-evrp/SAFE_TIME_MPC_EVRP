@@ -94,7 +94,11 @@ def _summarize(case: BaselineCase, controller_name: str, result) -> ControllerEp
             it += int(alns.get("iterations") or 0)
             cand += int(alns.get("candidates_evaluated") or 0)
             beat = beat or bool(alns.get("improved_over_constructor"))
-            vs += float(audit.get("validation_seconds") or 0.0)
+            vs += float(
+                audit.get("validation_seconds_this_decision")
+                if audit.get("validation_seconds_this_decision") is not None
+                else audit.get("validation_seconds") or 0.0
+            )
             if (
                 audit.get("validation_status") == "CERTIFIED_FEASIBLE"
                 or alns.get("feasibility_status") == "CERTIFIED_FEASIBLE"

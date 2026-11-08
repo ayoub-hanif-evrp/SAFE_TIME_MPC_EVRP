@@ -42,7 +42,11 @@ class ALNSDiagnostics:
     best_feasible_seconds: float | None = None
     constructor_distance: float | None = None
     best_distance: float | None = None
+    constructor_served: int | None = None
+    best_served: int | None = None
     improved_over_constructor: bool = False
+    improved_coverage_over_constructor: bool = False
+    rescued_customers: list[str] = field(default_factory=list)
     wall_seconds: float | None = None
     feasibility_status: str = "UNKNOWN"
     notes: list[str] = field(default_factory=list)
@@ -213,19 +217,44 @@ class ReactiveAlnsMpc:
         self.last_diagnostics = diag
 
         seed_plan = construct_routes(public, observation, horizon=self.horizon, energy=self.energy)
+        deferred_ids = list(seed_plan.deferred)
+        constructor_served_ids: set[str] = set()
         incumbent = self._from_insertion(seed_plan, observation, public, diag)
         if incumbent is not None and incumbent.feasible_commitments:
             diag.first_feasible_seconds = perf_counter() - started
             diag.best_feasible_seconds = diag.first_feasible_seconds
             diag.constructor_distance = incumbent.distance
             diag.best_distance = incumbent.distance
+            diag.constructor_served = len(incumbent.served)
+            diag.best_served = len(incumbent.served)
+            constructor_served_ids = set(incumbent.served)
             diag.feasibility_status = "CERTIFIED_FEASIBLE"
+            # Constructor rejects are provisional only — still rescue-eligible in ALNS.
+            newly, _rej, deferred_ids, accepted = self._acceptance_sets(
+                observation, public, incumbent.served, deferred_ids
+            )
+            incumbent = _FleetSolution(
+                sequences=incumbent.sequences,
+                routes=incumbent.routes,
+                distance=incumbent.distance,
+                charge_time=incumbent.charge_time,
+                served=incumbent.served,
+                newly_accepted=newly,
+                rejected=[],
+                deferred=deferred_ids,
+                accepted=accepted,
+                feasible_commitments=True,
+                notes=list(incumbent.notes) + ["provisional_rejects_deferred_to_alns"],
+            )
         else:
             recovered = self._recover_incumbent(observation, public, diag)
             if recovered is not None:
                 incumbent = recovered
                 diag.first_feasible_seconds = perf_counter() - started
                 diag.best_feasible_seconds = diag.first_feasible_seconds
+                diag.constructor_served = len(recovered.served)
+                diag.best_served = len(recovered.served)
+                constructor_served_ids = set(recovered.served)
                 diag.feasibility_status = "CERTIFIED_FEASIBLE"
                 diag.notes.append("recovered_previous_suffix")
             else:
@@ -253,10 +282,20 @@ class ReactiveAlnsMpc:
                 diag.repair_counts[r_op] = repair_count[r_op]
 
                 trial_seq, removed = self._destroy(current.sequences, observation, public, d_op)
-                if not removed:
+                rescue = self._rescue_pool(observation, public, trial_seq, deferred_ids)
+                if not removed and not rescue:
                     diag.rejected_moves += 1
                     continue
-                trial_seq = self._repair(trial_seq, removed, observation, public, r_op, current.accepted, diag)
+                trial_seq = self._repair(
+                    trial_seq,
+                    removed,
+                    observation,
+                    public,
+                    r_op,
+                    list(observation.accepted),
+                    diag,
+                    rescue_extra=rescue,
+                )
                 decoded = _decode_sequences(public, observation, trial_seq, self.energy, diag)
                 diag.candidates_evaluated += 1
                 if decoded is None:
@@ -268,8 +307,8 @@ class ReactiveAlnsMpc:
                         diag.rejected_moves += 1
                         reward = 0.0
                     else:
-                        newly, rejected, deferred, accepted = self._acceptance_sets(
-                            observation, public, served, seed_plan.deferred
+                        newly, rejected, deferred_ids, accepted = self._acceptance_sets(
+                            observation, public, served, deferred_ids
                         )
                         cand = _FleetSolution(
                             sequences=canonical,
@@ -279,7 +318,7 @@ class ReactiveAlnsMpc:
                             served=served,
                             newly_accepted=newly,
                             rejected=rejected,
-                            deferred=deferred,
+                            deferred=deferred_ids,
                             accepted=accepted,
                             feasible_commitments=True,
                         )
@@ -291,6 +330,7 @@ class ReactiveAlnsMpc:
                             diag.improvements += 1
                             diag.best_feasible_seconds = perf_counter() - started
                             diag.best_distance = cand.distance
+                            diag.best_served = len(cand.served)
                             reward = 5.0 if new_score < inc_score else 2.0
                             if new_score < inc_score:
                                 incumbent = cand
@@ -310,8 +350,28 @@ class ReactiveAlnsMpc:
                     destroy_count = {name: 0 for name in DESTROY_OPS}
                     repair_count = {name: 0 for name in REPAIR_OPS}
 
+            # Finalize official accepts/rejects from the best incumbent only.
+            newly, rejected, deferred_ids, accepted = self._acceptance_sets(
+                observation, public, incumbent.served, deferred_ids
+            )
+            incumbent = _FleetSolution(
+                sequences=incumbent.sequences,
+                routes=incumbent.routes,
+                distance=incumbent.distance,
+                charge_time=incumbent.charge_time,
+                served=incumbent.served,
+                newly_accepted=newly,
+                rejected=rejected,
+                deferred=deferred_ids,
+                accepted=accepted,
+                feasible_commitments=True,
+                notes=list(incumbent.notes),
+            )
             if diag.constructor_distance is not None and diag.best_distance is not None:
                 diag.improved_over_constructor = diag.best_distance + 1e-9 < diag.constructor_distance
+            if diag.constructor_served is not None and diag.best_served is not None:
+                diag.improved_coverage_over_constructor = diag.best_served > diag.constructor_served
+                diag.rescued_customers = sorted(set(incumbent.served) - constructor_served_ids)
 
         elapsed = perf_counter() - started
         diag.wall_seconds = elapsed
@@ -375,7 +435,11 @@ class ReactiveAlnsMpc:
             "route_evaluations": diag.route_evaluations,
             "constructor_distance": diag.constructor_distance,
             "best_distance": diag.best_distance,
+            "constructor_served": diag.constructor_served,
+            "best_served": diag.best_served,
             "improved_over_constructor": diag.improved_over_constructor,
+            "improved_coverage_over_constructor": diag.improved_coverage_over_constructor,
+            "rescued_customers": list(diag.rescued_customers),
             "first_feasible_seconds": diag.first_feasible_seconds,
             "best_feasible_seconds": diag.best_feasible_seconds,
             "wall_seconds": diag.wall_seconds,
@@ -411,8 +475,8 @@ class ReactiveAlnsMpc:
             return None
         if not self._covers_commitments(observation, served):
             return None
+        # Do not treat constructor rejects as final; acceptance is finalized after ALNS.
         newly = [c for c in plan.newly_accepted if c in served]
-        rejected = [c for c in plan.rejected if c not in newly]
         accepted = list(observation.accepted)
         for c in newly:
             if c not in accepted:
@@ -424,7 +488,7 @@ class ReactiveAlnsMpc:
             charge_time=charge,
             served=served,
             newly_accepted=newly,
-            rejected=rejected,
+            rejected=[],
             deferred=list(plan.deferred),
             accepted=accepted,
             feasible_commitments=True,
@@ -477,25 +541,67 @@ class ReactiveAlnsMpc:
         served: list[str],
         deferred_seed: list[str],
     ) -> tuple[list[str], list[str], list[str], list[str]]:
-        del public
+        """Finalize accepts/rejects. Official observation.rejected are never resurrected.
+
+        Response deadline is the customer window due date. Horizon-deferred customers
+        (ready > now+horizon) stay deferred; other unserved open requests are rejected
+        at decision finalize.
+        """
         served_set = set(served)
         pending_commit = set(observation.accepted) - set(observation.completed) - set(observation.in_service)
+        official_rejected = set(observation.rejected)
         newly = []
         rejected = []
+        deferred = []
+        now = observation.time
         for cid in observation.released_open:
+            if cid in official_rejected:
+                continue
             if cid in pending_commit or cid in observation.completed or cid in observation.in_service:
                 continue
-            if cid in deferred_seed:
+            node = public.node(cid)
+            if cid in deferred_seed or node.window.ready > now + self.horizon:
+                deferred.append(cid)
                 continue
             if cid in served_set:
                 newly.append(cid)
             else:
+                # Finalize rejection at decide() — including past response deadline.
                 rejected.append(cid)
         accepted = list(observation.accepted)
         for c in newly:
             if c not in accepted:
                 accepted.append(c)
-        return newly, rejected, list(deferred_seed), accepted
+        return newly, rejected, sorted(set(deferred)), accepted
+
+    def _rescue_pool(
+        self,
+        observation: Observation,
+        public: Instance,
+        sequences: dict[str, list[str]],
+        deferred_ids: list[str],
+    ) -> list[str]:
+        """Announced, unassigned, not officially rejected, not horizon-deferred."""
+        assigned = {cid for seq in sequences.values() for cid in seq}
+        deferred = set(deferred_ids)
+        official_rejected = set(observation.rejected)
+        pending_commit = set(observation.accepted) - set(observation.completed) - set(observation.in_service)
+        pool: list[str] = []
+        now = observation.time
+        for cid in observation.released_open:
+            if cid in assigned or cid in official_rejected or cid in deferred:
+                continue
+            if cid in observation.completed or cid in observation.in_service:
+                continue
+            if cid in pending_commit:
+                # Commitments must already be in sequences if covered; if missing, rescue them.
+                if cid not in assigned:
+                    pool.append(cid)
+                continue
+            if public.node(cid).window.ready > now + self.horizon:
+                continue
+            pool.append(cid)
+        return pool
 
     def _destroy(
         self,
@@ -549,11 +655,14 @@ class ReactiveAlnsMpc:
         op: str,
         accepted: list[str],
         diag: ALNSDiagnostics,
+        *,
+        rescue_extra: list[str] | None = None,
     ) -> dict[str, list[str]]:
-        """Greedy vs regret-k customer selection among the unassigned pool."""
+        """Greedy vs regret-k among removed customers AND rescue-eligible unassigned requests."""
         pending_commit = set(accepted) - set(observation.completed) - set(observation.in_service)
+        pool_ids = set(cid for _, cid in removed) | set(rescue_extra or [])
         pool = sorted(
-            set(cid for _, cid in removed),
+            pool_ids,
             key=lambda cid: (0 if cid in pending_commit else 1, public.node(cid).window.due, cid),
         )
         seq = {vid: list(s) for vid, s in sequences.items()}

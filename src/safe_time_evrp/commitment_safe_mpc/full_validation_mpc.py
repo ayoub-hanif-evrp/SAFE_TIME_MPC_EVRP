@@ -66,10 +66,12 @@ class FullValidationAlnsMpc:
         snapshot = make_public_snapshot(self._full, observation, self.horizon)
         public = snapshot.instance
 
+        this_decision_validation = 0.0
         # Revalidate previous witness against current anchors
         prev_ok = False
         if self._verified_routes is not None:
             prev = validate_continuation(public, observation, self._verified_routes, energy=self.energy)
+            this_decision_validation += prev.seconds
             self.profile.validation_seconds += prev.seconds
             self.profile.routes_revalidated += prev.routes_checked
             self.profile.charge_checks += prev.charge_visits_checked
@@ -94,6 +96,7 @@ class FullValidationAlnsMpc:
             energy=self.energy,
             require_new=frozenset(proposed_new),
         )
+        this_decision_validation += report.seconds
         self.profile.validation_seconds += report.seconds
         self.profile.routes_revalidated += report.routes_checked
         self.profile.charge_checks += report.charge_visits_checked
@@ -115,6 +118,7 @@ class FullValidationAlnsMpc:
             report2 = validate_continuation(
                 public, observation, candidate_routes, energy=self.energy, require_new=frozenset()
             )
+            this_decision_validation += report2.seconds
             self.profile.validation_seconds += report2.seconds
             self.profile.routes_revalidated += report2.routes_checked
             if report2.ok and self._alns._covers_commitments(observation, report2.served):
@@ -125,17 +129,13 @@ class FullValidationAlnsMpc:
                 notes.append("rejected_unvalidated_new_accepts")
                 notes.extend(report.reasons[:3])
             elif prev_ok and self._verified_routes is not None:
-                # Should not happen if we cleared; re-check stored
                 routes = self._verified_routes
                 newly = []
                 status = "CERTIFIED_FEASIBLE"
                 notes.append("reused_revalidated_previous_witness")
             else:
                 newly = []
-                # Preserve locked actions; do not invent returns
-                routes = {v.id: ([] if v.locked_destination is None else []) for v in observation.vehicles}
-                if self._alns.previous_routes and prev_ok:
-                    routes = {vid: list(vs) for vid, vs in (self._verified_routes or {}).items()}
+                routes = {v.id: [] for v in observation.vehicles}
                 status = "UNKNOWN"
                 notes.append("status=UNKNOWN")
                 notes.extend(report.reasons[:4])
@@ -153,7 +153,10 @@ class FullValidationAlnsMpc:
         elapsed = perf_counter() - started
         audit = dict(raw.audit or {})
         audit["validation_status"] = status
-        audit["validation_seconds"] = self.profile.validation_seconds
+        audit["validation_seconds_this_decision"] = this_decision_validation
+        audit["validation_seconds_cumulative"] = self.profile.validation_seconds
+        # Backward-compatible alias = per-decision increment (not cumulative).
+        audit["validation_seconds"] = this_decision_validation
         audit["validation_reasons"] = report.reasons[:6]
         audit["revalidation"] = {
             "routes_revalidated": self.profile.routes_revalidated,

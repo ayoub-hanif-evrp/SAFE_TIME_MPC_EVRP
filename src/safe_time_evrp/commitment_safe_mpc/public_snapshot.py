@@ -14,6 +14,16 @@ from dataclasses import dataclass
 from safe_time_evrp.models.instance import Instance, NodeKind
 from safe_time_evrp.models.state import Observation
 
+# Strict allowlist — future-demand / private keys never pass through.
+_PUBLIC_METADATA_ALLOWLIST = frozenset(
+    {
+        "public_snapshot",
+        "parent",
+        "suite",
+        "adversarial",
+    }
+)
+
 
 @dataclass(frozen=True)
 class PublicPlanningSnapshot:
@@ -46,7 +56,7 @@ def sanitize_instance(full: Instance, visible: frozenset[str]) -> Instance:
             keep_nodes[node_id] = node
     keep_ids = set(keep_nodes)
     arcs = {(o, d): arc for (o, d), arc in full.arcs.items() if o in keep_ids and d in keep_ids}
-    meta = {k: v for k, v in full.metadata.items() if k not in {"private", "hidden_releases"}}
+    meta = {k: v for k, v in full.metadata.items() if k in _PUBLIC_METADATA_ALLOWLIST}
     meta["public_snapshot"] = "1"
     meta["parent"] = full.name
     return Instance(
@@ -82,3 +92,6 @@ def assert_no_future_leak(snapshot: PublicPlanningSnapshot, full: Instance) -> N
     hidden = {n.id for n in full.customers} - snapshot.visible_customer_ids
     if public_customers & hidden:
         raise AssertionError("hidden customers present in public instance")
+    bad = set(snapshot.instance.metadata) - _PUBLIC_METADATA_ALLOWLIST
+    if bad:
+        raise AssertionError(f"public metadata not allowlisted: {sorted(bad)}")

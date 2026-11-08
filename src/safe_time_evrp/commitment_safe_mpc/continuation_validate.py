@@ -1,6 +1,7 @@
-"""Independent nominal continuation validation for commitment-safe MPC (B1).
+"""Independent nominal continuation validation for commitment-safe MPC (B1/M1).
 
 This is **not** a robust recursive-feasibility certificate against energy disturbances.
+Log replay of executed events does not prove unused future suffixes safe.
 """
 
 from __future__ import annotations
@@ -50,6 +51,16 @@ def validate_continuation(
         pending |= set(require_new)
     obligations = len(pending)
 
+    # Plant has no endogenous charger queue; refuse finite shared-capacity contracts.
+    if instance.station_capacity is not None:
+        return ValidationReport(
+            status="MODEL_CONTRACT_VIOLATED",
+            ok=False,
+            reasons=["station_capacity_unsupported_by_plant"],
+            obligations_rechecked=obligations,
+            seconds=perf_counter() - t0,
+        )
+
     visible = (
         set(observation.released_open)
         | set(observation.accepted)
@@ -61,10 +72,11 @@ def validate_continuation(
 
     for vehicle in observation.vehicles:
         visits = list(routes.get(vehicle.id, []))
-        # Locked destination must not be contradicted by an immediate alternate dispatch
-        if vehicle.locked_destination is not None:
-            # Noninterruptible: suffix may be provisional; do not require starting a different first travel
-            pass
+        # Busy / locked actions are non-interruptible: suffix must be empty.
+        if vehicle.locked_destination is not None and visits:
+            reasons.append(
+                f"locked_action_interrupted:{vehicle.id}:locked={vehicle.locked_destination}:suffix={len(visits)}"
+            )
         for v in visits:
             if v.purpose == "charge":
                 charge_visits += 1
@@ -74,6 +86,9 @@ def validate_continuation(
                 if v.node_id not in visible and v.node_id not in pending:
                     reasons.append(f"serves_unreleased_or_unknown:{v.node_id}")
         routes_checked += 1
+        if vehicle.locked_destination is not None:
+            # Locked vehicle: empty suffix is the only admissible provisional plan.
+            continue
         result = evaluate_route(instance, vehicle.anchor, visits, model)
         if not result.feasible:
             reasons.append(f"route_infeasible:{vehicle.id}:{result.reason}")
@@ -86,11 +101,22 @@ def validate_continuation(
         reasons.append("duplicate_service")
 
     missing = pending - set(served_all) - set(observation.in_service)
+    # Commitments currently under a locked in-service / onboard action count as covered.
+    locked_covered = set()
+    for vehicle in observation.vehicles:
+        locked_covered |= set(vehicle.anchor.onboard)
+        if vehicle.locked_destination is not None:
+            locked_covered.add(vehicle.locked_destination)
+    missing -= locked_covered
     if missing:
         reasons.append(f"missing_commitments:{sorted(missing)}")
 
     if reasons:
-        status = "MODEL_CONTRACT_VIOLATED" if any("unreleased" in r for r in reasons) else "UNKNOWN"
+        status = (
+            "MODEL_CONTRACT_VIOLATED"
+            if any("unreleased" in r or "station_capacity" in r or "locked_action" in r for r in reasons)
+            else "UNKNOWN"
+        )
         return ValidationReport(
             status=status,
             ok=False,
