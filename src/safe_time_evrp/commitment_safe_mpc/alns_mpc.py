@@ -19,6 +19,12 @@ from random import Random
 from time import perf_counter
 
 from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
+from safe_time_evrp.commitment_safe_mpc.route_resource_profile import (
+    EvalMode,
+    EvalStats,
+    RouteResourceProfile,
+    evaluate_with_profile,
+)
 from safe_time_evrp.environment.energy import NominalLinearEnergy
 from safe_time_evrp.environment.physics import evaluate_route
 from safe_time_evrp.models.instance import Instance
@@ -90,6 +96,10 @@ def _decode_sequences(
     sequences: dict[str, list[str]],
     energy: NominalLinearEnergy,
     diag: ALNSDiagnostics,
+    *,
+    eval_mode: EvalMode = EvalMode.FULL_EVALUATION,
+    eval_stats: EvalStats | None = None,
+    profiles: dict[str, RouteResourceProfile] | None = None,
 ) -> tuple[dict[str, list[Visit]], float, float, list[str], dict[str, list[str]]] | None:
     """Decode ordered customer sequences; service order matches the sequence.
 
@@ -101,19 +111,31 @@ def _decode_sequences(
     total_c = 0.0
     served: list[str] = []
     stations = instance.charger_ids()
+    stats = eval_stats or EvalStats()
+    store = profiles if profiles is not None else {}
     for vehicle in observation.vehicles:
         seq = sequences.get(vehicle.id, [])
         # Enforce uniqueness inside a vehicle sequence
         if len(seq) != len(set(seq)):
             return None
         route: list[Visit] = []
+        prev_profile = store.get(vehicle.id)
         for customer_id in seq:
             placed = False
             best = None
             best_key = None
+            best_profile = None
             for candidate in _append_variants(route, customer_id, stations, instance.depot_id):
                 diag.route_evaluations += 1
-                result = evaluate_route(instance, vehicle.anchor, candidate, energy)
+                result, prof = evaluate_with_profile(
+                    instance,
+                    vehicle.anchor,
+                    candidate,
+                    energy=energy,
+                    mode=eval_mode,
+                    previous=prev_profile,
+                    stats=stats,
+                )
                 if not result.feasible or customer_id not in result.served:
                     continue
                 # Prior services must remain in order
@@ -125,16 +147,29 @@ def _decode_sequences(
                 if best_key is None or key < best_key:
                     best_key = key
                     best = result.visits[:-1]
+                    best_profile = prof
                     placed = True
             if not placed:
                 return None
             assert best is not None
             route = best
+            if best_profile is not None:
+                prev_profile = best_profile
         diag.route_evaluations += 1
-        final = evaluate_route(instance, vehicle.anchor, route, energy)
+        final, final_prof = evaluate_with_profile(
+            instance,
+            vehicle.anchor,
+            route,
+            energy=energy,
+            mode=eval_mode,
+            previous=prev_profile,
+            stats=stats,
+        )
         if not final.feasible:
             return None
         routes[vehicle.id] = final.visits
+        if final_prof is not None:
+            store[vehicle.id] = final_prof
         total_d += final.distance
         total_c += final.charge_time
         served.extend(final.served)
@@ -192,6 +227,7 @@ class ReactiveAlnsMpc:
         segment_length: int = 8,
         time_limit_seconds: float = 0.25,
         seed: int = 0,
+        eval_mode: EvalMode | str = EvalMode.FULL_EVALUATION,
     ) -> None:
         if horizon <= 0:
             raise ValueError("planning horizon must be positive")
@@ -206,6 +242,9 @@ class ReactiveAlnsMpc:
         self.segment_length = segment_length
         self.time_limit_seconds = time_limit_seconds
         self.rng = Random(seed)
+        self.eval_mode = EvalMode(eval_mode)
+        self.eval_stats = EvalStats()
+        self._route_profiles: dict[str, RouteResourceProfile] = {}
         self.previous_routes: dict[str, list[Visit]] | None = None
         self.last_diagnostics = ALNSDiagnostics()
 
@@ -215,6 +254,8 @@ class ReactiveAlnsMpc:
         public = snapshot.instance
         diag = ALNSDiagnostics()
         self.last_diagnostics = diag
+        self.eval_stats = EvalStats()
+        self._route_profiles = {}
 
         seed_plan = construct_routes(public, observation, horizon=self.horizon, energy=self.energy)
         deferred_ids = list(seed_plan.deferred)
@@ -296,7 +337,16 @@ class ReactiveAlnsMpc:
                     diag,
                     rescue_extra=rescue,
                 )
-                decoded = _decode_sequences(public, observation, trial_seq, self.energy, diag)
+                decoded = _decode_sequences(
+                    public,
+                    observation,
+                    trial_seq,
+                    self.energy,
+                    diag,
+                    eval_mode=self.eval_mode,
+                    eval_stats=self.eval_stats,
+                    profiles=self._route_profiles,
+                )
                 diag.candidates_evaluated += 1
                 if decoded is None:
                     diag.rejected_moves += 1
@@ -425,8 +475,19 @@ class ReactiveAlnsMpc:
             audit={"alns": self._audit_dict(diag)},
         )
 
+    def _audit_dict(self, diag: ALNSDiagnostics) -> dict:
+        payload = ReactiveAlnsMpc._audit_dict_static(diag)
+        payload["eval_mode"] = self.eval_mode.value
+        payload["eval_stats"] = {
+            "full_evals": self.eval_stats.full_evals,
+            "incremental_evals": self.eval_stats.incremental_evals,
+            "prefix_reuses": self.eval_stats.prefix_reuses,
+            "fallbacks_to_full": self.eval_stats.fallbacks_to_full,
+        }
+        return payload
+
     @staticmethod
-    def _audit_dict(diag: ALNSDiagnostics) -> dict:
+    def _audit_dict_static(diag: ALNSDiagnostics) -> dict:
         return {
             "iterations": diag.iterations,
             "candidates_evaluated": diag.candidates_evaluated,
