@@ -214,13 +214,10 @@ def run_frontier_study(
                     if name == "insertion" and budget != budgets[0]:
                         continue
                     print(
-                        f"[frontier {done + 1}/{planned}] {case.case_id} {name} "
-                        f"budget={budget} seed={seed}",
+                        f"[frontier {done + 1}/{planned}] {case.case_id} {name} budget={budget} seed={seed}",
                         flush=True,
                     )
-                    rows.append(
-                        run_one(case, name, budget=budget, seed=seed, iterations=iterations)
-                    )
+                    rows.append(run_one(case, name, budget=budget, seed=seed, iterations=iterations))
                     done += 1
 
     # Aggregate means per (case, controller, budget)

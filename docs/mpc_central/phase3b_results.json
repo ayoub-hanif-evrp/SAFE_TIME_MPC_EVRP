@@ -1,0 +1,337 @@
+{
+  "verdict": "GO_PROTOTYPE",
+  "reason": "Adaptive decision-focused allocation strictly reduces first-action regret vs uniform on at least one matched budget cell and never worsens it on these tiny plant forks. Not yet a large-scale or prior-art-differentiated paper claim.",
+  "reference_label": "exhaustive_first_action_ranking_under_causal_reactive_recourse",
+  "n_comparisons": 9,
+  "adaptive_better": 2,
+  "adaptive_worse": 0,
+  "ties": 7,
+  "truth_tables": {
+    "case_a_predictive_charging": {
+      "serve_near": 100.0,
+      "charge_first": 165.0
+    },
+    "case_b_irreversible_admission": {
+      "accept_now": 100.0,
+      "reject_now": 160.0
+    },
+    "case_c_commitment_plus_uncertain": {
+      "accept_now": -1000000000.0,
+      "reject_now": 170.0,
+      "serve_must": 170.0
+    }
+  },
+  "rows": [
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "reactive",
+      "budget": 2,
+      "action": "serve_near",
+      "true_value": 100.0,
+      "regret": 65.0,
+      "best_action": "charge_first",
+      "best_value": 165.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "action": "serve_near",
+      "true_value": 100.0,
+      "regret": 65.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 100.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "action": "charge_first",
+      "true_value": 165.0,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 165.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "uniform_rollout",
+      "budget": 6,
+      "action": "charge_first",
+      "true_value": 165.0,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 165.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "adaptive_mpc",
+      "budget": 6,
+      "action": "charge_first",
+      "true_value": 165.0,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 165.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "uniform_rollout",
+      "budget": 9,
+      "action": "charge_first",
+      "true_value": 165.0,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 165.0
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "policy": "adaptive_mpc",
+      "budget": 9,
+      "action": "charge_first",
+      "true_value": 165.0,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "best_value": 165.0,
+      "estimated_value": 165.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "reactive",
+      "budget": 2,
+      "action": "accept_now",
+      "true_value": 100.0,
+      "regret": 60.0,
+      "best_action": "reject_now",
+      "best_value": 160.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "action": "accept_now",
+      "true_value": 100.0,
+      "regret": 60.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 100.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "action": "reject_now",
+      "true_value": 160.0,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 160.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "uniform_rollout",
+      "budget": 6,
+      "action": "reject_now",
+      "true_value": 160.0,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 160.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "adaptive_mpc",
+      "budget": 6,
+      "action": "reject_now",
+      "true_value": 160.0,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 160.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "uniform_rollout",
+      "budget": 9,
+      "action": "reject_now",
+      "true_value": 160.0,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 160.0
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "policy": "adaptive_mpc",
+      "budget": 9,
+      "action": "reject_now",
+      "true_value": 160.0,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "best_value": 160.0,
+      "estimated_value": 160.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "reactive",
+      "budget": 3,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 100.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 100.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "uniform_rollout",
+      "budget": 6,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 170.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "adaptive_mpc",
+      "budget": 6,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 170.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "uniform_rollout",
+      "budget": 9,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 170.0
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "adaptive_mpc",
+      "budget": 9,
+      "action": "serve_must",
+      "true_value": 170.0,
+      "regret": 0.0,
+      "best_action": "serve_must",
+      "best_value": 170.0,
+      "estimated_value": 170.0
+    }
+  ],
+  "comparisons": [
+    {
+      "case_id": "case_a_predictive_charging",
+      "budget": 3,
+      "uniform_action": "serve_near",
+      "adaptive_action": "charge_first",
+      "uniform_regret": 65.0,
+      "adaptive_regret": 0.0,
+      "winner": "adaptive_mpc"
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "budget": 6,
+      "uniform_action": "charge_first",
+      "adaptive_action": "charge_first",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_a_predictive_charging",
+      "budget": 9,
+      "uniform_action": "charge_first",
+      "adaptive_action": "charge_first",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "budget": 3,
+      "uniform_action": "accept_now",
+      "adaptive_action": "reject_now",
+      "uniform_regret": 60.0,
+      "adaptive_regret": 0.0,
+      "winner": "adaptive_mpc"
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "budget": 6,
+      "uniform_action": "reject_now",
+      "adaptive_action": "reject_now",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "budget": 9,
+      "uniform_action": "reject_now",
+      "adaptive_action": "reject_now",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "budget": 3,
+      "uniform_action": "serve_must",
+      "adaptive_action": "serve_must",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "budget": 6,
+      "uniform_action": "serve_must",
+      "adaptive_action": "serve_must",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    },
+    {
+      "case_id": "case_c_commitment_plus_uncertain",
+      "budget": 9,
+      "uniform_action": "serve_must",
+      "adaptive_action": "serve_must",
+      "uniform_regret": 0.0,
+      "adaptive_regret": 0.0,
+      "winner": "tie"
+    }
+  ]
+}

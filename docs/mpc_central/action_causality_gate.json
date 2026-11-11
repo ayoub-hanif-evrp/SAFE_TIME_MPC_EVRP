@@ -2,15 +2,15 @@
   "verdict": "REVISE",
   "reason": "Prediction changes first actions vs reactive, but commitment-safe MPC coincides with standard stochastic rollout \u2014 no Phase-3 novelty vs rollout.",
   "n_forks": 2,
-  "n_prediction_diverges_from_reactive": 2,
+  "n_prediction_diverges_from_reactive": 1,
   "n_mpc_differs_from_rollout": 0,
   "rows": [
     {
       "case_id": "case_a_predictive_charging",
       "reactive": "serve_near",
-      "stochastic_rollout": "charge_first",
-      "commitment_safe_mpc": "charge_first",
-      "prediction_changes_action": true,
+      "stochastic_rollout": "serve_near",
+      "commitment_safe_mpc": "serve_near",
+      "prediction_changes_action": false,
       "mpc_differs_from_rollout": false,
       "scores": [
         {
@@ -25,12 +25,12 @@
         },
         {
           "action": "charge_first",
-          "reactive_value": 80.65,
-          "stochastic_value": 136.66917501284522,
+          "reactive_value": 81.85,
+          "stochastic_value": 81.85,
           "safe": true,
           "per_scenario": [
-            80.65,
-            166.83334617360802
+            81.85,
+            81.85
           ]
         }
       ]
@@ -56,11 +56,11 @@
         {
           "action": "reject_now",
           "reactive_value": 0.0,
-          "stochastic_value": 75.2,
+          "stochastic_value": 151.80588745030457,
           "safe": true,
           "per_scenario": [
             0.0,
-            94.0
+            189.7573593128807
           ]
         }
       ]

@@ -1,8 +1,10 @@
-# Action-causality gate (Phase 3)
+# Action-causality gate (Phase 3 — legacy toy enumerator)
 
-**Verdict: REVISE**
+**Verdict: REVISE** (superseded for mechanism claims by Phase 3B)
 
-Prediction / scenario information **does** change executable first actions versus a forecast-blind reactive rule on both microscopic forks. On these forks, the Phase-3 “commitment-safe MPC” stand-in **coincides with standard stochastic rollout** (same objective over the same safe action set). That is necessary causality evidence for predictive MPC, **not** evidence of a differentiated MPC mechanism beyond ordinary rollout.
+> **Phase 3B update:** See `PHASE3B_CAUSAL_VALIDITY.md` and `DECISION_REGRET_GATE.md`. The Phase-3 stand-in below selected MPC≡rollout **by construction**. Phase 3B replaces that with plant-causal scoring and a decision-regret gate (`GO_PROTOTYPE` on tiny forks).
+
+Prediction / scenario information **does** change executable first actions versus a forecast-blind reactive rule on the toy admission fork. On these forks, the Phase-3 “commitment-safe MPC” stand-in **coincides with standard stochastic rollout** (same objective over the same safe action set). That is necessary causality evidence for predictive MPC, **not** evidence of a differentiated MPC mechanism beyond ordinary rollout.
 
 Artifact: `docs/mpc_central/action_causality_gate.json`  
 Code: `src/safe_time_evrp/mpc_central/forks.py`, `first_action_eval.py`  

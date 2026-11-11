@@ -1,7 +1,4 @@
-"""Hand-crafted microscopic forks for MPC action-causality tests.
-
-These are correctness / causality fixtures, not evidence of general superiority.
-"""
+"""Hand-crafted microscopic forks for MPC action-causality / decision-regret gates."""
 
 from __future__ import annotations
 
@@ -20,34 +17,36 @@ class ForkSpec:
     scenario_probs: tuple[float, ...]
     candidate_actions: tuple[str, ...]
     notes: tuple[str, ...]
+    base_releases: tuple[tuple[str, float], ...] = ()
+    prior_accepted: tuple[str, ...] = ()
+    t_max: float = 400.0
 
 
-def _obs_one_vehicle(inst: Instance, *, soc: float | None = None, released: tuple[str, ...] = ()) -> Observation:
+def _obs_one_vehicle(
+    inst: Instance,
+    *,
+    soc: float | None = None,
+    released: tuple[str, ...] = (),
+    accepted: tuple[str, ...] = (),
+) -> Observation:
     bat = inst.vehicle_type.battery_capacity if soc is None else soc
     anchor = Anchor(inst.depot_id, 0.0, bat, 0.0, frozenset())
     v = VehicleView("v1", "idle", inst.depot_id, bat, 0.0, (), anchor, None)
-    return Observation(0.0, (v,), released, (), (), (), (), ())
+    return Observation(0.0, (v,), released, accepted, (), (), (), ())
 
 
 def case_a_predictive_charging_fork() -> ForkSpec:
     """Serve Near now vs charge first under possible far future demand.
 
-    Geometry (velocity=1, consumption=1, inverse_recharge=0.5):
-      D=(0,0), S=(0,3), Near=(6,0), Far=(0,9); start SOC=16, capacity=40.
-
-    Serving Near first still allows a depot return, but charging afterward makes
-    Far miss its due time. Charging first preserves a feasible Near+Far tour.
-
-    Scenarios:
-      ω0: Far never appears → reactive optimum serve_near.
-      ω1: Far announced at t=1 → stochastic prefers charge_first.
+    Battery capacity equals the intended start SOC so FleetSimulator init logs match
+    (replay rejects silently patched SOC).
     """
-    vehicle = VehicleType(40.0, 5.0, 1.0, 0.5, 1.0, "full")
+    vehicle = VehicleType(16.0, 5.0, 1.0, 0.5, 1.0, "full")
     nodes = [
         Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 500), 0),
         Node("S", NodeKind.CHARGER, 0, 3, 0, TimeWindow(0, 500), 0),
-        Node("Near", NodeKind.CUSTOMER, 6, 0, 1, TimeWindow(0, 200), 2),
-        Node("Far", NodeKind.CUSTOMER, 0, 9, 1, TimeWindow(0, 40), 1),
+        Node("Near", NodeKind.CUSTOMER, 6, 0, 1, TimeWindow(0, 200), 8),
+        Node("Far", NodeKind.CUSTOMER, 0, 9, 1, TimeWindow(0, 28), 1),
     ]
     inst = build_euclidean_instance(
         "mpc_central_case_a_charge_fork",
@@ -58,7 +57,7 @@ def case_a_predictive_charging_fork() -> ForkSpec:
         assumptions=("action_causality_fixture", "nominal_linear"),
         metadata={"suite": "mpc_central", "fork": "charge"},
     )
-    obs = _obs_one_vehicle(inst, soc=16.0, released=("Near",))
+    obs = _obs_one_vehicle(inst, released=("Near",))
     return ForkSpec(
         case_id="case_a_predictive_charging",
         instance=inst,
@@ -66,26 +65,25 @@ def case_a_predictive_charging_fork() -> ForkSpec:
         scenarios=((), (("Far", 1.0),)),
         scenario_probs=(0.35, 0.65),
         candidate_actions=("serve_near", "charge_first"),
-        notes=(
-            "reactive prefers serve_near when Far absent",
-            "stochastic with P(Far)=0.65 prefers charge_first",
-        ),
+        notes=("reactive prefers serve_near", "stochastic prefers charge_first under P(Far)=0.65"),
+        base_releases=(("Near", 0.0),),
+        t_max=500.0,
     )
 
 
 def case_b_irreversible_admission_fork() -> ForkSpec:
-    """Accept costly Now vs reject to preserve capacity for Future.
+    """Accept costly Now vs reject to preserve a pair of future close customers.
 
-    Now is far with long service; Future is close with a tight window after t=5.
-    Accepting/serving Now consumes so much time that Future's window is missed.
-    Rejecting Now leaves the vehicle free for Future.
+    If Now is accepted, the long trip/service makes both FutureA/B miss their windows.
+    If Now is rejected, both futures are serviceable when the high-probability scenario occurs.
     """
     vehicle = VehicleType(100.0, 5.0, 1.0, 0.2, 1.0, "full")
     nodes = [
         Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 300), 0),
         Node("S", NodeKind.CHARGER, 1, 1, 0, TimeWindow(0, 300), 0),
         Node("Now", NodeKind.CUSTOMER, 20, 0, 1, TimeWindow(0, 80), 12),
-        Node("Future", NodeKind.CUSTOMER, 3, 0, 1, TimeWindow(5, 28), 1),
+        Node("FutureA", NodeKind.CUSTOMER, 3, 0, 1, TimeWindow(5, 30), 1),
+        Node("FutureB", NodeKind.CUSTOMER, 0, 3, 1, TimeWindow(5, 32), 1),
     ]
     inst = build_euclidean_instance(
         "mpc_central_case_b_admission_fork",
@@ -101,15 +99,65 @@ def case_b_irreversible_admission_fork() -> ForkSpec:
         case_id="case_b_irreversible_admission",
         instance=inst,
         observation=obs,
-        scenarios=((), (("Future", 5.0),)),
+        scenarios=((), (("FutureA", 5.0), ("FutureB", 5.0))),
         scenario_probs=(0.2, 0.8),
         candidate_actions=("accept_now", "reject_now"),
+        notes=("reactive prefers accept_now", "stochastic prefers reject_now under high P(futures)"),
+        base_releases=(("Now", 0.0),),
+        t_max=300.0,
+    )
+
+
+def case_c_commitment_plus_uncertain_demand() -> ForkSpec:
+    """Already-accepted Must must stay feasible while deciding about optional Now vs Future.
+
+    Must is close and already accepted. Now is a tempting far optional request.
+    Future is a nearby opportunity. Accepting Now risks Must and/or Future under time pressure.
+    """
+    vehicle = VehicleType(100.0, 3.0, 1.0, 0.2, 1.0, "full")
+    nodes = [
+        Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 400), 0),
+        Node("S", NodeKind.CHARGER, 1, 1, 0, TimeWindow(0, 400), 0),
+        # demand 2 + Now demand 2 exceeds load capacity 3 → cannot serve both in one tour
+        Node("Must", NodeKind.CUSTOMER, 4, 0, 2, TimeWindow(0, 60), 2),
+        Node("Now", NodeKind.CUSTOMER, 22, 0, 2, TimeWindow(0, 90), 10),
+        Node("Future", NodeKind.CUSTOMER, 2, 3, 1, TimeWindow(8, 35), 1),
+    ]
+    inst = build_euclidean_instance(
+        "mpc_central_case_c_commitment",
+        nodes,
+        vehicle,
+        source_format="synthetic",
+        source_name="mpc_central_causality",
+        assumptions=("action_causality_fixture", "prior_commitment"),
+        metadata={"suite": "mpc_central", "fork": "commitment"},
+    )
+    obs = _obs_one_vehicle(inst, released=("Must", "Now"), accepted=("Must",))
+    return ForkSpec(
+        case_id="case_c_commitment_plus_uncertain",
+        instance=inst,
+        observation=obs,
+        scenarios=((), (("Future", 8.0),)),
+        scenario_probs=(0.3, 0.7),
+        candidate_actions=("accept_now", "reject_now", "serve_must"),
         notes=(
-            "reactive prefers accept_now on visible demand",
-            "stochastic with high P(Future) prefers reject_now",
+            "Must is a hard prior commitment",
+            "reject_now or serve_must should dominate accept_now when Future is likely",
         ),
+        base_releases=(("Must", 0.0), ("Now", 0.0)),
+        prior_accepted=("Must",),
+        t_max=400.0,
     )
 
 
 def all_forks() -> list[ForkSpec]:
+    return [
+        case_a_predictive_charging_fork(),
+        case_b_irreversible_admission_fork(),
+        case_c_commitment_plus_uncertain_demand(),
+    ]
+
+
+def phase3_forks() -> list[ForkSpec]:
+    """Original Phase-3 pair (no prior commitment)."""
     return [case_a_predictive_charging_fork(), case_b_irreversible_admission_fork()]

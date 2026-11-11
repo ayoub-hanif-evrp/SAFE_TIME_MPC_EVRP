@@ -157,9 +157,7 @@ def _route_value(result) -> float:
     if not result.feasible:
         return -1e9
     return (
-        SERVICE_REWARD * len(result.served)
-        - DISTANCE_PENALTY * result.distance
-        - CHARGE_PENALTY * result.charge_time
+        SERVICE_REWARD * len(result.served) - DISTANCE_PENALTY * result.distance - CHARGE_PENALTY * result.charge_time
     )
 
 
