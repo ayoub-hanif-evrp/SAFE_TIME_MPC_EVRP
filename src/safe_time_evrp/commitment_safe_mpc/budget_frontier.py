@@ -198,9 +198,9 @@ def run_frontier_study(
         cases = [c for c in cases if len(c.instance.customers) <= max_customers or c.case_id == "B_rescue_pack"]
     rows: list[dict] = []
     planned = 0
-    for case in cases:
+    for _case in cases:
         for budget in budgets:
-            for seed in seeds:
+            for _seed in seeds:
                 for name in controllers:
                     if name == "insertion" and budget != budgets[0]:
                         continue

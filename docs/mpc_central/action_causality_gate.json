@@ -1,0 +1,69 @@
+{
+  "verdict": "REVISE",
+  "reason": "Prediction changes first actions vs reactive, but commitment-safe MPC coincides with standard stochastic rollout \u2014 no Phase-3 novelty vs rollout.",
+  "n_forks": 2,
+  "n_prediction_diverges_from_reactive": 2,
+  "n_mpc_differs_from_rollout": 0,
+  "rows": [
+    {
+      "case_id": "case_a_predictive_charging",
+      "reactive": "serve_near",
+      "stochastic_rollout": "charge_first",
+      "commitment_safe_mpc": "charge_first",
+      "prediction_changes_action": true,
+      "mpc_differs_from_rollout": false,
+      "scores": [
+        {
+          "action": "serve_near",
+          "reactive_value": 88.0,
+          "stochastic_value": 88.0,
+          "safe": true,
+          "per_scenario": [
+            88.0,
+            88.0
+          ]
+        },
+        {
+          "action": "charge_first",
+          "reactive_value": 80.65,
+          "stochastic_value": 136.66917501284522,
+          "safe": true,
+          "per_scenario": [
+            80.65,
+            166.83334617360802
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "case_b_irreversible_admission",
+      "reactive": "accept_now",
+      "stochastic_rollout": "reject_now",
+      "commitment_safe_mpc": "reject_now",
+      "prediction_changes_action": true,
+      "mpc_differs_from_rollout": false,
+      "scores": [
+        {
+          "action": "accept_now",
+          "reactive_value": 60.0,
+          "stochastic_value": 60.0,
+          "safe": true,
+          "per_scenario": [
+            60.0,
+            60.0
+          ]
+        },
+        {
+          "action": "reject_now",
+          "reactive_value": 0.0,
+          "stochastic_value": 75.2,
+          "safe": true,
+          "per_scenario": [
+            0.0,
+            94.0
+          ]
+        }
+      ]
+    }
+  ]
+}
