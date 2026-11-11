@@ -3,10 +3,10 @@
   "n_source_au_rows": 31,
   "n_audited": 31,
   "label_counts": {
-    "no_feasible_continuation_with_residual_accepts": 17,
-    "no_accepted_unfulfilled": 14
+    "cutoff_censor_with_accepted_unfulfilled": 22,
+    "no_accepted_unfulfilled": 9
   },
-  "note": "Labels are from replaying the same case/controller/budget/seed on FleetSimulator. replay_ok remains distinct from commitment fulfillment.",
+  "note": "Labels use EpisodeResult.termination_reason. Co-occurrence with no_feasible_continuation is a flag, not proof of causation. end_time >= t_max alone is not used as the cutoff test.",
   "rows": [
     {
       "case_id": "B_frontier_30",
@@ -25,26 +25,41 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 32,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
       "controller": "m1_both_off",
       "budget_seconds": 0.05,
       "seed": 3,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 16,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
       "replay_ok": true,
-      "end_time": 348.2828224555623,
+      "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -63,10 +78,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 32,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -85,33 +104,31 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 32,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
       "controller": "b1",
       "budget_seconds": 0.05,
       "seed": 11,
-      "accepted_unfulfilled": [
-        "C14",
-        "C15",
-        "C16",
-        "C17",
-        "C4",
-        "C8"
-      ],
-      "accepted_unfulfilled_count": 6,
-      "completed_count": 8,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 16,
       "replay_ok": true,
-      "end_time": 1175.0,
+      "end_time": 348.2828224555623,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
-      "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 383.2828224555623,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_30",
@@ -131,10 +148,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -154,10 +175,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -177,10 +202,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 41,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -200,10 +229,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -223,58 +256,95 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
       "controller": "b0",
       "budget_seconds": 0.4,
       "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 16,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
       "replay_ok": true,
-      "end_time": 348.2828224555623,
+      "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
       "controller": "m1_both_off",
       "budget_seconds": 0.4,
       "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 16,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
       "replay_ok": true,
-      "end_time": 348.2828224555623,
+      "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
       "controller": "b0",
       "budget_seconds": 0.4,
       "seed": 11,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 16,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
       "replay_ok": true,
-      "end_time": 348.2828224555623,
+      "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_30",
@@ -294,10 +364,14 @@
       "replay_ok": true,
       "end_time": 1175.0,
       "t_max": 1200.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
       "no_feasible_continuation_count": 40,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
@@ -308,12 +382,13 @@
       "accepted_unfulfilled_count": 0,
       "completed_count": 28,
       "replay_ok": true,
-      "end_time": 652.0511526681163,
+      "end_time": 648.1166088145759,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 683.1166088145759,
       "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
@@ -324,32 +399,30 @@
       "accepted_unfulfilled_count": 0,
       "completed_count": 27,
       "replay_ok": true,
-      "end_time": 554.6688356635008,
+      "end_time": 551.731054140155,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 586.731054140155,
       "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
       "controller": "m1_full_eval",
       "budget_seconds": 0.05,
       "seed": 3,
-      "accepted_unfulfilled": [
-        "C34",
-        "C35",
-        "C36"
-      ],
-      "accepted_unfulfilled_count": 3,
-      "completed_count": 22,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 26,
       "replay_ok": true,
-      "end_time": 1595.0,
+      "end_time": 510.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
-      "no_feasible_continuation_count": 41,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
@@ -360,34 +433,30 @@
       "accepted_unfulfilled_count": 0,
       "completed_count": 28,
       "replay_ok": true,
-      "end_time": 648.1166088145759,
+      "end_time": 652.0511526681163,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 687.0511526681163,
       "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
       "controller": "b1",
       "budget_seconds": 0.05,
       "seed": 11,
-      "accepted_unfulfilled": [
-        "C25",
-        "C33",
-        "C34",
-        "C35",
-        "C36"
-      ],
-      "accepted_unfulfilled_count": 5,
-      "completed_count": 20,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 28,
       "replay_ok": true,
-      "end_time": 1595.0,
+      "end_time": 648.1166088145759,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
-      "no_feasible_continuation_count": 42,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 683.1166088145759,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
@@ -400,10 +469,11 @@
       "replay_ok": true,
       "end_time": 510.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
       "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
@@ -411,21 +481,21 @@
       "budget_seconds": 0.15,
       "seed": 3,
       "accepted_unfulfilled": [
-        "C25",
-        "C33",
-        "C34",
-        "C35",
-        "C36"
+        "C37"
       ],
-      "accepted_unfulfilled_count": 5,
-      "completed_count": 20,
+      "accepted_unfulfilled_count": 1,
+      "completed_count": 24,
       "replay_ok": true,
       "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
       "no_feasible_continuation_count": 43,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
@@ -441,26 +511,39 @@
       "replay_ok": true,
       "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
       "no_feasible_continuation_count": 57,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
       "controller": "m1_no_reuse",
       "budget_seconds": 0.15,
       "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 27,
+      "accepted_unfulfilled": [
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "accepted_unfulfilled_count": 4,
+      "completed_count": 21,
       "replay_ok": true,
-      "end_time": 532.0294738357647,
+      "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 42,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
@@ -468,19 +551,22 @@
       "budget_seconds": 0.15,
       "seed": 7,
       "accepted_unfulfilled": [
-        "C34",
-        "C42",
-        "C45"
+        "C10",
+        "C25"
       ],
-      "accepted_unfulfilled_count": 3,
-      "completed_count": 23,
+      "accepted_unfulfilled_count": 2,
+      "completed_count": 14,
       "replay_ok": true,
       "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
-      "no_feasible_continuation_count": 36,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 57,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
@@ -488,24 +574,72 @@
       "budget_seconds": 0.4,
       "seed": 3,
       "accepted_unfulfilled": [
-        "C34",
-        "C37"
+        "C33",
+        "C36",
+        "C37",
+        "C41",
+        "C42",
+        "C45"
       ],
-      "accepted_unfulfilled_count": 2,
-      "completed_count": 23,
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 22,
       "replay_ok": true,
       "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
-      "no_feasible_continuation_count": 44,
-      "label": "no_feasible_continuation_with_residual_accepts"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 37,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
       "controller": "m1",
       "budget_seconds": 0.4,
       "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 20,
+      "replay_ok": true,
+      "end_time": 510.0,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C10",
+        "C25"
+      ],
+      "accepted_unfulfilled_count": 2,
+      "completed_count": 14,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 57,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1",
+      "budget_seconds": 0.4,
+      "seed": 7,
       "accepted_unfulfilled": [
         "C34",
         "C35",
@@ -516,58 +650,36 @@
       "replay_ok": true,
       "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": true,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
       "no_feasible_continuation_count": 41,
-      "label": "no_feasible_continuation_with_residual_accepts"
-    },
-    {
-      "case_id": "B_frontier_50",
-      "controller": "b1",
-      "budget_seconds": 0.4,
-      "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 20,
-      "replay_ok": true,
-      "end_time": 510.0,
-      "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
-    },
-    {
-      "case_id": "B_frontier_50",
-      "controller": "m1",
-      "budget_seconds": 0.4,
-      "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 27,
-      "replay_ok": true,
-      "end_time": 532.0294738357647,
-      "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
       "controller": "m1_full_eval",
       "budget_seconds": 0.4,
       "seed": 7,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 26,
+      "accepted_unfulfilled": [
+        "C37"
+      ],
+      "accepted_unfulfilled_count": 1,
+      "completed_count": 24,
       "replay_ok": true,
-      "end_time": 510.0,
+      "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 42,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     },
     {
       "case_id": "B_frontier_50",
@@ -576,30 +688,38 @@
       "seed": 7,
       "accepted_unfulfilled": [],
       "accepted_unfulfilled_count": 0,
-      "completed_count": 28,
+      "completed_count": 20,
       "replay_ok": true,
-      "end_time": 652.0511526681163,
+      "end_time": 510.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
       "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "label": "no_accepted_unfulfilled",
+      "flags": []
     },
     {
       "case_id": "B_frontier_50",
       "controller": "m1_both_off",
       "budget_seconds": 0.4,
       "seed": 11,
-      "accepted_unfulfilled": [],
-      "accepted_unfulfilled_count": 0,
-      "completed_count": 20,
+      "accepted_unfulfilled": [
+        "C34",
+        "C37"
+      ],
+      "accepted_unfulfilled_count": 2,
+      "completed_count": 23,
       "replay_ok": true,
-      "end_time": 510.0,
+      "end_time": 1595.0,
       "t_max": 1600.0,
-      "hit_tmax": false,
-      "busy_end": false,
-      "no_feasible_continuation_count": 0,
-      "label": "no_accepted_unfulfilled"
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 44,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax"
+      ]
     }
   ]
 }

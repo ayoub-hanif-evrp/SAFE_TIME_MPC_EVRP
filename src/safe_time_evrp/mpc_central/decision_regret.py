@@ -1,27 +1,18 @@
-"""Decision-regret gate: quality under equal computation, not mere action divergence.
+"""Decision-regret gate with honest matched evaluation budgets (Phase 3C).
 
-References
-----------
-1. reactive — expected value using only the no-future scenario ranking (forecast-blind).
-2. uniform_rollout — allocate scenario evaluations evenly across candidate first actions.
-3. adaptive_mpc — allocate extra evaluations to actions whose ranking is still uncertain.
-
-Exact reference (tiny forks only)
----------------------------------
-Exhaustive evaluation of every candidate first action on every scenario via the
-FleetSimulator causal plant score. Labeled as an *exhaustive first-action ranking
-under causal reactive recourse* — not a full multistage open-loop DP oracle.
-
-GO requires lower decision regret and/or better incumbent value at matched eval budget
-versus uniform rollout — not merely a different chosen action.
+Online policies share ``EvalBank``: every new (action, scenario) plant rollout
+counts once; cache hits are free; offline oracle values are never consulted
+during selection.
 """
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
+from itertools import permutations
 
-from safe_time_evrp.mpc_central.causal_plant import evaluate_action_scenario, expected_action_value
-from safe_time_evrp.mpc_central.forks import ForkSpec, all_forks
+from safe_time_evrp.mpc_central.eval_bank import EvalBank, OfflineOracle
+from safe_time_evrp.mpc_central.forks import ForkSpec, all_forks, with_action_order, with_scenario_order
 
 
 @dataclass
@@ -32,253 +23,280 @@ class EvalBudgetResult:
     true_value: float
     regret: float
     scenario_evals: int
+    wall_seconds: float
     notes: tuple[str, ...]
 
 
-def exhaustive_action_values(spec: ForkSpec) -> dict[str, float]:
-    """Full expected values for all candidates (exact on these tiny scenario sets)."""
-    out: dict[str, float] = {}
-    for action in spec.candidate_actions:
-        exp, _ = expected_action_value(spec, action)
-        out[action] = exp
-    return out
+def _pick_best(estimates: dict[str, float]) -> str:
+    return max(estimates, key=lambda a: (estimates[a], a))
 
 
-def reactive_policy(spec: ForkSpec, truth: dict[str, float]) -> EvalBudgetResult:
-    """Rank actions by the empty-future scenario only; score regret vs exhaustive truth."""
-    scored: list[tuple[float, str]] = []
-    evals = 0
+def reactive_policy(spec: ForkSpec, oracle: OfflineOracle) -> EvalBudgetResult:
+    bank = EvalBank(spec)
+    estimates: dict[str, float] = {}
     for action in spec.candidate_actions:
-        sc = evaluate_action_scenario(spec, action, spec.scenarios[0], scenario_index=0)
-        evals += 1
-        scored.append((sc.value, action))
-    action = max(scored, key=lambda x: (x[0], x[1]))[1]
-    true_v = truth[action]
-    best = max(truth.values())
+        estimates[action] = bank.evaluate(action, 0).value
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
     return EvalBudgetResult(
         policy="reactive",
         action=action,
-        estimated_value=max(scored)[0],
-        true_value=true_v,
-        regret=best - true_v,
-        scenario_evals=evals,
-        notes=("ranked_on_omega0_only",),
+        estimated_value=estimates[action],
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=("omega0_only",),
     )
 
 
-def uniform_rollout(spec: ForkSpec, truth: dict[str, float], *, budget: int) -> EvalBudgetResult:
-    """Evenly allocate scenario evaluations across actions (cyclic over scenarios)."""
-    n = len(spec.candidate_actions)
-    if budget < n:
-        budget = n
-    sums = {a: 0.0 for a in spec.candidate_actions}
-    counts = {a: 0 for a in spec.candidate_actions}
-    evals = 0
-    # Round-robin actions; within each action, cycle scenarios.
-    while evals < budget:
-        for action in spec.candidate_actions:
-            if evals >= budget:
+def uniform_rollout(spec: ForkSpec, oracle: OfflineOracle, *, budget: int) -> EvalBudgetResult:
+    """Round-robin (action, next unseen scenario) until budget is exhausted."""
+    bank = EvalBank(spec)
+    actions = list(spec.candidate_actions)
+    n_sc = len(spec.scenarios)
+    # Pointer per action to next scenario index to try.
+    next_k = {a: 0 for a in actions}
+    while bank.n_evals < budget:
+        progressed = False
+        for action in actions:
+            if bank.n_evals >= budget:
                 break
-            k = counts[action] % len(spec.scenarios)
-            sc = evaluate_action_scenario(spec, action, spec.scenarios[k], scenario_index=k)
-            # Probability-weighted running mean using known scenario probs when fully seen,
-            # else uniform over sampled indices.
-            sums[action] += spec.scenario_probs[k] * sc.value
-            counts[action] += 1
-            evals += 1
-    # Normalize: if each scenario seen once, sums already expectation; if partial, reweight.
-    estimates: dict[str, float] = {}
-    for action in spec.candidate_actions:
-        # Recompute proper expectation over unique scenario indices sampled.
-        # Simpler: run full expectation when counts >= n_scenarios, else use sampled mean.
-        if counts[action] >= len(spec.scenarios):
-            estimates[action] = expected_action_value(spec, action)[0]
+            k = next_k[action]
+            if k >= n_sc:
+                continue
+            bank.evaluate(action, k)
+            next_k[action] = k + 1
+            progressed = True
+        if not progressed:
+            break
+    estimates = {}
+    for action in actions:
+        est = bank.sampled_expectation(action)
+        if est is None:
+            # No sample — assign -inf so it cannot win.
+            estimates[action] = -1e18
         else:
-            # Use average of sampled scenario values without double-counting probs incorrectly.
-            vals = []
-            for i in range(counts[action]):
-                k = i % len(spec.scenarios)
-                vals.append(evaluate_action_scenario(spec, action, spec.scenarios[k], scenario_index=k).value)
-            # These re-evals are diagnostic-only for estimate; count them? No — already paid.
-            # Use stored approach instead: approximate with equal weight on sampled ks.
-            sampled = [i % len(spec.scenarios) for i in range(counts[action])]
-            uniq = []
-            seen = set()
-            for k in sampled:
-                if k not in seen:
-                    uniq.append(k)
-                    seen.add(k)
-            mass = sum(spec.scenario_probs[k] for k in uniq) or 1.0
-            est = 0.0
-            for k in uniq:
-                est += (spec.scenario_probs[k] / mass) * evaluate_action_scenario(
-                    spec, action, spec.scenarios[k], scenario_index=k
-                ).value
             estimates[action] = est
-            del vals
-    action = max(estimates, key=lambda a: (estimates[a], a))
-    best = max(truth.values())
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
     return EvalBudgetResult(
         policy="uniform_rollout",
         action=action,
         estimated_value=estimates[action],
-        true_value=truth[action],
-        regret=best - truth[action],
-        scenario_evals=evals,
-        notes=(f"budget={budget}",),
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=(f"budget={budget}", f"actual_evals={bank.n_evals}"),
     )
 
 
-def adaptive_mpc(spec: ForkSpec, truth: dict[str, float], *, budget: int) -> EvalBudgetResult:
-    """Decision-focused allocation: explore uncertain action rankings first.
+def random_allocation(spec: ForkSpec, oracle: OfflineOracle, *, budget: int, seed: int) -> EvalBudgetResult:
+    bank = EvalBank(spec)
+    rng = random.Random(seed)
+    actions = list(spec.candidate_actions)
+    pairs = [(a, k) for a in actions for k in range(len(spec.scenarios))]
+    rng.shuffle(pairs)
+    for action, k in pairs:
+        if bank.n_evals >= budget:
+            break
+        bank.evaluate(action, k)
+    estimates = {
+        a: (bank.sampled_expectation(a) if bank.sampled_expectation(a) is not None else -1e18) for a in actions
+    }
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
+    return EvalBudgetResult(
+        policy="random_allocation",
+        action=action,
+        estimated_value=estimates[action],
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=(f"budget={budget}", f"seed={seed}"),
+    )
 
-    Hypothesis: under tight budgets, focusing evals on near-ties recovers the
-    exhaustive-best action more often / with lower regret than uniform allocation.
-    """
-    n = len(spec.candidate_actions)
-    if budget < n:
-        budget = n
-    # Bootstrap: one eval of scenario 0 for each action.
-    samples: dict[str, list[float]] = {a: [] for a in spec.candidate_actions}
-    evals = 0
-    for action in spec.candidate_actions:
-        sc = evaluate_action_scenario(spec, action, spec.scenarios[0], scenario_index=0)
-        samples[action].append(sc.value)
-        evals += 1
+
+def adaptive_mpc(spec: ForkSpec, oracle: OfflineOracle, *, budget: int) -> EvalBudgetResult:
+    """Decision-focused allocation using only bank samples (no oracle)."""
+    bank = EvalBank(spec)
+    actions = list(spec.candidate_actions)
+    # Bootstrap: scenario 0 for each action (or until budget).
+    for action in actions:
+        if bank.n_evals >= budget:
+            break
+        bank.evaluate(action, 0)
 
     def estimate(action: str) -> float:
-        # Fill missing scenarios with pessimistic/neutral prior = scenario0 value.
-        by_k = {0: samples[action][0]} if samples[action] else {}
-        # Additional samples cycle scenarios 1..
-        for i, val in enumerate(samples[action][1:], start=1):
-            by_k[i % len(spec.scenarios)] = val
-        est = 0.0
-        for k, p in enumerate(spec.scenario_probs):
-            est += p * by_k.get(k, samples[action][0])
-        return est
+        est = bank.sampled_expectation(action)
+        return -1e18 if est is None else est
 
-    while evals < budget:
-        ests = {a: estimate(a) for a in spec.candidate_actions}
+    while bank.n_evals < budget:
+        ests = {a: estimate(a) for a in actions}
         ranked = sorted(ests, key=lambda a: (ests[a], a), reverse=True)
-        # Allocate to the top-2 gap (uncertainty about the leader).
-        a0, a1 = ranked[0], ranked[1] if len(ranked) > 1 else ranked[0]
-        # Prefer evaluating the under-sampled scenario index for the challenger/leader.
-        target = a1 if len(samples[a1]) <= len(samples[a0]) else a0
-        k = len(samples[target]) % len(spec.scenarios)
-        sc = evaluate_action_scenario(spec, target, spec.scenarios[k], scenario_index=k)
-        samples[target].append(sc.value)
-        evals += 1
-        del a0  # silence lint about unused after assignment intent
+        leader, challenger = ranked[0], ranked[1] if len(ranked) > 1 else ranked[0]
 
-    ests = {a: estimate(a) for a in spec.candidate_actions}
-    # When budget allows full coverage, prefer exact expectation for the incumbent ranking.
-    if evals >= n * len(spec.scenarios):
-        ests = exhaustive_action_values(spec)
-    action = max(ests, key=lambda a: (ests[a], a))
-    best = max(truth.values())
+        # Prefer undersampled among top-2; choose first unsampled scenario index.
+        def next_unseen(action: str) -> int | None:
+            seen = set(bank.sampled_indices(action))
+            for k in range(len(spec.scenarios)):
+                if k not in seen:
+                    return k
+            return None
+
+        target = challenger
+        k = next_unseen(challenger)
+        if k is None:
+            target = leader
+            k = next_unseen(leader)
+        if k is None:
+            # All top-2 fully sampled — fill any remaining unsampled pair.
+            filled = False
+            for a in actions:
+                kk = next_unseen(a)
+                if kk is not None:
+                    bank.evaluate(a, kk)
+                    filled = True
+                    break
+            if not filled:
+                break
+            continue
+        bank.evaluate(target, k)
+
+    estimates = {a: estimate(a) for a in actions}
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
     return EvalBudgetResult(
         policy="adaptive_mpc",
         action=action,
-        estimated_value=ests[action],
-        true_value=truth[action],
-        regret=best - truth[action],
-        scenario_evals=evals,
-        notes=(f"budget={budget}", "decision_focused_allocation"),
+        estimated_value=estimates[action],
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=(f"budget={budget}", "no_oracle_in_loop"),
     )
 
 
-def run_decision_regret_gate(*, budgets: tuple[int, ...] = (2, 4, 6)) -> dict:
-    rows = []
-    for spec in all_forks():
-        truth = exhaustive_action_values(spec)
-        best_action = max(truth, key=lambda a: (truth[a], a))
-        reactive = reactive_policy(spec, truth)
-        rows.append(
-            {
-                "case_id": spec.case_id,
-                "policy": reactive.policy,
-                "budget": reactive.scenario_evals,
-                "action": reactive.action,
-                "true_value": reactive.true_value,
-                "regret": reactive.regret,
-                "best_action": best_action,
-                "best_value": truth[best_action],
-            }
-        )
+def run_fairness_suite(
+    *,
+    budgets: tuple[int, ...] = (3, 4, 6),
+    reverse_actions: bool = True,
+    reverse_scenarios: bool = True,
+    random_seeds: tuple[int, ...] = (0, 1, 2),
+) -> dict:
+    """Matched regret comparisons under order permutations and allocation baselines."""
+    comparisons: list[dict] = []
+    rows: list[dict] = []
+    fragile_notes: list[str] = []
+
+    def one_spec(spec: ForkSpec, tag: str) -> None:
+        oracle = OfflineOracle.build(spec)
+        best_action = oracle.best_action()
         for b in budgets:
-            # Ensure budget at least n_actions
             b_eff = max(b, len(spec.candidate_actions))
-            uni = uniform_rollout(spec, truth, budget=b_eff)
-            ada = adaptive_mpc(spec, truth, budget=b_eff)
-            for res in (uni, ada):
+            uni = uniform_rollout(spec, oracle, budget=b_eff)
+            ada = adaptive_mpc(spec, oracle, budget=b_eff)
+            rnd_results = [random_allocation(spec, oracle, budget=b_eff, seed=s) for s in random_seeds]
+            for res in (uni, ada, *rnd_results):
+                assert res.scenario_evals <= b_eff
                 rows.append(
                     {
+                        "tag": tag,
                         "case_id": spec.case_id,
                         "policy": res.policy,
-                        "budget": res.scenario_evals,
+                        "budget": b_eff,
+                        "actual_evals": res.scenario_evals,
+                        "wall_seconds": res.wall_seconds,
                         "action": res.action,
                         "true_value": res.true_value,
                         "regret": res.regret,
                         "best_action": best_action,
-                        "best_value": truth[best_action],
                         "estimated_value": res.estimated_value,
+                        "notes": list(res.notes),
                     }
                 )
+            if ada.regret + 1e-9 < uni.regret:
+                winner = "adaptive_mpc"
+            elif uni.regret + 1e-9 < ada.regret:
+                winner = "uniform_rollout"
+            else:
+                winner = "tie"
+            comparisons.append(
+                {
+                    "tag": tag,
+                    "case_id": spec.case_id,
+                    "budget": b_eff,
+                    "uniform_action": uni.action,
+                    "adaptive_action": ada.action,
+                    "uniform_regret": uni.regret,
+                    "adaptive_regret": ada.regret,
+                    "uniform_evals": uni.scenario_evals,
+                    "adaptive_evals": ada.scenario_evals,
+                    "winner": winner,
+                    "candidate_order": list(spec.candidate_actions),
+                    "scenario_order_lens": [len(s) for s in spec.scenarios],
+                }
+            )
 
-    # Compare adaptive vs uniform at each matched budget.
-    comparisons = []
-    by_key: dict[tuple, dict] = {}
-    for row in rows:
-        if row["policy"] in {"uniform_rollout", "adaptive_mpc"}:
-            by_key[(row["case_id"], row["budget"], row["policy"])] = row
-    case_budgets = {(c, b) for (c, b, _) in by_key}
-    adaptive_better = 0
-    adaptive_worse = 0
-    ties = 0
-    for case_id, budget in sorted(case_budgets):
-        u = by_key.get((case_id, budget, "uniform_rollout"))
-        a = by_key.get((case_id, budget, "adaptive_mpc"))
-        if not u or not a:
+    for spec in all_forks():
+        one_spec(spec, "base")
+        if reverse_actions:
+            one_spec(with_action_order(spec, tuple(reversed(spec.candidate_actions))), "rev_actions")
+        if reverse_scenarios and len(spec.scenarios) > 1:
+            # Reverse scenario list and probs together.
+            sc = tuple(reversed(spec.scenarios))
+            pr = tuple(reversed(spec.scenario_probs))
+            one_spec(with_scenario_order(spec, sc, pr), "rev_scenarios")
+        # All action permutations for 2-action cases (order falsification).
+        if len(spec.candidate_actions) == 2:
+            for perm in permutations(spec.candidate_actions):
+                if perm == spec.candidate_actions or perm == tuple(reversed(spec.candidate_actions)):
+                    continue
+                one_spec(with_action_order(spec, perm), f"perm_{'_'.join(perm)}")
+
+    adaptive_better = sum(1 for c in comparisons if c["winner"] == "adaptive_mpc")
+    adaptive_worse = sum(1 for c in comparisons if c["winner"] == "uniform_rollout")
+    ties = sum(1 for c in comparisons if c["winner"] == "tie")
+
+    # Fragility: base win disappears under rev_actions at same case/budget.
+    for c in comparisons:
+        if c["tag"] != "base" or c["winner"] != "adaptive_mpc":
             continue
-        # Lower regret is better; tie-break on true_value.
-        if a["regret"] + 1e-9 < u["regret"]:
-            winner = "adaptive_mpc"
-            adaptive_better += 1
-        elif u["regret"] + 1e-9 < a["regret"]:
-            winner = "uniform_rollout"
-            adaptive_worse += 1
-        else:
-            winner = "tie"
-            ties += 1
-        comparisons.append(
-            {
-                "case_id": case_id,
-                "budget": budget,
-                "uniform_action": u["action"],
-                "adaptive_action": a["action"],
-                "uniform_regret": u["regret"],
-                "adaptive_regret": a["regret"],
-                "winner": winner,
-            }
+        twin = next(
+            (
+                x
+                for x in comparisons
+                if x["tag"] == "rev_actions" and x["case_id"] == c["case_id"] and x["budget"] == c["budget"]
+            ),
+            None,
         )
+        if twin and twin["winner"] != "adaptive_mpc":
+            fragile_notes.append(
+                f"{c['case_id']} budget={c['budget']}: adaptive win vanishes under reversed candidate order "
+                f"(now winner={twin['winner']})"
+            )
 
-    # Prototype GO is conditional: tiny forks only; not a publication claim.
-    if adaptive_better > 0 and adaptive_worse == 0:
-        verdict = "GO_PROTOTYPE"
+    if adaptive_better > 0 and adaptive_worse == 0 and not fragile_notes:
+        verdict = "GO"
         reason = (
-            "Adaptive decision-focused allocation strictly reduces first-action regret vs uniform "
-            "on at least one matched budget cell and never worsens it on these tiny plant forks. "
-            "Not yet a large-scale or prior-art-differentiated paper claim."
+            "Adaptive allocation reduces regret vs honest uniform under matched eval counts "
+            "across order stress tests without recorded order fragility."
         )
-    elif adaptive_better > adaptive_worse:
+    elif adaptive_better > 0 and (adaptive_worse > 0 or fragile_notes):
         verdict = "REVISE"
-        reason = "Adaptive helps on some budgets/cases but not consistently; mechanism needs sharpening."
+        reason = (
+            "Adaptive shows some matched-budget wins, but they are fragile to ordering "
+            "and/or sometimes worse than uniform — revise the allocation rule."
+        )
     elif adaptive_better == 0 and ties == len(comparisons):
         verdict = "REVISE"
-        reason = "No MPC-specific regret improvement vs uniform rollout at matched budgets on these forks."
+        reason = "No reproducible adaptive advantage over uniform under corrected budgets."
     else:
         verdict = "NO-GO"
-        reason = "Adaptive allocation does not improve decision regret vs uniform rollout."
+        reason = "Adaptive allocation offers no reproducible advantage over fairly budgeted rollout."
 
     return {
         "verdict": verdict,
@@ -288,7 +306,12 @@ def run_decision_regret_gate(*, budgets: tuple[int, ...] = (2, 4, 6)) -> dict:
         "adaptive_better": adaptive_better,
         "adaptive_worse": adaptive_worse,
         "ties": ties,
-        "truth_tables": {spec.case_id: exhaustive_action_values(spec) for spec in all_forks()},
-        "rows": rows,
+        "fragile_notes": fragile_notes,
         "comparisons": comparisons,
+        "rows": rows,
     }
+
+
+# Back-compat name used by older tests/docs.
+def run_decision_regret_gate(**kwargs) -> dict:
+    return run_fairness_suite(**kwargs)

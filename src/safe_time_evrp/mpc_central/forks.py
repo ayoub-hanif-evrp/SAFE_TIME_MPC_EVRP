@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from safe_time_evrp.models.instance import Instance, Node, NodeKind, TimeWindow, VehicleType, build_euclidean_instance
 from safe_time_evrp.models.state import Anchor, Observation, VehicleView
@@ -20,6 +20,22 @@ class ForkSpec:
     base_releases: tuple[tuple[str, float], ...] = ()
     prior_accepted: tuple[str, ...] = ()
     t_max: float = 400.0
+
+
+def with_action_order(spec: ForkSpec, actions: tuple[str, ...]) -> ForkSpec:
+    if set(actions) != set(spec.candidate_actions):
+        raise ValueError("action permutation must preserve the candidate set")
+    return replace(spec, candidate_actions=actions)
+
+
+def with_scenario_order(
+    spec: ForkSpec,
+    scenarios: tuple[tuple[tuple[str, float], ...], ...],
+    probs: tuple[float, ...],
+) -> ForkSpec:
+    if len(scenarios) != len(probs):
+        raise ValueError("scenarios and probs length mismatch")
+    return replace(spec, scenarios=scenarios, scenario_probs=probs)
 
 
 def _obs_one_vehicle(
@@ -109,19 +125,23 @@ def case_b_irreversible_admission_fork() -> ForkSpec:
 
 
 def case_c_commitment_plus_uncertain_demand() -> ForkSpec:
-    """Already-accepted Must must stay feasible while deciding about optional Now vs Future.
+    """Prior commitment Must with two distinct validated first actions.
 
-    Must is close and already accepted. Now is a tempting far optional request.
-    Future is a nearby opportunity. Accepting Now risks Must and/or Future under time pressure.
+    Capacity allows ``Must -> Now`` in one tour (both demand 2, capacity 4). That
+    continuation is nominally feasible and locks the vehicle onto Now after Must,
+    so FutureA/B miss. Rejecting Now and serving Must leaves time for the futures.
+
+    Also document that ``Must -> D(reload) -> Now`` is feasible (see commitment validity
+    doc) — Case C uses the single-tour accept to avoid reactive mid-tour insertions.
     """
-    vehicle = VehicleType(100.0, 3.0, 1.0, 0.2, 1.0, "full")
+    vehicle = VehicleType(100.0, 4.0, 1.0, 0.2, 1.0, "full")
     nodes = [
         Node("D", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 400), 0),
         Node("S", NodeKind.CHARGER, 1, 1, 0, TimeWindow(0, 400), 0),
-        # demand 2 + Now demand 2 exceeds load capacity 3 → cannot serve both in one tour
         Node("Must", NodeKind.CUSTOMER, 4, 0, 2, TimeWindow(0, 60), 2),
-        Node("Now", NodeKind.CUSTOMER, 22, 0, 2, TimeWindow(0, 90), 10),
-        Node("Future", NodeKind.CUSTOMER, 2, 3, 1, TimeWindow(8, 35), 1),
+        Node("Now", NodeKind.CUSTOMER, 22, 0, 2, TimeWindow(0, 90), 12),
+        Node("FutureA", NodeKind.CUSTOMER, 2, 3, 1, TimeWindow(8, 22), 1),
+        Node("FutureB", NodeKind.CUSTOMER, 3, 2, 1, TimeWindow(8, 24), 1),
     ]
     inst = build_euclidean_instance(
         "mpc_central_case_c_commitment",
@@ -129,7 +149,7 @@ def case_c_commitment_plus_uncertain_demand() -> ForkSpec:
         vehicle,
         source_format="synthetic",
         source_name="mpc_central_causality",
-        assumptions=("action_causality_fixture", "prior_commitment"),
+        assumptions=("action_causality_fixture", "prior_commitment", "single_tour_accept"),
         metadata={"suite": "mpc_central", "fork": "commitment"},
     )
     obs = _obs_one_vehicle(inst, released=("Must", "Now"), accepted=("Must",))
@@ -137,12 +157,12 @@ def case_c_commitment_plus_uncertain_demand() -> ForkSpec:
         case_id="case_c_commitment_plus_uncertain",
         instance=inst,
         observation=obs,
-        scenarios=((), (("Future", 8.0),)),
-        scenario_probs=(0.3, 0.7),
-        candidate_actions=("accept_now", "reject_now", "serve_must"),
+        scenarios=((), (("FutureA", 8.0), ("FutureB", 8.0))),
+        scenario_probs=(0.25, 0.75),
+        candidate_actions=("accept_now_after_must", "reject_now_serve_must"),
         notes=(
-            "Must is a hard prior commitment",
-            "reject_now or serve_must should dominate accept_now when Future is likely",
+            "accept_now_after_must covers Must+Now but blocks tight futures",
+            "reject_now_serve_must covers Must and enables FutureA/B",
         ),
         base_releases=(("Must", 0.0), ("Now", 0.0)),
         prior_accepted=("Must",),

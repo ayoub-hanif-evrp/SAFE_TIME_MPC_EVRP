@@ -42,7 +42,6 @@ def action_to_decision(spec: ForkSpec, action: str, *, vehicle_id: str) -> Decis
     rejected: list[str] = []
     routes: dict[str, list[Visit]] = {vehicle_id: []}
 
-    prior = list(spec.prior_accepted)
     if action == "serve_near":
         newly = ["Near"]
         accepted = list(dict.fromkeys([*accepted, "Near"]))
@@ -52,20 +51,26 @@ def action_to_decision(spec: ForkSpec, action: str, *, vehicle_id: str) -> Decis
     elif action == "accept_now":
         newly = ["Now"]
         accepted = list(dict.fromkeys([*accepted, "Now"]))
-        # If prior commitments exist, a legal accept must still cover them in-plan.
-        prefix = [Visit(cid, "service") for cid in prior]
-        routes[vehicle_id] = [*prefix, Visit("Now", "service")]
+        routes[vehicle_id] = [Visit("Now", "service")]
     elif action == "reject_now":
         rejected = ["Now"]
-        if prior:
-            routes[vehicle_id] = [Visit(cid, "service") for cid in prior]
+    elif action == "accept_now_after_must":
+        # Single-tour accept (capacity must allow Must+Now together).
+        newly = ["Now"]
+        accepted = list(dict.fromkeys([*accepted, "Now"]))
+        routes[vehicle_id] = [Visit("Must", "service"), Visit("Now", "service")]
+    elif action == "accept_now_reload":
+        newly = ["Now"]
+        accepted = list(dict.fromkeys([*accepted, "Now"]))
+        depot = spec.instance.depot_id
+        routes[vehicle_id] = [Visit("Must", "service"), Visit(depot, "reload"), Visit("Now", "service")]
+    elif action == "reject_now_serve_must":
+        rejected = ["Now"]
+        routes[vehicle_id] = [Visit("Must", "service")]
     elif action == "serve_must":
         routes[vehicle_id] = [Visit("Must", "service")]
-        # Do not greedily accept Now in the first decision; keep it open or reject.
         if "Now" in spec.observation.released_open:
             rejected = ["Now"]
-    elif action == "charge_then_must":
-        routes[vehicle_id] = [Visit("S", "charge"), Visit("Must", "service")]
     else:
         raise ValueError(f"unknown action {action}")
 
@@ -109,13 +114,28 @@ def _prepare_sim(spec: ForkSpec, scenario: tuple[tuple[str, float], ...]) -> Fle
         sim.schedule_release(cid, t)
     while sim.next_event_time() is not None and sim.next_event_time() <= EPS:
         sim.pop_event()
-    for cid in spec.prior_accepted:
-        status = sim.requests.get(cid)
-        if status is RequestStatus.HIDDEN:
-            sim.requests[cid] = RequestStatus.ANNOUNCED
-            status = RequestStatus.ANNOUNCED
-        if status in {RequestStatus.ANNOUNCED, RequestStatus.DEFERRED}:
-            sim.requests[cid] = RequestStatus.ACCEPTED
+    if spec.prior_accepted:
+        vid = next(iter(sim.vehicles))
+        # Legal logged acceptance (no direct request-map mutation).
+        seed = Decision(
+            time=sim.time,
+            routes={vid: []},
+            accepted=list(spec.prior_accepted),
+            newly_accepted=list(spec.prior_accepted),
+            rejected=[],
+            deferred=[],
+            fallback_used=False,
+            no_feasible_continuation=False,
+            horizon_extended=False,
+            planned_service=[],
+            total_distance=0.0,
+            total_charge_time=0.0,
+            optimize_seconds=0.0,
+            trigger="seed_prior_commitments",
+            locked_destinations={},
+            notes=["seed_prior_commitments"],
+        )
+        sim.apply_decision(seed)
     return sim
 
 
@@ -134,40 +154,62 @@ def evaluate_action_scenario(
     first = action_to_decision(spec, action, vehicle_id=vid)
     notes: list[str] = []
 
-    if spec.prior_accepted:
-        val = validate_continuation(spec.instance, sim.observation(), first.routes)
-        pending = set(spec.prior_accepted) - set(sim.observation().in_service)
-        covered = set(val.served) | set(sim.observation().in_service)
-        # Also count immediate service visits in the first decision.
-        covered |= {v.node_id for vs in first.routes.values() for v in vs if v.purpose == "service"}
-        if pending - covered and action == "accept_now":
-            # Accepting Now without covering Must in the same plan is unsafe if Must not in route.
-            if pending - covered:
-                notes.append("unsafe_prior_commitment_uncovered")
-                return PlantEpisodeScore(
-                    action=action,
-                    scenario_index=scenario_index,
-                    completed=(),
-                    accepted_unfulfilled=tuple(sorted(pending)),
-                    value=-1e9,
-                    replay_ok=True,
-                    end_time=sim.time,
-                    notes=tuple(notes),
-                )
+    # Refuse first decisions that name still-hidden customers.
+    hidden = {cid for cid, st in sim.requests.items() if st is RequestStatus.HIDDEN}
+    for visit in first.routes.get(vid, []):
+        if visit.node_id in hidden:
+            notes.append(f"illegal_unreleased_target:{visit.node_id}")
+            report = validate_log(spec.instance, sim.log)
+            return PlantEpisodeScore(
+                action=action,
+                scenario_index=scenario_index,
+                completed=(),
+                accepted_unfulfilled=tuple(spec.prior_accepted),
+                value=-1e9,
+                replay_ok=report.ok,
+                end_time=sim.time,
+                notes=tuple(notes),
+                log_kinds=tuple(rec.kind for rec in sim.log),
+            )
 
-    try:
-        sim.apply_decision(first)
-    except SimulatorError as exc:
-        notes.append(f"dispatch_rejected:{exc}")
+    require_new = frozenset(first.newly_accepted) if first.newly_accepted else None
+    val = validate_continuation(
+        spec.instance,
+        sim.observation(),
+        first.routes,
+        require_new=require_new,
+    )
+    if (spec.prior_accepted or first.newly_accepted) and not val.ok:
+        notes.append("validate_continuation_failed")
+        notes.extend(val.reasons[:3])
+        report = validate_log(spec.instance, sim.log)
         return PlantEpisodeScore(
             action=action,
             scenario_index=scenario_index,
             completed=(),
             accepted_unfulfilled=tuple(spec.prior_accepted),
             value=-1e9,
-            replay_ok=True,
+            replay_ok=report.ok,
             end_time=sim.time,
             notes=tuple(notes),
+            log_kinds=tuple(rec.kind for rec in sim.log),
+        )
+
+    try:
+        sim.apply_decision(first)
+    except SimulatorError as exc:
+        notes.append(f"dispatch_rejected:{exc}")
+        report = validate_log(spec.instance, sim.log)
+        return PlantEpisodeScore(
+            action=action,
+            scenario_index=scenario_index,
+            completed=(),
+            accepted_unfulfilled=tuple(spec.prior_accepted),
+            value=-1e9,
+            replay_ok=report.ok,
+            end_time=sim.time,
+            notes=tuple(notes),
+            log_kinds=tuple(rec.kind for rec in sim.log),
         )
     reactive = EventTriggeredMPC(spec.instance, horizon=horizon)
     events = 0

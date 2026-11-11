@@ -1,8 +1,4 @@
-"""Classify frontier episodes with accepted_unfulfilled (Task 5).
-
-Replays each matching budget_frontier row on the authoritative plant and labels
-the terminal cause without speculation beyond observed simulator state.
-"""
+"""Classify frontier episodes with accepted_unfulfilled using explicit termination reasons."""
 
 from __future__ import annotations
 
@@ -17,15 +13,13 @@ from safe_time_evrp.validation.replay import validate_log
 
 
 def _controller_factory(name: str, case, *, budget: float, seed: int, iterations: int):
-    from safe_time_evrp.commitment_safe_mpc.budget_frontier import _controller_factory
+    from safe_time_evrp.commitment_safe_mpc.budget_frontier import _controller_factory as factory
 
-    return _controller_factory(name, case, budget=budget, seed=seed, iterations=iterations)
+    return factory(name, case, budget=budget, seed=seed, iterations=iterations)
 
 
 def classify_episode(case, controller_name: str, *, budget: float, seed: int, iterations: int = 80) -> dict:
     ctrl = _controller_factory(controller_name, case, budget=budget, seed=seed, iterations=iterations)
-    # Use the same run_episode path but keep the simulator finished state via a thin wrapper:
-    # re-run and inspect final_requests + whether wall clock hit t_max via log episode_end time.
     result = run_episode(
         case.instance,
         case.releases,
@@ -40,28 +34,31 @@ def classify_episode(case, controller_name: str, *, budget: float, seed: int, it
     au = sorted(cid for cid, st in final.items() if st == "accepted_unfulfilled")
     completed = sorted(cid for cid, st in final.items() if st == "completed")
     end_time = max((rec.time for rec in result.log), default=0.0)
-    hit_tmax = end_time + EPS >= case.t_max
-    # In-service at end would appear as accepted_unfulfilled only after mark_finished if ACCEPTED;
-    # IN_SERVICE left open is unusual after mark_finished.
-    busy_end = any(
-        rec.kind == "episode_end"
-        and any(
-            v.get("status") != "idle" or v.get("node") != case.instance.depot_id
-            for v in rec.data.get("vehicles", {}).values()
-        )
-        for rec in result.log
-        if rec.kind == "episode_end"
-    )
+    term = result.termination_reason
+    pending = result.pending_next_event_time
+    nfc = result.no_feasible_continuation_count
+
+    # Attribution uses explicit termination_reason; NFC co-occurrence is recorded separately.
     if not au:
         label = "no_accepted_unfulfilled"
-    elif hit_tmax and busy_end:
-        label = "tmax_censor_busy_fleet"
-    elif hit_tmax:
-        label = "tmax_censor_accepted_remaining"
-    elif result.no_feasible_continuation_count > 0 and au:
-        label = "no_feasible_continuation_with_residual_accepts"
+    elif term == "cutoff_next_event_after_tmax":
+        label = "cutoff_censor_with_accepted_unfulfilled"
+    elif term == "natural_completion" and au:
+        label = "natural_end_with_accepted_unfulfilled"
+    elif term == "no_pending_events" and au:
+        label = "no_events_with_accepted_unfulfilled"
     else:
-        label = "residual_accepts_before_natural_end"
+        label = f"residual_accepts_term_{term}"
+
+    # Secondary flags (not primary causal proof).
+    flags = []
+    if nfc > 0:
+        flags.append("had_no_feasible_continuation_decisions")
+    if pending is not None and result.t_max is not None and pending > result.t_max + EPS:
+        flags.append("pending_event_after_tmax")
+    if end_time + EPS >= case.t_max:
+        flags.append("last_log_time_ge_tmax")  # informational only; not a terminator
+
     return {
         "case_id": case.case_id,
         "controller": controller_name,
@@ -73,10 +70,11 @@ def classify_episode(case, controller_name: str, *, budget: float, seed: int, it
         "replay_ok": report.ok,
         "end_time": end_time,
         "t_max": case.t_max,
-        "hit_tmax": hit_tmax,
-        "busy_end": busy_end,
-        "no_feasible_continuation_count": result.no_feasible_continuation_count,
+        "termination_reason": term,
+        "pending_next_event_time": pending,
+        "no_feasible_continuation_count": nfc,
         "label": label,
+        "flags": flags,
     }
 
 
@@ -111,15 +109,15 @@ def audit_frontier_unfulfilled(
         "n_audited": len(classified),
         "label_counts": dict(counts),
         "note": (
-            "Labels are from replaying the same case/controller/budget/seed on FleetSimulator. "
-            "replay_ok remains distinct from commitment fulfillment."
+            "Labels use EpisodeResult.termination_reason. "
+            "Co-occurrence with no_feasible_continuation is a flag, not proof of causation. "
+            "end_time >= t_max alone is not used as the cutoff test."
         ),
         "rows": classified,
     }
 
 
 if __name__ == "__main__":
-    # Full audit of all AU rows can take several minutes (frontier_30/50).
     art = audit_frontier_unfulfilled()
     out = Path("docs/mpc_central/fulfillment_audit.json")
     out.write_text(json.dumps(art, indent=2), encoding="utf-8")

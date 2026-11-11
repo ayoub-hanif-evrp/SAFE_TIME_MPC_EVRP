@@ -37,6 +37,9 @@ class EpisodeResult:
     no_feasible_continuation_count: int
     fallback_count: int
     horizon_extended_count: int
+    termination_reason: str = "unspecified"
+    pending_next_event_time: float | None = None
+    t_max: float | None = None
 
 
 def run_episode(
@@ -87,20 +90,32 @@ def run_episode(
     if simulator.next_event_time() is None or simulator.next_event_time() > EPS:
         decide("initial")
     events = 0
+    termination_reason = "unspecified"
+    pending_next: float | None = None
     while events < max_events:
         nxt = simulator.next_event_time()
-        if nxt is None or nxt > t_max + EPS:
+        pending_next = nxt
+        if nxt is None:
+            termination_reason = "no_pending_events"
+            break
+        if nxt > t_max + EPS:
+            termination_reason = "cutoff_next_event_after_tmax"
             break
         event = simulator.pop_event()
         events += 1
         if event is None:
+            termination_reason = "pop_returned_none"
             break
         if event.kind in _TRIGGERS:
             decide(event.kind)
         if _finished(simulator, t_max):
+            termination_reason = "natural_completion"
+            pending_next = simulator.next_event_time()
             break
     else:
         raise RuntimeError("event limit reached before the episode finished")
+    if termination_reason == "unspecified":
+        termination_reason = "loop_exit_unspecified"
     simulator.mark_finished()
     total = perf_counter() - wall
     simulation_seconds = max(0.0, total - optimize_seconds)
@@ -114,6 +129,9 @@ def run_episode(
         no_feasible_continuation_count=sum(d.no_feasible_continuation for d in decisions),
         fallback_count=sum(d.fallback_used for d in decisions),
         horizon_extended_count=sum(d.horizon_extended for d in decisions),
+        termination_reason=termination_reason,
+        pending_next_event_time=pending_next,
+        t_max=t_max,
     )
 
 

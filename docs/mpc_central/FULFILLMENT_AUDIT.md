@@ -1,33 +1,35 @@
-# Frontier `accepted_unfulfilled` audit (Task 5)
+# Frontier `accepted_unfulfilled` audit
 
-Source: `docs/commitment_safe_mpc/budget_frontier.json` (31 rows with AU>0).  
-Replay module: `mpc_central/fulfillment_audit.py` → `fulfillment_audit.json`.
+Source: `docs/commitment_safe_mpc/budget_frontier.json`.  
+Module: `mpc_central/fulfillment_audit.py`.
 
-## Method
+## Method (Phase 3C repair)
 
-Re-run each (case, controller, budget, seed) on `FleetSimulator` via `run_episode`, then label from **observed** end state:
+`run_episode` now records:
+
+- `termination_reason` ∈ `{natural_completion, cutoff_next_event_after_tmax, no_pending_events, ...}`
+- `pending_next_event_time`
+- `t_max`
+
+**Cutoff is `termination_reason == cutoff_next_event_after_tmax`**, not `end_time >= t_max` (the clock may stop before `t_max` when the next event is beyond the horizon).
+
+`no_feasible_continuation_count > 0` is recorded as a **flag**, not as proof that NFC caused AU.
+
+## Labels
 
 | Label | Meaning |
 |-------|---------|
-| `tmax_censor_busy_fleet` | end_time ≥ t_max and fleet not idle at depot |
-| `tmax_censor_accepted_remaining` | end_time ≥ t_max with residual accepts |
-| `no_feasible_continuation_with_residual_accepts` | AU present and episode recorded `no_feasible_continuation` decisions |
-| `residual_accepts_before_natural_end` | AU without the above |
-| `no_accepted_unfulfilled` | AU did **not** reproduce on re-run |
+| `cutoff_censor_with_accepted_unfulfilled` | Cut off because next event > t_max, AU present |
+| `natural_end_with_accepted_unfulfilled` | Natural completion with residual AU |
+| `no_events_with_accepted_unfulfilled` | No pending events, AU present |
+| `no_accepted_unfulfilled` | AU did not reproduce on re-run |
+| `residual_accepts_term_*` | Other termination with AU |
 
-`replay_ok` is recorded separately and is **not** fulfillment.
-
-## Results (31 re-runs)
+## Results (31 re-runs, new schema)
 
 | Label | Count |
 |-------|------:|
-| `no_feasible_continuation_with_residual_accepts` | 17 |
-| `no_accepted_unfulfilled` | 14 |
+| `cutoff_censor_with_accepted_unfulfilled` | 22 |
+| `no_accepted_unfulfilled` | 9 |
 
-No row in this re-run was classified as pure `tmax_censor_*`.
-
-## Reading
-
-1. When AU reproduces, it co-occurs with `no_feasible_continuation_count > 0` — i.e. controllers sometimes accept under plans that later lose a certified continuation, leaving residual accepts at episode end.  
-2. 14/31 AU rows **did not reproduce** under the same seed/budget — cooperative `time_limit_seconds` wall-clock search is not bit-stable across machines/loads. Treat original frontier AU counts as noisy.  
-3. Still: **do not equate `replay_ok` with commitment fulfillment.**
+Under the corrected terminator, most reproduced AU episodes are **time cutoffs** (`next_event > t_max`), not proven NFC causation. 9/31 did not reproduce AU (wall-clock search noise).
