@@ -1,0 +1,1197 @@
+{
+  "n_audited": 31,
+  "n_source_au_rows": 31,
+  "label_counts": {
+    "cutoff_censor_with_accepted_unfulfilled": 21,
+    "no_accepted_unfulfilled": 10
+  },
+  "cutoff_with_feasible_continuation": 0,
+  "cutoff_with_infeasible_or_unknown_continuation": 21,
+  "residual_feasible_true": 0,
+  "residual_feasible_false": 21,
+  "residual_skipped": 10,
+  "note": "Cutoff alone does not prove loss of a feasible continuation. residual_feasible tests nominal commitment continuation at the final observation.",
+  "rows": [
+    {
+      "case_id": "B_frontier_30",
+      "controller": "insertion",
+      "budget_seconds": 0.05,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "accepted_unfulfilled_count": 5,
+      "completed_count": 11,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 32,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v2:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C19', 'C20']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.05,
+      "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 16,
+      "replay_ok": true,
+      "end_time": 348.2828224555623,
+      "t_max": 1200.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 383.2828224555623,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "insertion",
+      "budget_seconds": 0.05,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "accepted_unfulfilled_count": 5,
+      "completed_count": 11,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 32,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v2:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C19', 'C20']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "insertion",
+      "budget_seconds": 0.05,
+      "seed": 11,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "accepted_unfulfilled_count": 5,
+      "completed_count": 11,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 32,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v2:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C19', 'C20']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C19",
+        "C20"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b1",
+      "budget_seconds": 0.05,
+      "seed": 11,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.05,
+      "seed": 11,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 16,
+      "replay_ok": true,
+      "end_time": 348.2828224555623,
+      "t_max": 1200.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 383.2828224555623,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.15,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b0",
+      "budget_seconds": 0.4,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b1",
+      "budget_seconds": 0.4,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.4,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b0",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b0",
+      "budget_seconds": 0.4,
+      "seed": 11,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_30",
+      "controller": "b1",
+      "budget_seconds": 0.4,
+      "seed": 11,
+      "accepted_unfulfilled": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 8,
+      "replay_ok": true,
+      "end_time": 1175.0,
+      "t_max": 1200.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1210.0,
+      "no_feasible_continuation_count": 40,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C14', 'C15', 'C16', 'C17', 'C4', 'C8']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "au_at_episode_end": [
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C4",
+        "C8"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.05,
+      "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 27,
+      "replay_ok": true,
+      "end_time": 574.9292990395697,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 609.9292990395697,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_no_reuse",
+      "budget_seconds": 0.05,
+      "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 27,
+      "replay_ok": true,
+      "end_time": 529.946452595747,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 564.946452595747,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_full_eval",
+      "budget_seconds": 0.05,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C26",
+        "C34",
+        "C37",
+        "C41",
+        "C42"
+      ],
+      "accepted_unfulfilled_count": 5,
+      "completed_count": 22,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 39,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v2:battery_depleted",
+        "missing_commitments:['C26', 'C34', 'C37', 'C41', 'C42']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C26",
+        "C34",
+        "C37",
+        "C41",
+        "C42"
+      ],
+      "au_at_episode_end": [
+        "C26",
+        "C34",
+        "C37",
+        "C41",
+        "C42"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.05,
+      "seed": 7,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 28,
+      "replay_ok": true,
+      "end_time": 652.0511526681163,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 687.0511526681163,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.05,
+      "seed": 11,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 28,
+      "replay_ok": true,
+      "end_time": 654.9968011995328,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 689.9968011995328,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_no_reuse",
+      "budget_seconds": 0.05,
+      "seed": 11,
+      "accepted_unfulfilled": [
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "accepted_unfulfilled_count": 4,
+      "completed_count": 21,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 42,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "missing_commitments:['C33', 'C34', 'C35', 'C36']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "au_at_episode_end": [
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.15,
+      "seed": 3,
+      "accepted_unfulfilled": [
+        "C37"
+      ],
+      "accepted_unfulfilled_count": 1,
+      "completed_count": 24,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 42,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C37']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C37"
+      ],
+      "au_at_episode_end": [
+        "C37"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b0",
+      "budget_seconds": 0.15,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C10",
+        "C25"
+      ],
+      "accepted_unfulfilled_count": 2,
+      "completed_count": 14,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 57,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v3:battery_depleted",
+        "missing_commitments:['C10', 'C25']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C10",
+        "C25"
+      ],
+      "au_at_episode_end": [
+        "C10",
+        "C25"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_no_reuse",
+      "budget_seconds": 0.15,
+      "seed": 7,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 20,
+      "replay_ok": true,
+      "end_time": 510.0,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.15,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C10",
+        "C25"
+      ],
+      "accepted_unfulfilled_count": 2,
+      "completed_count": 14,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 57,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v3:battery_depleted",
+        "missing_commitments:['C10', 'C25']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C10",
+        "C25"
+      ],
+      "au_at_episode_end": [
+        "C10",
+        "C25"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.4,
+      "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 20,
+      "replay_ok": true,
+      "end_time": 510.0,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1",
+      "budget_seconds": 0.4,
+      "seed": 3,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 27,
+      "replay_ok": true,
+      "end_time": 532.0294738357647,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 567.0294738357647,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "b1",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C33",
+        "C36",
+        "C37",
+        "C41",
+        "C42",
+        "C45"
+      ],
+      "accepted_unfulfilled_count": 6,
+      "completed_count": 22,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 37,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "missing_commitments:['C33', 'C36', 'C37', 'C41', 'C42', 'C45']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C33",
+        "C36",
+        "C37",
+        "C41",
+        "C42",
+        "C45"
+      ],
+      "au_at_episode_end": [
+        "C33",
+        "C36",
+        "C37",
+        "C41",
+        "C42",
+        "C45"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "accepted_unfulfilled_count": 3,
+      "completed_count": 22,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C34', 'C35', 'C36']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "au_at_episode_end": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_full_eval",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "accepted_unfulfilled_count": 3,
+      "completed_count": 22,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 41,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "route_infeasible:v1:battery_depleted",
+        "missing_commitments:['C34', 'C35', 'C36']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "au_at_episode_end": [
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.4,
+      "seed": 7,
+      "accepted_unfulfilled": [
+        "C25",
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "accepted_unfulfilled_count": 5,
+      "completed_count": 20,
+      "replay_ok": true,
+      "end_time": 1595.0,
+      "t_max": 1600.0,
+      "termination_reason": "cutoff_next_event_after_tmax",
+      "pending_next_event_time": 1630.0,
+      "no_feasible_continuation_count": 43,
+      "label": "cutoff_censor_with_accepted_unfulfilled",
+      "flags": [
+        "had_no_feasible_continuation_decisions",
+        "pending_event_after_tmax",
+        "residual_continuation_infeasible"
+      ],
+      "residual_check": "nominal_continuation_at_final_obs",
+      "residual_feasible": false,
+      "residual_source": "insertion_probe",
+      "residual_reasons": [
+        "missing_commitments:['C25', 'C33', 'C34', 'C35', 'C36']"
+      ],
+      "pending_accepted_at_final_obs": [
+        "C25",
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "au_at_episode_end": [
+        "C25",
+        "C33",
+        "C34",
+        "C35",
+        "C36"
+      ],
+      "cutoff_vs_infeasibility": "cutoff_with_infeasible_or_unknown_continuation"
+    },
+    {
+      "case_id": "B_frontier_50",
+      "controller": "m1_both_off",
+      "budget_seconds": 0.4,
+      "seed": 11,
+      "accepted_unfulfilled": [],
+      "accepted_unfulfilled_count": 0,
+      "completed_count": 20,
+      "replay_ok": true,
+      "end_time": 510.0,
+      "t_max": 1600.0,
+      "termination_reason": "natural_completion",
+      "pending_next_event_time": 545.0,
+      "no_feasible_continuation_count": 0,
+      "label": "no_accepted_unfulfilled",
+      "flags": []
+    }
+  ]
+}

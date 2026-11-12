@@ -8,7 +8,7 @@
 
 ### Latest milestone — Phase 3D (REVISE)
 
-MPC-central track (`docs/mpc_central/`): repaired plant distance + B1 scenario recourse + non-renormalizing expectation; added `CommitmentSafePredictiveMpc` and a small closed-loop pilot. **Verdict REVISE** — predictive MPC not yet better than B1 on development cases; Phase 3C adaptive wins remain order-fragile. See `PHASE3D_VALIDITY.md`, `PHASE3D_CLOSED_LOOP_RESULTS.md`, `phase3d_results.json`. Do not treat adaptive top-two allocation as the paper contribution.
+MPC-central track (`docs/mpc_central/`): repaired plant distance + B1 scenario recourse + non-renormalizing expectation; `CommitmentSafePredictiveMpc` with **causal scenario rollouts**; train/dev/holdout splits (holdout untouched); full AU residual audit (`phase3d_au_residual.json`: 0/21 cutoff residuals feasible). **Verdict REVISE** — predictive MPC not yet better than B1 on development cases; Phase 3C adaptive wins remain order-fragile. See `PHASE3D_VALIDITY.md`, `PHASE3D_CLOSED_LOOP_RESULTS.md`, `phase3d_results.json`. Do not treat adaptive top-two allocation as the paper contribution.
 
 ---
 

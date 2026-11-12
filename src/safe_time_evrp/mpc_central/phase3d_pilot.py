@@ -6,18 +6,16 @@ Modest matched comparisons only. Holdout untouched. No large benchmarks.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from statistics import mean
 
 from safe_time_evrp.commitment_safe_mpc.baseline_compare import executed_distance_from_log
-from safe_time_evrp.commitment_safe_mpc.baseline_suite import build_baseline_suite
 from safe_time_evrp.commitment_safe_mpc.full_validation_mpc import FullValidationAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.m1_mpc import CertificateCarryingAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.predictive_mpc import CommitmentSafePredictiveMpc
 from safe_time_evrp.controllers.episode import run_episode
 from safe_time_evrp.controllers.mpc import EventTriggeredMPC
-from safe_time_evrp.mpc3c.forecast import ArrivalForecast, TrainDemandAtom, build_anonymous_scenarios
-from safe_time_evrp.mpc3c.seeds import stable_seed
 from safe_time_evrp.mpc_central.causal_plant import expected_action_value
 from safe_time_evrp.mpc_central.decision_regret import (
     adaptive_mpc,
@@ -28,31 +26,14 @@ from safe_time_evrp.mpc_central.decision_regret import (
 )
 from safe_time_evrp.mpc_central.eval_bank import OfflineOracle
 from safe_time_evrp.mpc_central.forks import all_forks
+from safe_time_evrp.mpc_central.fulfillment_audit import audit_frontier_unfulfilled
+from safe_time_evrp.mpc_central.phase3d_splits import (
+    development_cases,
+    fit_train_forecast,
+    holdout_cases,
+    split_manifest,
+)
 from safe_time_evrp.validation.replay import validate_log
-
-
-def _train_forecast_from_instance(instance, *, n_scenarios: int = 2, seed: int = 0) -> ArrivalForecast:
-    """Fit anonymous atoms from *this* instance geometry only (development, not holdout)."""
-    atoms: list[TrainDemandAtom] = []
-    for cid in instance.customer_ids():
-        node = instance.node(cid)
-        atoms.append(
-            TrainDemandAtom(
-                float(node.x),
-                float(node.y),
-                float(node.demand),
-                float(node.service_time),
-                float(node.window.ready),
-                float(node.window.due),
-            )
-        )
-    model = ArrivalForecast(train_atoms=tuple(atoms), train_interarrival_mean=5.0, model_id="phase3d_dev")
-    return build_anonymous_scenarios(
-        model,
-        n_scenarios=n_scenarios,
-        customers_per_scenario=min(3, max(1, len(atoms) // 2)),
-        seed=stable_seed("phase3d", str(seed)),
-    )
 
 
 def repaired_fork_action_values() -> dict:
@@ -87,7 +68,6 @@ def repaired_fork_action_values() -> dict:
 
 def decision_layer_pilot(*, budgets: tuple[int, ...] = (3, 4)) -> dict:
     fairness = run_fairness_suite(budgets=budgets, reverse_actions=True, reverse_scenarios=True)
-    # Matched adaptive vs equal / CRN on base tags only.
     head_to_head = []
     for spec in all_forks():
         oracle = OfflineOracle.build(spec)
@@ -129,10 +109,11 @@ def _summarize_episode(case, name: str, result) -> dict:
                 "trigger": d.trigger,
                 "newly_accepted": list(d.newly_accepted),
                 "planned_service": list(d.planned_service)[:6],
-                "notes": list(d.notes)[:4],
+                "notes": list(d.notes)[:5],
             }
         )
     overrun = sum(1 for d in result.decisions if (d.audit or {}).get("predictive_mpc", {}).get("deadline_overrun"))
+    causal = sum(1 for d in result.decisions if "causal_rollouts=1" in (d.notes or []))
     return {
         "controller": name,
         "completed_count": len(completed),
@@ -146,18 +127,20 @@ def _summarize_episode(case, name: str, result) -> dict:
         "termination_reason": result.termination_reason,
         "replay_ok": report.ok,
         "deadline_overruns": overrun,
+        "causal_rollout_decisions": causal,
         "first_decisions": first_actions,
         "completed": completed,
         "accepted_unfulfilled": au,
     }
 
 
-def closed_loop_pilot(*, alns_iterations: int = 15, alns_time: float = 0.15, seed: int = 7) -> dict:
-    """Small matched closed-loop on the first two baseline development cases."""
-    cases = build_baseline_suite()[:2]
+def closed_loop_pilot(*, alns_iterations: int = 12, alns_time: float = 0.35, seed: int = 7) -> dict:
+    """Matched closed-loop on development cases; forecast fitted on train only."""
+    forecast = fit_train_forecast(n_scenarios=2, customers_per_scenario=2, seed=seed)
+    cases = development_cases()
+    holdout_ids = [c.case_id for c in holdout_cases()]
     rows = []
     for case in cases:
-        forecast = _train_forecast_from_instance(case.instance, n_scenarios=2, seed=seed)
         controllers = {
             "insertion": EventTriggeredMPC(case.instance, case.horizon),
             "b1": FullValidationAlnsMpc(
@@ -183,6 +166,8 @@ def closed_loop_pilot(*, alns_iterations: int = 15, alns_time: float = 0.15, see
                 time_limit_seconds=alns_time,
                 seed=seed,
                 allocation="uniform",
+                max_replan_interval=case.max_replan_interval,
+                rollout_max_events=250,
             ),
             "predictive_paired_crn": CommitmentSafePredictiveMpc(
                 case.instance,
@@ -193,9 +178,17 @@ def closed_loop_pilot(*, alns_iterations: int = 15, alns_time: float = 0.15, see
                 time_limit_seconds=alns_time,
                 seed=seed + 1,
                 allocation="paired_crn",
+                max_replan_interval=case.max_replan_interval,
+                rollout_max_events=250,
             ),
         }
-        case_row = {"case_id": case.case_id, "fleet_size": case.fleet_size, "controllers": {}}
+        case_row = {
+            "case_id": case.case_id,
+            "fleet_size": case.fleet_size,
+            "split": "development",
+            "forecast_source": "train_only",
+            "controllers": {},
+        }
         for name, ctrl in controllers.items():
             res = run_episode(
                 case.instance,
@@ -208,13 +201,53 @@ def closed_loop_pilot(*, alns_iterations: int = 15, alns_time: float = 0.15, see
             )
             case_row["controllers"][name] = _summarize_episode(case, name, res)
         rows.append(case_row)
-    return {"n_cases": len(rows), "rows": rows}
+    return {
+        "n_cases": len(rows),
+        "split": split_manifest(),
+        "holdout_untouched": holdout_ids,
+        "forecast_model_id": forecast.model_id,
+        "rows": rows,
+    }
 
 
-def scientific_verdict(fork_values: dict, decision: dict, closed: dict) -> dict:
+def run_au_residual_audit(*, iterations: int = 40, out_path: Path | None = None) -> dict:
+    """Full frontier AU residual feasibility audit (cutoff vs lost continuation)."""
+    art = audit_frontier_unfulfilled(iterations=iterations, limit=None)
+    # audit already includes residual fields when AU present
+    label_counts = Counter(r["label"] for r in art["rows"])
+    cutoff_feasible = sum(
+        1 for r in art["rows"] if r.get("cutoff_vs_infeasibility") == "cutoff_with_feasible_continuation"
+    )
+    cutoff_infeas = sum(
+        1 for r in art["rows"] if r.get("cutoff_vs_infeasibility") == "cutoff_with_infeasible_or_unknown_continuation"
+    )
+    residual_ok = sum(1 for r in art["rows"] if r.get("residual_feasible") is True)
+    residual_bad = sum(1 for r in art["rows"] if r.get("residual_feasible") is False)
+    residual_skip = sum(1 for r in art["rows"] if r.get("residual_check") == "skipped" or "residual_check" not in r)
+    summary = {
+        "n_audited": art["n_audited"],
+        "n_source_au_rows": art["n_source_au_rows"],
+        "label_counts": dict(label_counts),
+        "cutoff_with_feasible_continuation": cutoff_feasible,
+        "cutoff_with_infeasible_or_unknown_continuation": cutoff_infeas,
+        "residual_feasible_true": residual_ok,
+        "residual_feasible_false": residual_bad,
+        "residual_skipped": residual_skip,
+        "note": (
+            "Cutoff alone does not prove loss of a feasible continuation. "
+            "residual_feasible tests nominal commitment continuation at the final observation."
+        ),
+        "rows": art["rows"],
+    }
+    path = out_path or Path("docs/mpc_central/phase3d_au_residual.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary
+
+
+def scientific_verdict(fork_values: dict, decision: dict, closed: dict, au_audit: dict | None = None) -> dict:
     fairness = decision["fairness"]
     fragile = list(fairness.get("fragile_notes") or [])
-    # Closed-loop: does predictive beat B1 on completed or AU at matched budget?
     predictive_wins = 0
     predictive_losses = 0
     notes = []
@@ -228,19 +261,15 @@ def scientific_verdict(fork_values: dict, decision: dict, closed: dict) -> dict:
         better_au = pred["accepted_unfulfilled_count"] < b1["accepted_unfulfilled_count"]
         worse_completed = pred["completed_count"] < b1["completed_count"]
         worse_au = pred["accepted_unfulfilled_count"] > b1["accepted_unfulfilled_count"]
-        if better_completed or better_au:
-            if worse_completed or worse_au:
-                notes.append(f"{row['case_id']}: mixed predictive vs B1")
-            else:
-                predictive_wins += 1
-                notes.append(f"{row['case_id']}: predictive improves vs B1")
+        if (better_completed or better_au) and not (worse_completed or worse_au):
+            predictive_wins += 1
+            notes.append(f"{row['case_id']}: predictive improves vs B1")
         elif worse_completed or worse_au:
             predictive_losses += 1
             notes.append(f"{row['case_id']}: predictive worse vs B1")
         else:
             notes.append(f"{row['case_id']}: predictive indistinguishable from B1 on completed/AU")
 
-    # Adaptive vs equal on base head-to-head
     ada_vs_eq = []
     for h in decision["head_to_head_base"]:
         if h["adaptive_regret"] + 1e-9 < h["equal_regret"]:
@@ -260,16 +289,30 @@ def scientific_verdict(fork_values: dict, decision: dict, closed: dict) -> dict:
         reason = (
             "Some predictive closed-loop gains exist, but results remain fragile or mixed against strong baselines."
         )
-    elif all(x == "tie" for x in ada_vs_eq) and predictive_wins == 0:
-        verdict = "REVISE"
-        reason = (
-            "Repaired evaluation contracts are in place, but the predictive controller does not yet "
-            "show a mechanism-specific closed-loop advantage over B1 / equal allocation."
-        )
     else:
         verdict = "REVISE"
         reason = (
             "Evidence does not yet support claiming a novel MPC contribution over established rollout/B1 baselines."
+        )
+
+    supported = [
+        "Executed distance now uses arc-table reconstruction (nonzero on traveled routes).",
+        "Scenario recourse default is B1-validated; insertion retained as labeled baseline.",
+        "sampled_expectation no longer renormalizes over partial samples.",
+        "CommitmentSafePredictiveMpc uses causal closed-loop scenario rollouts on the real plant.",
+        "Forecast fitted on train split only; development pilot; holdout untouched.",
+    ]
+    unproved = [
+        "Order-robust adaptive allocation advantage (Phase 3C fragile wins remain).",
+        "Global multistage optimality of the offline first-action reference.",
+        "Superiority of the predictive controller over B1 / equal / CRN as a paper claim.",
+        "Holdout generalization (intentionally unevaluated).",
+    ]
+    if au_audit is not None:
+        supported.append(
+            f"AU residual audit: {au_audit['n_audited']} episodes; "
+            f"cutoff_feasible={au_audit['cutoff_with_feasible_continuation']}, "
+            f"cutoff_infeas_or_unknown={au_audit['cutoff_with_infeasible_or_unknown_continuation']}."
         )
 
     return {
@@ -285,33 +328,39 @@ def scientific_verdict(fork_values: dict, decision: dict, closed: dict) -> dict:
         "fairness_verdict": fairness["verdict"],
         "fragile_notes": fragile,
         "notes": notes,
-        "supported": [
-            "Executed distance now uses arc-table reconstruction (nonzero on traveled routes).",
-            "Scenario recourse default is B1-validated; insertion retained as labeled baseline.",
-            "sampled_expectation no longer renormalizes over partial samples.",
-            "CommitmentSafePredictiveMpc runs on the real plant via run_episode.",
-        ],
-        "unproved": [
-            "Order-robust adaptive allocation advantage (Phase 3C fragile wins remain).",
-            "Global multistage optimality of the offline first-action reference.",
-            "Train/holdout forecast generalization (pilot uses development atoms only).",
-            "Superiority of the predictive controller over B1 / equal / CRN as a paper claim.",
-        ],
+        "supported": supported,
+        "unproved": unproved,
     }
 
 
-def run_phase3d_pilot(*, out_path: Path | None = None) -> dict:
+def run_phase3d_pilot(*, out_path: Path | None = None, run_au_audit: bool = True) -> dict:
     fork_values = repaired_fork_action_values()
     decision = decision_layer_pilot()
     closed = closed_loop_pilot()
-    verdict = scientific_verdict(fork_values, decision, closed)
-    # Compact fairness for artifact (full comparisons retained).
+    au_audit = None
+    au_summary = None
+    if run_au_audit:
+        au_path = Path("docs/mpc_central/phase3d_au_residual.json")
+        au_audit = run_au_residual_audit(iterations=40, out_path=au_path)
+        au_summary = {
+            "n_audited": au_audit["n_audited"],
+            "label_counts": au_audit["label_counts"],
+            "cutoff_with_feasible_continuation": au_audit["cutoff_with_feasible_continuation"],
+            "cutoff_with_infeasible_or_unknown_continuation": au_audit[
+                "cutoff_with_infeasible_or_unknown_continuation"
+            ],
+            "residual_feasible_true": au_audit["residual_feasible_true"],
+            "residual_feasible_false": au_audit["residual_feasible_false"],
+            "artifact": str(au_path),
+        }
+    verdict = scientific_verdict(fork_values, decision, closed, au_summary)
     fairness = decision["fairness"]
     artifact = {
         "phase": "3D",
         "verdict": verdict["verdict"],
         "reason": verdict["reason"],
         "scientific": verdict,
+        "splits": closed["split"],
         "repaired_fork_values": fork_values,
         "fairness_summary": {
             "n_comparisons": fairness["n_comparisons"],
@@ -325,6 +374,7 @@ def run_phase3d_pilot(*, out_path: Path | None = None) -> dict:
         },
         "head_to_head_base": decision["head_to_head_base"],
         "closed_loop": closed,
+        "au_residual_summary": au_summary,
         "mean_closed_loop_optimize_seconds": {
             name: mean(r["controllers"][name]["optimize_seconds"] for r in closed["rows"])
             for name in closed["rows"][0]["controllers"]

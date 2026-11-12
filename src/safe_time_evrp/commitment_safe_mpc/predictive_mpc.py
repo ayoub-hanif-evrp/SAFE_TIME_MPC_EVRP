@@ -1,9 +1,9 @@
 """Minimal commitment-safe predictive MPC (Phase 3D).
 
 ALNS / insertion generate candidate routes. This controller selects among
-validated first decisions using information-safe forecast scenarios and B1
-continuation validation. Not claimed novel vs OCBA / standard stochastic MPC
-until pilot evidence says so.
+validated first decisions using information-safe forecast scenarios and **causal
+closed-loop scenario rollouts** (B1-validated recourse). Not claimed novel vs
+standard stochastic MPC until pilot evidence says so.
 """
 
 from __future__ import annotations
@@ -16,15 +16,10 @@ from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_co
 from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
 from safe_time_evrp.controllers.mpc import EventTriggeredMPC
 from safe_time_evrp.environment.energy import NominalLinearEnergy
-from safe_time_evrp.environment.physics import evaluate_route
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
-from safe_time_evrp.mpc3c.forecast import (
-    ArrivalForecast,
-    ForecastCustomer,
-    augment_instance_for_planning,
-    visible_forecast,
-)
+from safe_time_evrp.mpc3c.forecast import ArrivalForecast, visible_forecast
+from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value
 
 
 @dataclass
@@ -34,40 +29,12 @@ class PredictiveMpcProfile:
     validation_seconds: float = 0.0
     fallbacks: int = 0
     candidates_rejected_invalid: int = 0
+    causal_rollouts: int = 0
     notes: list[str] = field(default_factory=list)
 
 
-def _forecast_lookahead_value(
-    public: Instance,
-    observation: Observation,
-    routes: dict[str, list[Visit]],
-    forecasts: list[ForecastCustomer],
-    energy: NominalLinearEnergy,
-) -> float:
-    """Heuristic closed-loop proxy: how many forecast nodes remain insertable after commitments."""
-    if not forecasts:
-        return 0.0
-    aug = augment_instance_for_planning(public, forecasts)
-    # Score: +10 per forecast customer for which a single-vehicle append is feasible after routes.
-    value = 0.0
-    for vid, visits in routes.items():
-        vview = next(v for v in observation.vehicles if v.id == vid)
-        base = evaluate_route(aug, vview.anchor, visits, energy)
-        if not base.feasible:
-            continue
-        for fc in forecasts:
-            trial = list(visits) + [Visit(fc.customer_id, "service")]
-            res = evaluate_route(aug, vview.anchor, trial, energy)
-            if res.feasible and fc.customer_id in res.served:
-                value += 10.0 - 0.1 * (res.distance - base.distance)
-    return value
-
-
 class CommitmentSafePredictiveMpc:
-    """Event-triggered predictive MPC with validated fallback.
-
-    Interface matches B0/B1/M1: ``decide(observation, trigger) -> Decision``.
-    """
+    """Event-triggered predictive MPC with validated fallback and causal rollouts."""
 
     def __init__(
         self,
@@ -81,6 +48,8 @@ class CommitmentSafePredictiveMpc:
         seed: int = 0,
         energy: NominalLinearEnergy | None = None,
         allocation: str = "uniform",
+        max_replan_interval: float = 5.0,
+        rollout_max_events: int = 400,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -89,12 +58,14 @@ class CommitmentSafePredictiveMpc:
         self.energy = energy or NominalLinearEnergy()
         self.time_limit_seconds = time_limit_seconds
         self.allocation = allocation
+        self.max_replan_interval = max_replan_interval
+        self.rollout_max_events = rollout_max_events
         self._alns = ReactiveAlnsMpc(
             instance,
             horizon,
             energy=self.energy,
             iterations=alns_iterations,
-            time_limit_seconds=max(0.05, time_limit_seconds * 0.6),
+            time_limit_seconds=max(0.05, time_limit_seconds * 0.45),
             seed=seed,
         )
         self._insertion = EventTriggeredMPC(instance, horizon, self.energy)
@@ -102,11 +73,23 @@ class CommitmentSafePredictiveMpc:
         self.profile = PredictiveMpcProfile()
         self.last_validation_status = "UNKNOWN"
 
+    def _scenario_forecasts(self, observation: Observation) -> list[list]:
+        if self.forecast is None:
+            return []
+        out = []
+        for s_idx in range(self.n_scenarios):
+            out.append(visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx))
+        return out
+
     def decide(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
         snapshot = make_public_snapshot(self._full, observation, self.horizon)
         public = snapshot.instance
-        notes = ["commitment_safe_predictive_mpc", f"allocation={self.allocation}"]
+        notes = [
+            "commitment_safe_predictive_mpc",
+            f"allocation={self.allocation}",
+            "causal_rollouts=1",
+        ]
         this_val = 0.0
 
         prev_ok = False
@@ -119,7 +102,6 @@ class CommitmentSafePredictiveMpc:
                 self._verified = None
                 notes.append("previous_witness_invalidated")
 
-        # Candidate generators: ALNS + insertion (physically executable proposals).
         raw_alns = self._alns.decide(observation, trigger)
         raw_ins = self._insertion.decide(observation, trigger)
         candidates: list[tuple[str, Decision]] = [("alns", raw_alns), ("insertion", raw_ins)]
@@ -144,8 +126,12 @@ class CommitmentSafePredictiveMpc:
             )
             candidates.append(("incumbent", incumb))
 
+        scenario_fcs = self._scenario_forecasts(observation)
+        # Paired CRN: same scenario list order for every candidate (already index-ordered).
+        if self.allocation == "uniform":
+            pass
+
         scored: list[tuple[float, str, Decision, list[str]]] = []
-        scenario_budget = self.n_scenarios
         for name, cand in candidates:
             if perf_counter() - started > self.time_limit_seconds:
                 notes.append("cooperative_deadline_hit_during_scoring")
@@ -159,7 +145,6 @@ class CommitmentSafePredictiveMpc:
             )
             this_val += report.seconds
             if not report.ok:
-                # Drop new accepts; try commitments-only validation.
                 report2 = validate_continuation(public, observation, cand.routes, energy=self.energy)
                 this_val += report2.seconds
                 if not report2.ok:
@@ -184,28 +169,30 @@ class CommitmentSafePredictiveMpc:
                     notes=list(cand.notes) + ["stripped_unvalidated_accepts"],
                 )
                 served = list(report2.served)
-                nom_dist = report2.distance
             else:
                 served = list(report.served)
-                nom_dist = report.distance
 
-            value = 100.0 * len(served) - nom_dist
-            if self.forecast is not None:
-                # Uniform / equal scenario indices (deterministic; order-stable).
-                indices = list(range(scenario_budget))
-                if self.allocation == "paired_crn":
-                    indices = list(range(scenario_budget))  # same set for every candidate
-                for s_idx in indices:
-                    if perf_counter() - started > self.time_limit_seconds:
-                        notes.append("deadline_during_forecast_eval")
-                        break
-                    fcs = visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx)
-                    self.profile.scenarios_evaluated += 1
-                    value += _forecast_lookahead_value(public, observation, cand.routes, fcs, self.energy)
+            if perf_counter() - started > self.time_limit_seconds:
+                notes.append("deadline_before_causal_rollout")
+                value = 100.0 * len(served)
+            else:
+                mean_v, scores = expected_rollout_value(
+                    self._full,
+                    observation,
+                    cand,
+                    scenario_fcs,
+                    horizon=self.horizon,
+                    max_scenarios=self.n_scenarios,
+                    max_replan_interval=self.max_replan_interval,
+                    max_events=self.rollout_max_events,
+                    energy=self.energy,
+                )
+                self.profile.scenarios_evaluated += len(scores)
+                self.profile.causal_rollouts += len(scores)
+                value = mean_v
             scored.append((value, name, cand, served))
 
         if scored:
-            # Lexicographic: value, then name (order-stable among ties).
             scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
             _best_v, best_name, best, served = scored[0]
             newly = [c for c in best.newly_accepted if c in served]
@@ -271,6 +258,7 @@ class CommitmentSafePredictiveMpc:
                 "validation_seconds_this_decision": this_val,
                 "predictive_mpc": {
                     "scenarios_evaluated": self.profile.scenarios_evaluated,
+                    "causal_rollouts": self.profile.causal_rollouts,
                     "n_candidates_scored": len(scored),
                     "deadline_overrun": elapsed > self.time_limit_seconds,
                     "allocation": self.allocation,

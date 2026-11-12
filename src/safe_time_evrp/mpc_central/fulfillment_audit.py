@@ -18,35 +18,31 @@ def _controller_factory(name: str, case, *, budget: float, seed: int, iterations
     return factory(name, case, budget=budget, seed=seed, iterations=iterations)
 
 
-def _residual_continuation_feasible(case, controller_name: str, *, budget: float, seed: int, iterations: int) -> dict:
-    """Re-run and test whether outstanding accepted customers still have a nominal continuation.
+class _CaptureController:
+    def __init__(self, inner):
+        self.inner = inner
+        self.last_obs = None
+        self.last_decision = None
 
-    Cutoff alone does not prove loss of feasibility. This check asks the final observation
-    whether a commitment-only validated plan covering remaining accepted customers exists.
+    def decide(self, observation, trigger):
+        self.last_obs = observation
+        decision = self.inner.decide(observation, trigger)
+        self.last_decision = decision
+        return decision
+
+
+def _residual_from_final_state(case, capture: _CaptureController, result) -> dict:
+    """Test whether outstanding accepted customers still have a nominal continuation.
+
+    Cutoff alone does not prove loss of feasibility. Tries, in order:
+    1) last verified witness on the controller,
+    2) last dispatched routes,
+    3) a fresh insertion proposal on the final observation (commitment-oriented).
     """
     from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_continuation
     from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
+    from safe_time_evrp.controllers.mpc import EventTriggeredMPC
 
-    class _Capture:
-        def __init__(self, inner):
-            self.inner = inner
-            self.last_obs = None
-
-        def decide(self, observation, trigger):
-            self.last_obs = observation
-            return self.inner.decide(observation, trigger)
-
-    inner = _controller_factory(controller_name, case, budget=budget, seed=seed, iterations=iterations)
-    capture = _Capture(inner)
-    result = run_episode(
-        case.instance,
-        case.releases,
-        fleet_size=case.fleet_size,
-        horizon=case.horizon,
-        max_replan_interval=case.max_replan_interval,
-        t_max=case.t_max,
-        controller=capture,
-    )
     au = sorted(cid for cid, st in result.final_requests.items() if st == "accepted_unfulfilled")
     if not au or capture.last_obs is None:
         return {
@@ -55,22 +51,45 @@ def _residual_continuation_feasible(case, controller_name: str, *, budget: float
             "residual_reasons": [],
         }
     obs = capture.last_obs
-    # Prefer last verified routes from B1/M1-style controllers when present.
-    routes = getattr(inner, "_verified_routes", None) or getattr(inner, "_verified", None)
-    if routes is None:
-        routes = {v.id: [] for v in obs.vehicles}
+    inner = capture.inner
     snap = make_public_snapshot(case.instance, obs, case.horizon)
-    report = validate_continuation(snap.instance, obs, routes, require_new=frozenset())
+    public = snap.instance
     pending = set(obs.accepted) - set(obs.completed) - set(obs.in_service)
+
+    candidates: list[tuple[str, dict]] = []
+    witness = getattr(inner, "_verified_routes", None) or getattr(inner, "_verified", None)
+    if witness is not None:
+        candidates.append(("verified_witness", {vid: list(vs) for vid, vs in witness.items()}))
+    if capture.last_decision is not None:
+        candidates.append(("last_decision_routes", {vid: list(vs) for vid, vs in capture.last_decision.routes.items()}))
+    # Construct a residual insertion plan from the final public observation.
+    ins = EventTriggeredMPC(case.instance, case.horizon)
+    residual_dec = ins.decide(obs, "residual_feasibility_probe")
+    candidates.append(("insertion_probe", {vid: list(vs) for vid, vs in residual_dec.routes.items()}))
+
+    best_ok = False
+    best_source = "none"
+    best_reasons: list[str] = []
+    for source, routes in candidates:
+        report = validate_continuation(public, obs, routes, require_new=frozenset())
+        if report.ok:
+            best_ok = True
+            best_source = source
+            best_reasons = []
+            break
+        best_source = source
+        best_reasons = list(report.reasons)[:5]
+
     return {
         "residual_check": "nominal_continuation_at_final_obs",
-        "residual_feasible": report.ok,
-        "residual_reasons": list(report.reasons)[:5],
+        "residual_feasible": best_ok,
+        "residual_source": best_source,
+        "residual_reasons": best_reasons,
         "pending_accepted_at_final_obs": sorted(pending),
         "au_at_episode_end": au,
         "cutoff_vs_infeasibility": (
             "cutoff_with_feasible_continuation"
-            if result.termination_reason == "cutoff_next_event_after_tmax" and report.ok
+            if result.termination_reason == "cutoff_next_event_after_tmax" and best_ok
             else "cutoff_with_infeasible_or_unknown_continuation"
             if result.termination_reason == "cutoff_next_event_after_tmax"
             else "non_cutoff"
@@ -87,7 +106,9 @@ def classify_episode(
     iterations: int = 80,
     check_residual: bool = True,
 ) -> dict:
-    ctrl = _controller_factory(controller_name, case, budget=budget, seed=seed, iterations=iterations)
+    inner = _controller_factory(controller_name, case, budget=budget, seed=seed, iterations=iterations)
+    capture = _CaptureController(inner) if check_residual else None
+    ctrl = capture if capture is not None else inner
     result = run_episode(
         case.instance,
         case.releases,
@@ -128,10 +149,8 @@ def classify_episode(
         flags.append("last_log_time_ge_tmax")  # informational only; not a terminator
 
     residual = {}
-    if check_residual and au:
-        residual = _residual_continuation_feasible(
-            case, controller_name, budget=budget, seed=seed, iterations=iterations
-        )
+    if check_residual and au and capture is not None:
+        residual = _residual_from_final_state(case, capture, result)
         if residual.get("cutoff_vs_infeasibility") == "cutoff_with_feasible_continuation":
             flags.append("cutoff_but_residual_continuation_feasible")
         elif residual.get("residual_feasible") is False:

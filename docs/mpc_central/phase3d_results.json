@@ -26,14 +26,30 @@
       "Executed distance now uses arc-table reconstruction (nonzero on traveled routes).",
       "Scenario recourse default is B1-validated; insertion retained as labeled baseline.",
       "sampled_expectation no longer renormalizes over partial samples.",
-      "CommitmentSafePredictiveMpc runs on the real plant via run_episode."
+      "CommitmentSafePredictiveMpc uses causal closed-loop scenario rollouts on the real plant.",
+      "Forecast fitted on train split only; development pilot; holdout untouched."
     ],
     "unproved": [
       "Order-robust adaptive allocation advantage (Phase 3C fragile wins remain).",
       "Global multistage optimality of the offline first-action reference.",
-      "Train/holdout forecast generalization (pilot uses development atoms only).",
-      "Superiority of the predictive controller over B1 / equal / CRN as a paper claim."
+      "Superiority of the predictive controller over B1 / equal / CRN as a paper claim.",
+      "Holdout generalization (intentionally unevaluated)."
     ]
+  },
+  "splits": {
+    "train": [
+      "B_tight_battery",
+      "B_competing"
+    ],
+    "development": [
+      "B_phase_b",
+      "B_easy_dynamic"
+    ],
+    "holdout": [
+      "B_adversarial_overaccept"
+    ],
+    "holdout_status": "untouched",
+    "forecast_rule": "fit_empirical_arrivals on train instances only; anonymous scenarios only"
   },
   "repaired_fork_values": {
     "cases": [
@@ -303,10 +319,31 @@
   ],
   "closed_loop": {
     "n_cases": 2,
+    "split": {
+      "train": [
+        "B_tight_battery",
+        "B_competing"
+      ],
+      "development": [
+        "B_phase_b",
+        "B_easy_dynamic"
+      ],
+      "holdout": [
+        "B_adversarial_overaccept"
+      ],
+      "holdout_status": "untouched",
+      "forecast_rule": "fit_empirical_arrivals on train instances only; anonymous scenarios only"
+    },
+    "holdout_untouched": [
+      "B_adversarial_overaccept"
+    ],
+    "forecast_model_id": "train_atoms=7;pooled_ready_gap_mean=8.333333;NOT_valid_announcement_interarrival",
     "rows": [
       {
         "case_id": "B_phase_b",
         "fleet_size": 2,
+        "split": "development",
+        "forecast_source": "train_only",
         "controllers": {
           "insertion": {
             "controller": "insertion",
@@ -315,12 +352,13 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.0005647000070894137,
+            "optimize_seconds": 0.0005371000152081251,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -362,12 +400,13 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.022523600011481903,
+            "optimize_seconds": 0.0176181000424549,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -379,9 +418,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               },
               {
@@ -392,9 +432,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               },
               {
@@ -405,9 +446,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               }
             ],
@@ -424,12 +466,13 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.021632699979818426,
+            "optimize_seconds": 0.016822100020362996,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -485,12 +528,13 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.025867399977869354,
+            "optimize_seconds": 0.042599699983838946,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 11,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -503,6 +547,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -515,6 +560,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -527,6 +573,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               }
@@ -544,12 +591,13 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.024031099979765713,
+            "optimize_seconds": 0.045264300002600066,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 11,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -562,6 +610,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -574,6 +623,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -586,6 +636,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               }
@@ -601,6 +652,8 @@
       {
         "case_id": "B_easy_dynamic",
         "fleet_size": 2,
+        "split": "development",
+        "forecast_source": "train_only",
         "controllers": {
           "insertion": {
             "controller": "insertion",
@@ -609,12 +662,13 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.0005204999906709418,
+            "optimize_seconds": 0.000514300016220659,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -661,12 +715,13 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.02790009998716414,
+            "optimize_seconds": 0.021113299982971512,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -678,9 +733,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               },
               {
@@ -694,9 +750,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               },
               {
@@ -708,9 +765,10 @@
                 ],
                 "notes": [
                   "reactive_alns_mpc",
-                  "iterations=15",
+                  "iterations=12",
                   "improvements=0",
-                  "improved_over_constructor=False"
+                  "improved_over_constructor=False",
+                  "status=CERTIFIED_FEASIBLE"
                 ]
               }
             ],
@@ -728,12 +786,13 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.026108400023076683,
+            "optimize_seconds": 0.020724500020151027,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 0,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -794,12 +853,13 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.029093199991621077,
+            "optimize_seconds": 0.04264359999797307,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 12,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -812,6 +872,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -827,6 +888,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -840,6 +902,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               }
@@ -858,12 +921,13 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.02865049998217728,
+            "optimize_seconds": 0.04259359998104628,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
+            "causal_rollout_decisions": 12,
             "first_decisions": [
               {
                 "trigger": "request_release",
@@ -876,6 +940,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -891,6 +956,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               },
@@ -904,6 +970,7 @@
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
+                  "causal_rollouts=1",
                   "selected=insertion"
                 ]
               }
@@ -919,11 +986,12 @@
       }
     ]
   },
+  "au_residual_summary": null,
   "mean_closed_loop_optimize_seconds": {
-    "insertion": 0.0005425999988801777,
-    "b1": 0.02521184999932302,
-    "m1": 0.023870550001447555,
-    "predictive_uniform": 0.027480299984745216,
-    "predictive_paired_crn": 0.026340799980971497
+    "insertion": 0.0005257000157143921,
+    "b1": 0.019365700012713205,
+    "m1": 0.01877330002025701,
+    "predictive_uniform": 0.04262164999090601,
+    "predictive_paired_crn": 0.043928949991823174
   }
 }
