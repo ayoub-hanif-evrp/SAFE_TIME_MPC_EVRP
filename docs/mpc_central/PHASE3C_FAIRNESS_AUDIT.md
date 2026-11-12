@@ -1,7 +1,12 @@
 # Phase 3C — Fairness audit (matched evaluation budgets)
 
-**Branch tip at authorship:** post-`fd366b4` Phase 3C work  
+**Branch tip at authorship:** `bf8838d` Phase 3C work  
 **Verdict: REVISE**
+
+> **Phase 3D note:** Numbers below match the committed `phase3c_results.json` written by
+> `tests/test_mpc_central_phase3c.py` with `budgets=(3, 4)` → **18** comparisons / **15** ties.
+> An earlier draft of this document incorrectly stated 27 / 24 (that would be
+> `budgets=(3, 4, 6)`). Reconciled 12 November 2026.
 
 ## Defects repaired
 
@@ -16,14 +21,17 @@
 
 | Metric | Value |
 |--------|------:|
-| Comparisons (base + order/scenario stress) | 27 |
+| Comparisons (base + order/scenario stress) | 18 |
 | Adaptive better than uniform | 3 |
 | Uniform better than adaptive | 0 |
-| Ties | 24 |
+| Ties | 15 |
 | Fragile notes | 3 (all budget=3 wins vanish under reversed candidate order) |
 
 **Interpretation:** Under *honest* budgets, adaptive still wins a few original-order budget-3 cells, but those wins are **order-dependent**. That is not a trustworthy MPC-specific mechanism.
 
 ## Stop / next
 
-Do **not** scale Phase 4 on this evidence. Revise the allocation rule (or the scientific claim) so any advantage survives candidate/scenario order permutations and stronger baselines (random allocation is included in the suite rows).
+Do **not** scale Phase 4 on this evidence. Phase 3D repairs the evaluation contract
+(distance, B1 recourse, estimation) and introduces a minimal closed-loop predictive
+MPC controller compared against B1 / equal allocation / paired CRN — not another
+hand-designed adaptive-sampler paper claim.

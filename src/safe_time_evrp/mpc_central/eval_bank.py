@@ -49,21 +49,26 @@ class EvalBank:
         hit = self._cache.get((action, int(scenario_index)))
         return None if hit is None else hit.value
 
-    def sampled_expectation(self, action: str) -> float | None:
-        """Probability-reweighted expectation over *sampled* scenarios only.
+    def sampled_expectation(self, action: str, *, missing_fill: float = 0.0) -> float | None:
+        """Estimate E[V] with fixed prior fill for unsampled scenarios (no renormalization).
 
-        Unsampled scenarios contribute nothing; probabilities of sampled ones are
-        renormalized. Returns None if the action has no samples.
+        For each scenario k:
+          - if sampled: use the cached plant value
+          - if not: use ``missing_fill`` (default 0 = no credit for unseen futures)
+
+        This is intentionally conservative and order-transparent. It is **not** an
+        unbiased estimator of the full expectation unless every scenario is sampled.
+        Returns None only when the action has never been evaluated at all.
         """
-        hits = [
-            (k, self._cache[(action, k)].value) for k in range(len(self.spec.scenarios)) if (action, k) in self._cache
-        ]
-        if not hits:
+        if not any((action, k) in self._cache for k in range(len(self.spec.scenarios))):
             return None
-        mass = sum(self.spec.scenario_probs[k] for k, _ in hits)
-        if mass <= 0:
-            return None
-        return sum((self.spec.scenario_probs[k] / mass) * val for k, val in hits)
+        total = 0.0
+        for k, p in enumerate(self.spec.scenario_probs):
+            if (action, k) in self._cache:
+                total += p * self._cache[(action, k)].value
+            else:
+                total += p * missing_fill
+        return total
 
     def sampled_indices(self, action: str) -> tuple[int, ...]:
         return tuple(k for k in range(len(self.spec.scenarios)) if (action, k) in self._cache)

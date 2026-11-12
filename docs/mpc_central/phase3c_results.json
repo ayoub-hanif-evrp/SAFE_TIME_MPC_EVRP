@@ -1,7 +1,8 @@
 {
   "verdict": "REVISE",
   "reason": "Adaptive shows some matched-budget wins, but they are fragile to ordering and/or sometimes worse than uniform \u2014 revise the allocation rule.",
-  "reference_label": "exhaustive_first_action_ranking_under_causal_reactive_recourse",
+  "reference_label": "exhaustive_first_action_ranking_under_causal_b1_validated_recourse",
+  "estimation_note": "sampled_expectation uses prior-weighted fill (missing_fill=0) for unsampled scenarios \u2014 no probability renormalization. equal_allocation and paired_common_random are established discrete R&S / CRN baselines; classic OCBA is not used because plant values are deterministic given scenario.",
   "n_comparisons": 18,
   "adaptive_better": 3,
   "adaptive_worse": 0,
@@ -18,11 +19,17 @@
       "budget": 3,
       "uniform_action": "serve_near",
       "adaptive_action": "charge_first",
-      "uniform_regret": 65.0,
+      "equal_action": "serve_near",
+      "crn_action": "serve_near",
+      "uniform_regret": 47.491796067500616,
       "adaptive_regret": 0.0,
+      "equal_regret": 47.491796067500616,
+      "crn_regret": 47.491796067500616,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "adaptive_mpc",
+      "vs_equal_allocation": "adaptive_better",
+      "vs_paired_crn": "adaptive_better",
       "candidate_order": [
         "serve_near",
         "charge_first"
@@ -38,11 +45,17 @@
       "budget": 4,
       "uniform_action": "charge_first",
       "adaptive_action": "charge_first",
+      "equal_action": "charge_first",
+      "crn_action": "charge_first",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "serve_near",
         "charge_first"
@@ -58,11 +71,17 @@
       "budget": 3,
       "uniform_action": "charge_first",
       "adaptive_action": "charge_first",
+      "equal_action": "charge_first",
+      "crn_action": "charge_first",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "charge_first",
         "serve_near"
@@ -78,11 +97,17 @@
       "budget": 4,
       "uniform_action": "charge_first",
       "adaptive_action": "charge_first",
+      "equal_action": "charge_first",
+      "crn_action": "charge_first",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "charge_first",
         "serve_near"
@@ -98,11 +123,17 @@
       "budget": 3,
       "uniform_action": "charge_first",
       "adaptive_action": "charge_first",
+      "equal_action": "charge_first",
+      "crn_action": "charge_first",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "serve_near",
         "charge_first"
@@ -118,11 +149,17 @@
       "budget": 4,
       "uniform_action": "charge_first",
       "adaptive_action": "charge_first",
+      "equal_action": "charge_first",
+      "crn_action": "charge_first",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "serve_near",
         "charge_first"
@@ -138,11 +175,17 @@
       "budget": 3,
       "uniform_action": "accept_now",
       "adaptive_action": "reject_now",
-      "uniform_regret": 60.0,
+      "equal_action": "accept_now",
+      "crn_action": "accept_now",
+      "uniform_regret": 90.4,
       "adaptive_regret": 0.0,
+      "equal_regret": 90.4,
+      "crn_regret": 90.4,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "adaptive_mpc",
+      "vs_equal_allocation": "adaptive_better",
+      "vs_paired_crn": "adaptive_better",
       "candidate_order": [
         "accept_now",
         "reject_now"
@@ -158,11 +201,17 @@
       "budget": 4,
       "uniform_action": "reject_now",
       "adaptive_action": "reject_now",
+      "equal_action": "reject_now",
+      "crn_action": "reject_now",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now",
         "reject_now"
@@ -178,11 +227,17 @@
       "budget": 3,
       "uniform_action": "reject_now",
       "adaptive_action": "reject_now",
+      "equal_action": "reject_now",
+      "crn_action": "reject_now",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "reject_now",
         "accept_now"
@@ -198,11 +253,17 @@
       "budget": 4,
       "uniform_action": "reject_now",
       "adaptive_action": "reject_now",
+      "equal_action": "reject_now",
+      "crn_action": "reject_now",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "reject_now",
         "accept_now"
@@ -218,11 +279,17 @@
       "budget": 3,
       "uniform_action": "reject_now",
       "adaptive_action": "reject_now",
+      "equal_action": "reject_now",
+      "crn_action": "reject_now",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now",
         "reject_now"
@@ -238,11 +305,17 @@
       "budget": 4,
       "uniform_action": "reject_now",
       "adaptive_action": "reject_now",
+      "equal_action": "reject_now",
+      "crn_action": "reject_now",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now",
         "reject_now"
@@ -258,11 +331,17 @@
       "budget": 3,
       "uniform_action": "accept_now_after_must",
       "adaptive_action": "reject_now_serve_must",
-      "uniform_regret": 50.0,
+      "equal_action": "accept_now_after_must",
+      "crn_action": "accept_now_after_must",
+      "uniform_regret": 79.53101291502418,
       "adaptive_regret": 0.0,
+      "equal_regret": 79.53101291502418,
+      "crn_regret": 79.53101291502418,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "adaptive_mpc",
+      "vs_equal_allocation": "adaptive_better",
+      "vs_paired_crn": "adaptive_better",
       "candidate_order": [
         "accept_now_after_must",
         "reject_now_serve_must"
@@ -278,11 +357,17 @@
       "budget": 4,
       "uniform_action": "reject_now_serve_must",
       "adaptive_action": "reject_now_serve_must",
+      "equal_action": "reject_now_serve_must",
+      "crn_action": "reject_now_serve_must",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now_after_must",
         "reject_now_serve_must"
@@ -298,11 +383,17 @@
       "budget": 3,
       "uniform_action": "reject_now_serve_must",
       "adaptive_action": "reject_now_serve_must",
+      "equal_action": "reject_now_serve_must",
+      "crn_action": "reject_now_serve_must",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "reject_now_serve_must",
         "accept_now_after_must"
@@ -318,11 +409,17 @@
       "budget": 4,
       "uniform_action": "reject_now_serve_must",
       "adaptive_action": "reject_now_serve_must",
+      "equal_action": "reject_now_serve_must",
+      "crn_action": "reject_now_serve_must",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "reject_now_serve_must",
         "accept_now_after_must"
@@ -338,11 +435,17 @@
       "budget": 3,
       "uniform_action": "reject_now_serve_must",
       "adaptive_action": "reject_now_serve_must",
+      "equal_action": "reject_now_serve_must",
+      "crn_action": "reject_now_serve_must",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 3,
       "adaptive_evals": 3,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now_after_must",
         "reject_now_serve_must"
@@ -358,11 +461,17 @@
       "budget": 4,
       "uniform_action": "reject_now_serve_must",
       "adaptive_action": "reject_now_serve_must",
+      "equal_action": "reject_now_serve_must",
+      "crn_action": "reject_now_serve_must",
       "uniform_regret": 0.0,
       "adaptive_regret": 0.0,
+      "equal_regret": 0.0,
+      "crn_regret": 0.0,
       "uniform_evals": 4,
       "adaptive_evals": 4,
       "winner": "tie",
+      "vs_equal_allocation": "tie",
+      "vs_paired_crn": "tie",
       "candidate_order": [
         "accept_now_after_must",
         "reject_now_serve_must"
@@ -380,12 +489,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0009099999879254028,
+      "wall_seconds": 0.0014722000050824136,
       "action": "serve_near",
-      "true_value": 100.0,
-      "regret": 65.0,
+      "true_value": 88.0,
+      "regret": 47.491796067500616,
       "best_action": "charge_first",
-      "estimated_value": 100.0,
+      "estimated_value": 88.0,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -397,12 +506,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0017919999809237197,
+      "wall_seconds": 0.002793099993141368,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -411,202 +520,304 @@
     {
       "tag": "base",
       "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
+      "policy": "equal_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0009123999916482717,
+      "wall_seconds": 0.0018191000126535073,
       "action": "serve_near",
-      "true_value": 100.0,
-      "regret": 65.0,
+      "true_value": 88.0,
+      "regret": 47.491796067500616,
       "best_action": "charge_first",
-      "estimated_value": 100.0,
+      "estimated_value": 88.0,
       "notes": [
         "budget=3",
-        "seed=0"
+        "rs_equal_allocation"
       ]
     },
     {
       "tag": "base",
       "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
+      "policy": "paired_common_random",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0017591000214451924,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=3",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0021366000146372244,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=3",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "uniform_rollout",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002456299989717081,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=4",
-        "actual_evals=4"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "adaptive_mpc",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0020985999872209504,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=4",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002075900003546849,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=4",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002097700009471737,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=4",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002069700014544651,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=4",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_a_predictive_charging",
-      "policy": "uniform_rollout",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0017419000068912283,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=3",
-        "actual_evals=3"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_a_predictive_charging",
-      "policy": "adaptive_mpc",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0024505999899702147,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=3",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0019403999904170632,
-      "action": "charge_first",
-      "true_value": 165.0,
-      "regret": 0.0,
-      "best_action": "charge_first",
-      "estimated_value": 165.0,
-      "notes": [
-        "budget=3",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_a_predictive_charging",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0009289000154240057,
+      "wall_seconds": 0.001562899982673116,
       "action": "serve_near",
-      "true_value": 100.0,
-      "regret": 65.0,
+      "true_value": 88.0,
+      "regret": 47.491796067500616,
       "best_action": "charge_first",
-      "estimated_value": 100.0,
+      "estimated_value": 88.0,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.001534599985461682,
+      "action": "serve_near",
+      "true_value": 88.0,
+      "regret": 47.491796067500616,
+      "best_action": "charge_first",
+      "estimated_value": 88.0,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028231000032974407,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028584999818122014,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "uniform_rollout",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003201999992597848,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "actual_evals=4"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "adaptive_mpc",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0032124999997904524,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003564300001016818,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0032688000064808875,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.00330470000335481,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0034501999762142077,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003195500001311302,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002812499995343387,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "actual_evals=3"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028279000107431784,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028058000025339425,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028008000081172213,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0030092000088188797,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0017060000100173056,
+      "action": "serve_near",
+      "true_value": 88.0,
+      "regret": 47.491796067500616,
+      "best_action": "charge_first",
+      "estimated_value": 88.0,
       "notes": [
         "budget=3",
         "seed=1"
@@ -618,12 +829,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.001673899998422712,
+      "wall_seconds": 0.0026270000089425594,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 200.0,
+      "estimated_value": 108.08966744387541,
       "notes": [
         "budget=3",
         "seed=2"
@@ -635,12 +846,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0020862999954260886,
+      "wall_seconds": 0.003247799992095679,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -652,12 +863,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0020891000021947548,
+      "wall_seconds": 0.0032421000069007277,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -666,15 +877,49 @@
     {
       "tag": "rev_actions",
       "case_id": "case_a_predictive_charging",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0032079999946290627,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003600300013204105,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_a_predictive_charging",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.002064500004053116,
+      "wall_seconds": 0.0034583999804453924,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=0"
@@ -686,12 +931,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.002073800002108328,
+      "wall_seconds": 0.003188699993188493,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=1"
@@ -703,12 +948,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.00308400001085829,
+      "wall_seconds": 0.003130899989628233,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=2"
@@ -720,12 +965,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0017035000055329874,
+      "wall_seconds": 0.0028565999964484945,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 200.0,
+      "estimated_value": 108.08966744387541,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -737,12 +982,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.001670199999352917,
+      "wall_seconds": 0.002628700007335283,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 200.0,
+      "estimated_value": 108.08966744387541,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -751,15 +996,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_a_predictive_charging",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002510899998014793,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 108.08966744387541,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_a_predictive_charging",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002515000000130385,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 108.08966744387541,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_a_predictive_charging",
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0016429000097559765,
+      "wall_seconds": 0.0025064999936148524,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 200.0,
+      "estimated_value": 108.08966744387541,
       "notes": [
         "budget=3",
         "seed=0"
@@ -771,12 +1050,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0018888999911723658,
+      "wall_seconds": 0.0027642999921226874,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=3",
         "seed=1"
@@ -788,12 +1067,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.001801200007321313,
+      "wall_seconds": 0.0033720000210450962,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=3",
         "seed=2"
@@ -805,12 +1084,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.002067000008537434,
+      "wall_seconds": 0.0033067000040318817,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -822,12 +1101,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0028975000022910535,
+      "wall_seconds": 0.0032060999947134405,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -836,15 +1115,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_a_predictive_charging",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003166499998769723,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_a_predictive_charging",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003163799992762506,
+      "action": "charge_first",
+      "true_value": 135.49179606750062,
+      "regret": 0.0,
+      "best_action": "charge_first",
+      "estimated_value": 135.49179606750062,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_a_predictive_charging",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0023084999847924337,
+      "wall_seconds": 0.003206800000043586,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=0"
@@ -856,12 +1169,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0020962000271538273,
+      "wall_seconds": 0.0032549999887123704,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=1"
@@ -873,12 +1186,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0021031999785918742,
+      "wall_seconds": 0.003184000015608035,
       "action": "charge_first",
-      "true_value": 165.0,
+      "true_value": 135.49179606750062,
       "regret": 0.0,
       "best_action": "charge_first",
-      "estimated_value": 165.0,
+      "estimated_value": 135.49179606750062,
       "notes": [
         "budget=4",
         "seed=2"
@@ -890,12 +1203,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.000641400009044446,
+      "wall_seconds": 0.0014649000077042729,
       "action": "accept_now",
-      "true_value": 100.0,
-      "regret": 60.0,
+      "true_value": 60.0,
+      "regret": 90.4,
       "best_action": "reject_now",
-      "estimated_value": 100.0,
+      "estimated_value": 60.0,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -907,12 +1220,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0008377000049222261,
+      "wall_seconds": 0.001415799997630529,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -921,202 +1234,304 @@
     {
       "tag": "base",
       "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
+      "policy": "equal_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0006451999943237752,
+      "wall_seconds": 0.0016573999891988933,
       "action": "accept_now",
-      "true_value": 100.0,
-      "regret": 60.0,
+      "true_value": 60.0,
+      "regret": 90.4,
       "best_action": "reject_now",
-      "estimated_value": 100.0,
+      "estimated_value": 60.0,
       "notes": [
         "budget=3",
-        "seed=0"
+        "rs_equal_allocation"
       ]
     },
     {
       "tag": "base",
       "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
+      "policy": "paired_common_random",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0008585000032326207,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=3",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0010527999984333292,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=3",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "uniform_rollout",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0012815999943995848,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=4",
-        "actual_evals=4"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "adaptive_mpc",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0014447000139625743,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=4",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0014947999879950657,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=4",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0015108999941730872,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=4",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0013095999893266708,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=4",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "uniform_rollout",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0008435000054305419,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=3",
-        "actual_evals=3"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "adaptive_mpc",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0008381000079680234,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=3",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0008397999772569165,
-      "action": "reject_now",
-      "true_value": 160.0,
-      "regret": 0.0,
-      "best_action": "reject_now",
-      "estimated_value": 160.0,
-      "notes": [
-        "budget=3",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_b_irreversible_admission",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0006646000110777095,
+      "wall_seconds": 0.0014688999945065007,
       "action": "accept_now",
-      "true_value": 100.0,
-      "regret": 60.0,
+      "true_value": 60.0,
+      "regret": 90.4,
       "best_action": "reject_now",
-      "estimated_value": 100.0,
+      "estimated_value": 60.0,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0017174999957205728,
+      "action": "accept_now",
+      "true_value": 60.0,
+      "regret": 90.4,
+      "best_action": "reject_now",
+      "estimated_value": 60.0,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.001553299996885471,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.001678700020420365,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "uniform_rollout",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002203399984864518,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "actual_evals=4"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "adaptive_mpc",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002205199998570606,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0021874999802093953,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002300599997397512,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0022791999945184216,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002550399978645146,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0023391999857267365,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0013986999983899295,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "actual_evals=3"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0014039999950909987,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0014100999978836626,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.001383799986797385,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0015140999894356355,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0015451999934157357,
+      "action": "accept_now",
+      "true_value": 60.0,
+      "regret": 90.4,
+      "best_action": "reject_now",
+      "estimated_value": 60.0,
       "notes": [
         "budget=3",
         "seed=1"
@@ -1128,12 +1543,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0012022000009892508,
+      "wall_seconds": 0.0022579000215046108,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 200.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "seed=2"
@@ -1145,12 +1560,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.001255499999388121,
+      "wall_seconds": 0.0024997000000439584,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -1162,12 +1577,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0013847999944118783,
+      "wall_seconds": 0.0023484999837819487,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -1176,15 +1591,49 @@
     {
       "tag": "rev_actions",
       "case_id": "case_b_irreversible_admission",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0022117000044090673,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002149499996448867,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_b_irreversible_admission",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0013013999996474013,
+      "wall_seconds": 0.0022583999816561118,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=0"
@@ -1196,12 +1645,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.001342599993222393,
+      "wall_seconds": 0.0023102000122889876,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=1"
@@ -1213,12 +1662,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012672000011662021,
+      "wall_seconds": 0.0022613999899476767,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=2"
@@ -1230,12 +1679,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0014922999980626628,
+      "wall_seconds": 0.002212500010500662,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 200.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -1247,12 +1696,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0013261999993119389,
+      "wall_seconds": 0.0022404999908758327,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 200.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -1261,15 +1710,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_b_irreversible_admission",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0020810999849345535,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002318300001206808,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_b_irreversible_admission",
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0012242999946465716,
+      "wall_seconds": 0.0020843999955104664,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 200.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "seed=0"
@@ -1281,12 +1764,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0010589999874355271,
+      "wall_seconds": 0.0015943000034894794,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "seed=1"
@@ -1298,12 +1781,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.000845799979288131,
+      "wall_seconds": 0.001403700007358566,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=3",
         "seed=2"
@@ -1315,12 +1798,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012776999938068911,
+      "wall_seconds": 0.0024338000075658783,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -1332,12 +1815,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012599000037880614,
+      "wall_seconds": 0.0022077000030549243,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -1346,15 +1829,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_b_irreversible_admission",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002166700011002831,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_b_irreversible_admission",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.002193400010582991,
+      "action": "reject_now",
+      "true_value": 150.4,
+      "regret": 0.0,
+      "best_action": "reject_now",
+      "estimated_value": 150.4,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_b_irreversible_admission",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012753999908454716,
+      "wall_seconds": 0.0021684000093955547,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=0"
@@ -1366,12 +1883,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012475999974412844,
+      "wall_seconds": 0.002132900001015514,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=1"
@@ -1383,12 +1900,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0012414999946486205,
+      "wall_seconds": 0.002156899994588457,
       "action": "reject_now",
-      "true_value": 160.0,
+      "true_value": 150.4,
       "regret": 0.0,
       "best_action": "reject_now",
-      "estimated_value": 160.0,
+      "estimated_value": 150.4,
       "notes": [
         "budget=4",
         "seed=2"
@@ -1400,12 +1917,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.001790100010111928,
+      "wall_seconds": 0.0030218000028980896,
       "action": "accept_now_after_must",
-      "true_value": 200.0,
-      "regret": 50.0,
+      "true_value": 156.0,
+      "regret": 79.53101291502418,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 200.0,
+      "estimated_value": 156.0,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -1417,12 +1934,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0017927000008057803,
+      "wall_seconds": 0.0026174999948125333,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -1431,202 +1948,304 @@
     {
       "tag": "base",
       "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
+      "policy": "equal_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0015853999939281493,
+      "wall_seconds": 0.0030645000078948215,
       "action": "accept_now_after_must",
-      "true_value": 200.0,
-      "regret": 50.0,
+      "true_value": 156.0,
+      "regret": 79.53101291502418,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 200.0,
+      "estimated_value": 156.0,
       "notes": [
         "budget=3",
-        "seed=0"
+        "rs_equal_allocation"
       ]
     },
     {
       "tag": "base",
       "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
+      "policy": "paired_common_random",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0015287000132957473,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=3",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0018438999832142144,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=3",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "uniform_rollout",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002341099956538528,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=4",
-        "actual_evals=4"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "adaptive_mpc",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002514099993277341,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=4",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.0024916000111261383,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=4",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002949300003820099,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=4",
-        "seed=1"
-      ]
-    },
-    {
-      "tag": "base",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 4,
-      "actual_evals": 4,
-      "wall_seconds": 0.002414300019154325,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=4",
-        "seed=2"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "uniform_rollout",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0015106999926501885,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=3",
-        "actual_evals=3"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "adaptive_mpc",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0015204999945126474,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=3",
-        "no_oracle_in_loop"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0016040999762481079,
-      "action": "reject_now_serve_must",
-      "true_value": 250.0,
-      "regret": 0.0,
-      "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
-      "notes": [
-        "budget=3",
-        "seed=0"
-      ]
-    },
-    {
-      "tag": "rev_actions",
-      "case_id": "case_c_commitment_plus_uncertain",
-      "policy": "random_allocation",
-      "budget": 3,
-      "actual_evals": 3,
-      "wall_seconds": 0.0015877999685471877,
+      "wall_seconds": 0.002987700019730255,
       "action": "accept_now_after_must",
-      "true_value": 200.0,
-      "regret": 50.0,
+      "true_value": 156.0,
+      "regret": 79.53101291502418,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 200.0,
+      "estimated_value": 156.0,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.003553899980033748,
+      "action": "accept_now_after_must",
+      "true_value": 156.0,
+      "regret": 79.53101291502418,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 156.0,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002591600001323968,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0027907999901799485,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "uniform_rollout",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003912999993190169,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "actual_evals=4"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "adaptive_mpc",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003889200001140125,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0043806999892694876,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.004270200006430969,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0039259999903151765,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003916399989975616,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "seed=1"
+      ]
+    },
+    {
+      "tag": "base",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.004214599961414933,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "seed=2"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "uniform_rollout",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002402600002824329,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "actual_evals=3"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "adaptive_mpc",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002378600009251386,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "no_oracle_in_loop"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.002386699998169206,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0023612999939359725,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0028137000190326944,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=3",
+        "seed=0"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "random_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.003080099995713681,
+      "action": "accept_now_after_must",
+      "true_value": 156.0,
+      "regret": 79.53101291502418,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 156.0,
       "notes": [
         "budget=3",
         "seed=1"
@@ -1638,12 +2257,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0021776000212412328,
+      "wall_seconds": 0.0036840000102529302,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 300.0,
+      "estimated_value": 212.53101291502418,
       "notes": [
         "budget=3",
         "seed=2"
@@ -1655,12 +2274,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.00250170000072103,
+      "wall_seconds": 0.0038711000088369474,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -1672,12 +2291,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.002796400003717281,
+      "wall_seconds": 0.004281199988326989,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -1686,15 +2305,49 @@
     {
       "tag": "rev_actions",
       "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.00416550000954885,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.003851000001304783,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_actions",
+      "case_id": "case_c_commitment_plus_uncertain",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0024484000023221597,
+      "wall_seconds": 0.003802400009590201,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=0"
@@ -1706,12 +2359,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0023505999997723848,
+      "wall_seconds": 0.0039505999884568155,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=1"
@@ -1723,12 +2376,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.003340999988722615,
+      "wall_seconds": 0.004349499999079853,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=2"
@@ -1740,12 +2393,12 @@
       "policy": "uniform_rollout",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.002195500012021512,
+      "wall_seconds": 0.003585800004657358,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 300.0,
+      "estimated_value": 212.53101291502418,
       "notes": [
         "budget=3",
         "actual_evals=3"
@@ -1757,12 +2410,12 @@
       "policy": "adaptive_mpc",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.003274799993960187,
+      "wall_seconds": 0.0035645000025397167,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 300.0,
+      "estimated_value": 212.53101291502418,
       "notes": [
         "budget=3",
         "no_oracle_in_loop"
@@ -1771,15 +2424,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "equal_allocation",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.004193799992208369,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 212.53101291502418,
+      "notes": [
+        "budget=3",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "paired_common_random",
+      "budget": 3,
+      "actual_evals": 3,
+      "wall_seconds": 0.0037939999892842025,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 212.53101291502418,
+      "notes": [
+        "budget=3",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_c_commitment_plus_uncertain",
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0022047000093152747,
+      "wall_seconds": 0.00381879998894874,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 300.0,
+      "estimated_value": 212.53101291502418,
       "notes": [
         "budget=3",
         "seed=0"
@@ -1791,12 +2478,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0018625999946380034,
+      "wall_seconds": 0.002625599969178438,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=3",
         "seed=1"
@@ -1808,12 +2495,12 @@
       "policy": "random_allocation",
       "budget": 3,
       "actual_evals": 3,
-      "wall_seconds": 0.0016904000076465309,
+      "wall_seconds": 0.0023773000139044598,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=3",
         "seed=2"
@@ -1825,12 +2512,12 @@
       "policy": "uniform_rollout",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0025397999852430075,
+      "wall_seconds": 0.004420300014317036,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "actual_evals=4"
@@ -1842,12 +2529,12 @@
       "policy": "adaptive_mpc",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.00235800001246389,
+      "wall_seconds": 0.0038407999963965267,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "no_oracle_in_loop"
@@ -1856,15 +2543,49 @@
     {
       "tag": "rev_scenarios",
       "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "equal_allocation",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0038283999892883003,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "rs_equal_allocation"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_c_commitment_plus_uncertain",
+      "policy": "paired_common_random",
+      "budget": 4,
+      "actual_evals": 4,
+      "wall_seconds": 0.0038308999937726185,
+      "action": "reject_now_serve_must",
+      "true_value": 235.53101291502418,
+      "regret": 0.0,
+      "best_action": "reject_now_serve_must",
+      "estimated_value": 235.53101291502418,
+      "notes": [
+        "budget=4",
+        "paired_crn"
+      ]
+    },
+    {
+      "tag": "rev_scenarios",
+      "case_id": "case_c_commitment_plus_uncertain",
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0023527000012109056,
+      "wall_seconds": 0.004164699974353425,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=0"
@@ -1876,12 +2597,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.0029051000165054575,
+      "wall_seconds": 0.003886499980580993,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=1"
@@ -1893,12 +2614,12 @@
       "policy": "random_allocation",
       "budget": 4,
       "actual_evals": 4,
-      "wall_seconds": 0.00250909999886062,
+      "wall_seconds": 0.0037650000012945384,
       "action": "reject_now_serve_must",
-      "true_value": 250.0,
+      "true_value": 235.53101291502418,
       "regret": 0.0,
       "best_action": "reject_now_serve_must",
-      "estimated_value": 250.0,
+      "estimated_value": 235.53101291502418,
       "notes": [
         "budget=4",
         "seed=2"

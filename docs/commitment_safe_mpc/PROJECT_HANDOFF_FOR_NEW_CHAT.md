@@ -1,10 +1,14 @@
 # Project handoff — SAFE_TIME_MPC_EVRP (for a new chat)
 
 **Purpose of this file:** paste or attach this into a new ChatGPT / Cursor chat so work continues without losing context.  
-**Last updated:** 2026-11-11  
-**Active branch:** `research/decision-relevant-dual-mpc` (tip at handoff time: `6e8187c`)  
+**Last updated:** 2026-11-12  
+**Active branch:** `research/commitment-safe-predictive-mpc`  
 **Remote:** `https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP.git`  
 **Repo path (local):** `SAFE_TIME_MPC_EVRP`
+
+### Latest milestone — Phase 3D (REVISE)
+
+MPC-central track (`docs/mpc_central/`): repaired plant distance + B1 scenario recourse + non-renormalizing expectation; added `CommitmentSafePredictiveMpc` and a small closed-loop pilot. **Verdict REVISE** — predictive MPC not yet better than B1 on development cases; Phase 3C adaptive wins remain order-fragile. See `PHASE3D_VALIDITY.md`, `PHASE3D_CLOSED_LOOP_RESULTS.md`, `phase3d_results.json`. Do not treat adaptive top-two allocation as the paper contribution.
 
 ---
 

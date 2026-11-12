@@ -1,18 +1,23 @@
 """FleetSimulator-backed causal evaluation of first actions.
 
 Scenarios reveal customers only at their release times. After the shared first
-decision, recourse is forecast-blind reactive insertion on the public observation.
+decision, default recourse is B1-style commitment-validated insertion
+(``recourse='b1_validated'``). Raw insertion remains available as a labeled baseline
+(``recourse='insertion'``). Executed distance is reconstructed from the arc table
+via ``executed_distance_from_log`` (depart records do not store distance). Periodic
+``replan_interval`` events match ``run_episode``.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
+from safe_time_evrp.commitment_safe_mpc.baseline_compare import executed_distance_from_log
 from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_continuation
 from safe_time_evrp.controllers.mpc import EventTriggeredMPC
 from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy
 from safe_time_evrp.environment.simulator import FleetSimulator, SimulatorError
-from safe_time_evrp.models.state import Decision, RequestStatus, Visit
+from safe_time_evrp.models.state import Decision, Observation, RequestStatus, Visit
 from safe_time_evrp.mpc_central.forks import ForkSpec
 from safe_time_evrp.validation.replay import validate_log
 
@@ -139,6 +144,119 @@ def _prepare_sim(spec: ForkSpec, scenario: tuple[tuple[str, float], ...]) -> Fle
     return sim
 
 
+class B1ValidatedRecourse:
+    """Insertion proposals with independent nominal continuation validation (B1-style).
+
+    Heavier than raw EventTriggeredMPC; lighter than full ALNS–B1. Used as the
+    default scenario-recourse policy for safety-relevant experiments.
+    """
+
+    def __init__(self, instance, horizon: float) -> None:
+        self._inner = EventTriggeredMPC(instance, horizon)
+        self._instance = instance
+        self._verified: dict[str, list[Visit]] | None = None
+
+    def decide(self, observation: Observation, trigger: str) -> Decision:
+        raw = self._inner.decide(observation, trigger)
+        report = validate_continuation(
+            self._instance,
+            observation,
+            raw.routes,
+            require_new=frozenset(raw.newly_accepted),
+        )
+        notes = list(raw.notes) + ["b1_validated_recourse"]
+        if report.ok:
+            newly = [c for c in raw.newly_accepted if c in report.served]
+            self._verified = {vid: list(vs) for vid, vs in raw.routes.items()}
+            accepted = list(observation.accepted)
+            for c in newly:
+                if c not in accepted:
+                    accepted.append(c)
+            return Decision(
+                time=raw.time,
+                routes=raw.routes,
+                accepted=accepted,
+                newly_accepted=newly,
+                rejected=[c for c in raw.rejected if c not in newly],
+                deferred=list(raw.deferred),
+                fallback_used=False,
+                no_feasible_continuation=False,
+                horizon_extended=raw.horizon_extended,
+                planned_service=list(raw.planned_service),
+                total_distance=raw.total_distance,
+                total_charge_time=raw.total_charge_time,
+                optimize_seconds=raw.optimize_seconds,
+                trigger=trigger,
+                locked_destinations=dict(raw.locked_destinations),
+                notes=notes + ["validated_with_new_accepts" if newly else "validated_commitments_only"],
+                audit={"validation_status": "CERTIFIED_FEASIBLE", **(raw.audit or {})},
+            )
+        # Drop new accepts; try commitments only.
+        report2 = validate_continuation(self._instance, observation, raw.routes, require_new=frozenset())
+        if report2.ok:
+            self._verified = {vid: list(vs) for vid, vs in raw.routes.items()}
+            return Decision(
+                time=raw.time,
+                routes=raw.routes,
+                accepted=list(observation.accepted),
+                newly_accepted=[],
+                rejected=list(raw.rejected) + list(raw.newly_accepted),
+                deferred=list(raw.deferred),
+                fallback_used=True,
+                no_feasible_continuation=False,
+                horizon_extended=raw.horizon_extended,
+                planned_service=list(raw.planned_service),
+                total_distance=raw.total_distance,
+                total_charge_time=raw.total_charge_time,
+                optimize_seconds=raw.optimize_seconds,
+                trigger=trigger,
+                locked_destinations=dict(raw.locked_destinations),
+                notes=notes + ["rejected_unvalidated_new_accepts"],
+                audit={"validation_status": "CERTIFIED_FEASIBLE", **(raw.audit or {})},
+            )
+        if self._verified is not None:
+            prev = validate_continuation(self._instance, observation, self._verified, require_new=frozenset())
+            if prev.ok:
+                return Decision(
+                    time=raw.time,
+                    routes={vid: list(vs) for vid, vs in self._verified.items()},
+                    accepted=list(observation.accepted),
+                    newly_accepted=[],
+                    rejected=list(raw.newly_accepted),
+                    deferred=[],
+                    fallback_used=True,
+                    no_feasible_continuation=False,
+                    horizon_extended=False,
+                    planned_service=[],
+                    total_distance=0.0,
+                    total_charge_time=0.0,
+                    optimize_seconds=raw.optimize_seconds,
+                    trigger=trigger,
+                    locked_destinations={},
+                    notes=notes + ["reused_previous_witness"],
+                    audit={"validation_status": "CERTIFIED_FEASIBLE"},
+                )
+        return Decision(
+            time=raw.time,
+            routes={v.id: [] for v in observation.vehicles},
+            accepted=list(observation.accepted),
+            newly_accepted=[],
+            rejected=list(raw.newly_accepted),
+            deferred=[],
+            fallback_used=True,
+            no_feasible_continuation=True,
+            horizon_extended=False,
+            planned_service=[],
+            total_distance=0.0,
+            total_charge_time=0.0,
+            optimize_seconds=raw.optimize_seconds,
+            trigger=trigger,
+            locked_destinations={},
+            notes=notes + ["status=UNKNOWN"],
+            audit={"validation_status": "UNKNOWN"},
+        )
+
+
 def evaluate_action_scenario(
     spec: ForkSpec,
     action: str,
@@ -147,12 +265,12 @@ def evaluate_action_scenario(
     scenario_index: int = 0,
     horizon: float = 200.0,
     max_replan_interval: float = 5.0,
+    recourse: str = "b1_validated",
 ) -> PlantEpisodeScore:
-    del max_replan_interval  # reactive MPC schedules its own replans via episode triggers
     sim = _prepare_sim(spec, scenario)
     vid = next(iter(sim.vehicles))
     first = action_to_decision(spec, action, vehicle_id=vid)
-    notes: list[str] = []
+    notes: list[str] = [f"recourse={recourse}"]
 
     # Refuse first decisions that name still-hidden customers.
     hidden = {cid for cid, st in sim.requests.items() if st is RequestStatus.HIDDEN}
@@ -211,40 +329,38 @@ def evaluate_action_scenario(
             notes=tuple(notes),
             log_kinds=tuple(rec.kind for rec in sim.log),
         )
-    reactive = EventTriggeredMPC(spec.instance, horizon=horizon)
+
+    if recourse == "insertion":
+        controller: EventTriggeredMPC | B1ValidatedRecourse = EventTriggeredMPC(spec.instance, horizon=horizon)
+    else:
+        controller = B1ValidatedRecourse(spec.instance, horizon=horizon)
+
+    # Match run_episode: schedule periodic replans on the plant event heap.
+    replan_id = sim.schedule_replan(sim.time + max_replan_interval)
     events = 0
-    replan_every = 8.0
-    next_force = sim.time + replan_every
     while events < 20_000:
         nxt = sim.next_event_time()
-        # Forced replan ticks so idle fleets reconsider after releases.
-        if nxt is None or (nxt > next_force + EPS and sim.time + EPS < spec.t_max):
-            if sim.time + EPS >= spec.t_max:
-                break
-            # Advance time via a no-op wait only if there is a future event beyond force.
-            if nxt is not None and nxt <= spec.t_max + EPS:
-                # Insert a decide at next_force by waiting until min(nxt, next_force) — plant has no wait API.
-                # Fall through to pop if nxt <= next_force; else decide now while idle.
-                idle = all(v.status.value == "idle" for v in sim.vehicles.values())
-                if idle and sim.time + EPS >= next_force:
-                    decision = reactive.decide(sim.observation(), "replan")
-                    if decision.routes and vid not in decision.routes:
-                        decision.routes = {vid: next(iter(decision.routes.values()))}
-                    sim.apply_decision(decision)
-                    next_force = sim.time + replan_every
-                    continue
         if nxt is None or nxt > spec.t_max + EPS:
             break
         event = sim.pop_event()
         events += 1
         if event is None:
             break
-        if event.kind in _TRIGGERS:
-            decision = reactive.decide(sim.observation(), event.kind)
-            if decision.routes and vid not in decision.routes:
+        if event.kind in _TRIGGERS or event.kind == "replan_interval":
+            decision = controller.decide(sim.observation(), event.kind)
+            if decision.routes and vid not in decision.routes and decision.routes:
                 decision.routes = {vid: next(iter(decision.routes.values()))}
+            # Strip any still-hidden targets from routes.
+            hidden_now = {cid for cid, st in sim.requests.items() if st is RequestStatus.HIDDEN}
+            cleaned = {
+                v_id: [vis for vis in visits if vis.node_id not in hidden_now]
+                for v_id, visits in decision.routes.items()
+            }
+            decision.routes = cleaned
             sim.apply_decision(decision)
-            next_force = sim.time + replan_every
+            if replan_id is not None:
+                sim.cancel(replan_id)
+            replan_id = sim.schedule_replan(sim.time + max_replan_interval)
         open_status = {"announced", "accepted", "deferred", "in_service"}
         if not any(s.value in open_status for s in sim.requests.values()):
             if all(v.status.value == "idle" and v.node == spec.instance.depot_id for v in sim.vehicles.values()):
@@ -254,9 +370,10 @@ def evaluate_action_scenario(
     report = validate_log(spec.instance, sim.log)
     completed = tuple(sorted(cid for cid, st in sim.requests.items() if st.value == "completed"))
     au = tuple(sorted(cid for cid, st in sim.requests.items() if st.value == "accepted_unfulfilled"))
-    dist = sum(float(rec.data.get("distance") or 0.0) for rec in sim.log if rec.kind == "depart")
+    dist = executed_distance_from_log(spec.instance, sim.log)
     value = SERVICE_REWARD * len(completed) - UNFULFILLED_PENALTY * len(au) - DISTANCE_PENALTY * dist
     notes.append(f"events={events}")
+    notes.append(f"executed_distance={dist:.6f}")
     return PlantEpisodeScore(
         action=action,
         scenario_index=scenario_index,

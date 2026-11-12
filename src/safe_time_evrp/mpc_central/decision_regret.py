@@ -180,6 +180,79 @@ def adaptive_mpc(spec: ForkSpec, oracle: OfflineOracle, *, budget: int) -> EvalB
     )
 
 
+def equal_allocation(spec: ForkSpec, oracle: OfflineOracle, *, budget: int) -> EvalBudgetResult:
+    """Classical equal allocation: round-robin next unseen scenario per action.
+
+    Established ranking-and-selection baseline when within-scenario noise is absent
+    (our plant rollouts are deterministic given the scenario index). Classic OCBA
+    needs nonzero within-design variance and is not applicable here without noise.
+    """
+    bank = EvalBank(spec)
+    actions = list(spec.candidate_actions)
+    next_k = {a: 0 for a in actions}
+    n_sc = len(spec.scenarios)
+    while bank.n_evals < budget:
+        progressed = False
+        for action in actions:
+            if bank.n_evals >= budget:
+                break
+            k = next_k[action]
+            if k >= n_sc:
+                continue
+            bank.evaluate(action, k)
+            next_k[action] = k + 1
+            progressed = True
+        if not progressed:
+            break
+    estimates = {
+        a: (bank.sampled_expectation(a) if bank.sampled_expectation(a) is not None else -1e18) for a in actions
+    }
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
+    return EvalBudgetResult(
+        policy="equal_allocation",
+        action=action,
+        estimated_value=estimates[action],
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=(f"budget={budget}", "rs_equal_allocation"),
+    )
+
+
+def paired_common_random(spec: ForkSpec, oracle: OfflineOracle, *, budget: int) -> EvalBudgetResult:
+    """Paired CRN: complete all actions on scenario k before advancing k.
+
+    Reduces order artifacts from incomplete scenario coverage across actions.
+    """
+    bank = EvalBank(spec)
+    actions = list(spec.candidate_actions)
+    n_sc = len(spec.scenarios)
+    for k in range(n_sc):
+        for action in actions:
+            if bank.n_evals >= budget:
+                break
+            bank.evaluate(action, k)
+        if bank.n_evals >= budget:
+            break
+    estimates = {
+        a: (bank.sampled_expectation(a) if bank.sampled_expectation(a) is not None else -1e18) for a in actions
+    }
+    action = _pick_best(estimates)
+    best = max(oracle.values.values())
+    return EvalBudgetResult(
+        policy="paired_common_random",
+        action=action,
+        estimated_value=estimates[action],
+        true_value=oracle.values[action],
+        regret=best - oracle.values[action],
+        scenario_evals=bank.n_evals,
+        wall_seconds=bank.wall_seconds,
+        notes=(f"budget={budget}", "paired_crn"),
+    )
+
+
 def run_fairness_suite(
     *,
     budgets: tuple[int, ...] = (3, 4, 6),
@@ -199,8 +272,10 @@ def run_fairness_suite(
             b_eff = max(b, len(spec.candidate_actions))
             uni = uniform_rollout(spec, oracle, budget=b_eff)
             ada = adaptive_mpc(spec, oracle, budget=b_eff)
+            eq = equal_allocation(spec, oracle, budget=b_eff)
+            crn = paired_common_random(spec, oracle, budget=b_eff)
             rnd_results = [random_allocation(spec, oracle, budget=b_eff, seed=s) for s in random_seeds]
-            for res in (uni, ada, *rnd_results):
+            for res in (uni, ada, eq, crn, *rnd_results):
                 assert res.scenario_evals <= b_eff
                 rows.append(
                     {
@@ -224,6 +299,18 @@ def run_fairness_suite(
                 winner = "uniform_rollout"
             else:
                 winner = "tie"
+            if ada.regret + 1e-9 < eq.regret:
+                vs_equal = "adaptive_better"
+            elif eq.regret + 1e-9 < ada.regret:
+                vs_equal = "equal_better"
+            else:
+                vs_equal = "tie"
+            if ada.regret + 1e-9 < crn.regret:
+                vs_crn = "adaptive_better"
+            elif crn.regret + 1e-9 < ada.regret:
+                vs_crn = "crn_better"
+            else:
+                vs_crn = "tie"
             comparisons.append(
                 {
                     "tag": tag,
@@ -231,11 +318,17 @@ def run_fairness_suite(
                     "budget": b_eff,
                     "uniform_action": uni.action,
                     "adaptive_action": ada.action,
+                    "equal_action": eq.action,
+                    "crn_action": crn.action,
                     "uniform_regret": uni.regret,
                     "adaptive_regret": ada.regret,
+                    "equal_regret": eq.regret,
+                    "crn_regret": crn.regret,
                     "uniform_evals": uni.scenario_evals,
                     "adaptive_evals": ada.scenario_evals,
                     "winner": winner,
+                    "vs_equal_allocation": vs_equal,
+                    "vs_paired_crn": vs_crn,
                     "candidate_order": list(spec.candidate_actions),
                     "scenario_order_lens": [len(s) for s in spec.scenarios],
                 }
@@ -301,7 +394,13 @@ def run_fairness_suite(
     return {
         "verdict": verdict,
         "reason": reason,
-        "reference_label": "exhaustive_first_action_ranking_under_causal_reactive_recourse",
+        "reference_label": "exhaustive_first_action_ranking_under_causal_b1_validated_recourse",
+        "estimation_note": (
+            "sampled_expectation uses prior-weighted fill (missing_fill=0) for unsampled "
+            "scenarios — no probability renormalization. equal_allocation and "
+            "paired_common_random are established discrete R&S / CRN baselines; "
+            "classic OCBA is not used because plant values are deterministic given scenario."
+        ),
         "n_comparisons": len(comparisons),
         "adaptive_better": adaptive_better,
         "adaptive_worse": adaptive_worse,
