@@ -201,7 +201,16 @@ class CommitmentSafePredictiveMpc:
         self.profile.scoring_seconds += perf_counter() - t_score
 
         if scored:
-            scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+            # Tie-break: higher value, then more new accepts, then more service first-legs,
+            # then prefer non-wait names — never let "wait_idle" beat an equal-valued serve.
+            def _rank(item: tuple[float, str, Decision, list[str]]):
+                value, name, cand, _served = item
+                key = FirstActionKey.from_decision(cand)
+                n_service = sum(1 for leg in key.first_legs if leg[2] == "service")
+                not_wait = 0 if name.startswith("wait") or name == "wait_idle" else 1
+                return (value, len(key.newly_accepted), n_service, not_wait, name)
+
+            scored.sort(key=_rank, reverse=True)
             _best_v, best_name, best, served = scored[0]
             newly = [c for c in best.newly_accepted if c in served and c not in observation.completed]
             routes = sanitize_routes(observation, best.routes)

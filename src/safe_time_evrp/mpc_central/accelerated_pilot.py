@@ -152,13 +152,19 @@ def action_diversity_gate(case: BaselineCase) -> dict:
 
 def run_accelerated_pilot(
     *,
+    out_path: Path | None = None,
     out_dir: Path | None = None,
     alns_iterations: int = 10,
     alns_time: float = 0.35,
     seed: int = 7,
     max_cases: int | None = None,
+    write_tracked_default: bool = False,
 ) -> dict:
-    out_dir = out_dir or Path("docs/mpc_central")
+    """Run matched development pilot.
+
+    By default does **not** overwrite tracked ``accelerated_results.json`` unless
+    ``write_tracked_default=True`` or an explicit ``out_path`` is provided.
+    """
     forecast = fit_train_forecast(n_scenarios=2, customers_per_scenario=2, seed=seed, announcement_mean=12.0)
     # Independent forecast seed for plant/forecast separation check in artifact.
     forecast_alt = build_anonymous_scenarios(
@@ -325,12 +331,20 @@ def run_accelerated_pilot(
             "construction + commitment-preserving evaluation contracts, not from the argmax itself."
         ),
     }
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "accelerated_results.json").write_text(json.dumps(artifact, indent=2), encoding="utf-8")
+    if out_path is None:
+        base = out_dir or Path("docs/mpc_central")
+        out_path = base / "accelerated_results.json" if write_tracked_default else None
+    if out_path is not None:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
+        artifact["artifact_path"] = str(out_path)
     return artifact
 
 
 if __name__ == "__main__":
-    art = run_accelerated_pilot()
+    art = run_accelerated_pilot(
+        out_path=Path("docs/mpc_central/repaired_development_results.json"),
+        write_tracked_default=False,
+    )
     print(art["verdict"], art["reason"])
     print(art["summary"])

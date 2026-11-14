@@ -123,6 +123,7 @@ def generate_counterfactual_actions(
     alns_time: float = 0.12,
     seed: int = 0,
     include_solver_baselines: bool = True,
+    include_b1: bool = True,
 ) -> tuple[list[tuple[str, Decision]], CounterfactualDiagnostics]:
     """Return distinct commitment-safe first actions with diagnostics."""
     model = energy or NominalLinearEnergy()
@@ -139,6 +140,13 @@ def generate_counterfactual_actions(
         ins = EventTriggeredMPC(instance, horizon, model)
         raw.append(("alns", alns.decide(observation, "counterfactual")))
         raw.append(("insertion", ins.decide(observation, "counterfactual")))
+    if include_b1:
+        from safe_time_evrp.commitment_safe_mpc.full_validation_mpc import FullValidationAlnsMpc
+
+        b1 = FullValidationAlnsMpc(
+            instance, horizon, energy=model, iterations=alns_iterations, time_limit_seconds=alns_time, seed=seed
+        )
+        raw.append(("b1", b1.decide(observation, "counterfactual")))
 
     idle = _idle_vehicles(observation)
     announced = [
@@ -148,7 +156,7 @@ def generate_counterfactual_actions(
 
     # --- Accept vs reject marginal announced customers ---
     for cid in announced[:3]:
-        # Reject
+        # Reject only that customer (intentional rejection action).
         raw.append(
             (
                 f"reject:{cid}",
@@ -162,7 +170,7 @@ def generate_counterfactual_actions(
                 ),
             )
         )
-        # Accept on each idle vehicle (single-leg dispatch)
+        # Accept on each idle vehicle (do not auto-reject other announcements).
         for veh in idle:
             routes = _empty_routes(observation)
             routes[veh.id] = [Visit(cid, "service")]
@@ -174,13 +182,13 @@ def generate_counterfactual_actions(
                         "cf_accept",
                         routes,
                         newly=[cid],
-                        rejected=[c for c in announced if c != cid][:2],
+                        rejected=[],
                         notes=[f"cf_accept_{cid}_on_{veh.id}"],
                     ),
                 )
             )
 
-    # --- Charge now vs continue (idle vehicles near low SOC or anytime for diversity) ---
+    # --- Charge now (does not reject current announcements) ---
     for veh in idle:
         for sid in chargers[:2]:
             routes = _empty_routes(observation)
@@ -193,13 +201,13 @@ def generate_counterfactual_actions(
                         "cf_charge",
                         routes,
                         newly=[],
-                        rejected=list(announced[:1]),
+                        rejected=[],
                         notes=[f"cf_charge_{veh.id}_{sid}"],
                     ),
                 )
             )
 
-    # --- Wait / idle preserve commitments (empty routes) ---
+    # --- Wait / idle: defer action without rejecting announcements ---
     raw.append(
         (
             "wait_idle",
@@ -208,7 +216,7 @@ def generate_counterfactual_actions(
                 "cf_wait",
                 _empty_routes(observation),
                 newly=[],
-                rejected=list(announced[:1]),
+                rejected=[],
                 notes=["cf_wait_idle"],
             ),
         )

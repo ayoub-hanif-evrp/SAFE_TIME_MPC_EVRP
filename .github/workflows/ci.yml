@@ -15,9 +15,16 @@ jobs:
       - name: Install
         run: pip install -e ".[dev]"
       - name: Download and verify public benchmarks
+        id: benchmarks
+        continue-on-error: true
         run: |
           python -m safe_time_evrp.data.download
           python -m safe_time_evrp.data.verify
+      - name: Note benchmark download status
+        if: steps.benchmarks.outcome != 'success'
+        run: |
+          echo "::warning::Public benchmark download/verify failed (often metadata_request_failed on external hosts)."
+          echo "Lint and pytest still run; do not treat this as a Python unit-test failure."
       - name: Lint
         run: |
           ruff check src tests
@@ -26,3 +33,9 @@ jobs:
         run: python -m pytest -q
       - name: Development episode
         run: python -m safe_time_evrp.evaluation.smoke_test
+      - name: Fail job if benchmarks required and missing
+        if: steps.benchmarks.outcome != 'success'
+        run: |
+          echo "Benchmark step failed. Job marked unstable for data deps; see warning above."
+          # Keep the job red for visibility of data-pipeline issues, after tests have run.
+          exit 1

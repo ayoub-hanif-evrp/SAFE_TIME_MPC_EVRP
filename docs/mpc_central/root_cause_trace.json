@@ -1,0 +1,1227 @@
+{
+  "overall_verdict": "OBJECTIVE_MISSPECIFICATION",
+  "hypothesis": "seed_simulator_from_observation omitted request_release history \u2192 validate_log early_request_access \u2192 accept/serve scored -1e9",
+  "traces": [
+    {
+      "case_id": "B_phase_b",
+      "observation": {
+        "time": 0.0,
+        "released_open": [
+          "C1",
+          "C2"
+        ],
+        "accepted": [],
+        "vehicle_statuses": [
+          "idle",
+          "idle"
+        ]
+      },
+      "fork_probe": {
+        "has_snapshot_request_releases": true,
+        "log_kinds_prefix": [
+          "vehicle_init",
+          "vehicle_init",
+          "request_release",
+          "request_release"
+        ]
+      },
+      "b1_first_action": {
+        "newly_accepted": [
+          "C1"
+        ],
+        "rejected": [
+          "C2"
+        ],
+        "first_legs": [
+          [
+            "v1",
+            "C1",
+            "service"
+          ],
+          [
+            "v2",
+            "D",
+            "return"
+          ]
+        ]
+      },
+      "diagnostics": {
+        "raw_candidates": 12,
+        "valid_commitment_safe": 8,
+        "distinct_first_actions": 8
+      },
+      "candidates": [
+        {
+          "name": "alns",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [
+              "C2"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "C1",
+                "service"
+              ],
+              [
+                "v2",
+                "D",
+                "return"
+              ]
+            ]
+          },
+          "matches_b1_first_action": true,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 121.63367532907468,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 159.75977316062,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 40.240227,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=40.240227",
+                "events=84"
+              ]
+            },
+            {
+              "value": 83.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 16.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=16.492423",
+                "events=83"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reject:C1",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [
+              "C1"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 38.12609783154532,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 76.25219566309065,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 23.747804,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=23.747804",
+                "events=83"
+              ]
+            },
+            {
+              "value": 0.0,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 0.0,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=0.000000",
+                "events=80"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "accept:C1@v1",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "C1",
+                "service"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 121.63367532907468,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 159.75977316062,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 40.240227,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=40.240227",
+                "events=84"
+              ]
+            },
+            {
+              "value": 83.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 16.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=16.492423",
+                "events=83"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "accept:C1@v2",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "C1",
+                "service"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 121.63367532907468,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 159.75977316062,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 40.240227,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=40.240227",
+                "events=84"
+              ]
+            },
+            {
+              "value": 83.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 16.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=16.492423",
+                "events=83"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reject:C2",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [
+              "C2"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 121.63367532907468,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 159.75977316062,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 40.240227,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=40.240227",
+                "events=85"
+              ]
+            },
+            {
+              "value": 83.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 16.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=16.492423",
+                "events=82"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "charge:v1->S",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "S",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 67.50757749752935,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 67.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.492423",
+                "events=84"
+              ]
+            },
+            {
+              "value": 67.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.492423",
+                "events=84"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "charge:v2->S",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S",
+                "charge"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 67.50757749752935,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 67.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.492423",
+                "events=84"
+              ]
+            },
+            {
+              "value": 67.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.492423",
+                "events=84"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "wait_idle",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 121.63367532907468,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 159.75977316062,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 40.240227,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=40.240227",
+                "events=85"
+              ]
+            },
+            {
+              "value": 83.50757749752935,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 16.492423,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=16.492423",
+                "events=82"
+              ]
+            }
+          ]
+        }
+      ],
+      "chosen": "alns",
+      "chosen_value": 121.63367532907468,
+      "verdict": "OBJECTIVE_MISSPECIFICATION",
+      "reason": "Fork/replay valid and first action matches B1 at this epoch; closed-loop underserving (if any) arises later or from objective elsewhere."
+    },
+    {
+      "case_id": "B_tight_battery",
+      "observation": {
+        "time": 0.0,
+        "released_open": [
+          "C1",
+          "C2"
+        ],
+        "accepted": [],
+        "vehicle_statuses": [
+          "idle",
+          "idle"
+        ]
+      },
+      "fork_probe": {
+        "has_snapshot_request_releases": true,
+        "log_kinds_prefix": [
+          "vehicle_init",
+          "vehicle_init",
+          "request_release",
+          "request_release"
+        ]
+      },
+      "b1_first_action": {
+        "newly_accepted": [
+          "C1"
+        ],
+        "rejected": [
+          "C2"
+        ],
+        "first_legs": [
+          [
+            "v1",
+            "C1",
+            "service"
+          ],
+          [
+            "v2",
+            "D",
+            "return"
+          ]
+        ]
+      },
+      "diagnostics": {
+        "raw_candidates": 12,
+        "valid_commitment_safe": 8,
+        "distinct_first_actions": 8
+      },
+      "candidates": [
+        {
+          "name": "alns",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [
+              "C2"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "C1",
+                "service"
+              ],
+              [
+                "v2",
+                "D",
+                "return"
+              ]
+            ]
+          },
+          "matches_b1_first_action": true,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 156.17212568075195,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 156.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.747701",
+                "events=74"
+              ]
+            },
+            {
+              "value": 156.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.908048",
+                "events=75"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reject:C1",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [
+              "C1"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 76.17212568075196,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 76.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 23.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=23.747701",
+                "events=73"
+              ]
+            },
+            {
+              "value": 76.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 23.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=23.908048",
+                "events=72"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "accept:C1@v1",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "C1",
+                "service"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 156.17212568075195,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 156.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.747701",
+                "events=74"
+              ]
+            },
+            {
+              "value": 156.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.908048",
+                "events=75"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "accept:C1@v2",
+          "first_action_key": {
+            "newly_accepted": [
+              "C1"
+            ],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "C1",
+                "service"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 156.17212568075195,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 156.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.747701",
+                "events=74"
+              ]
+            },
+            {
+              "value": 156.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.908048",
+                "events=75"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reject:C2",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [
+              "C2"
+            ],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 156.17212568075195,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 156.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.747701",
+                "events=74"
+              ]
+            },
+            {
+              "value": 156.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.908048",
+                "events=73"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "charge:v1->S",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "S",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 106.12612406114542,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 144.25224812229084,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 55.747752,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=55.747752",
+                "events=76"
+              ]
+            },
+            {
+              "value": 68.0,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.0,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.000000",
+                "events=73"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "charge:v2->S",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S",
+                "charge"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 106.12612406114542,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 144.25224812229084,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 55.747752,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=55.747752",
+                "events=76"
+              ]
+            },
+            {
+              "value": 68.0,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 32.0,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=32.000000",
+                "events=73"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "wait_idle",
+          "first_action_key": {
+            "newly_accepted": [],
+            "rejected": [],
+            "first_legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ]
+          },
+          "matches_b1_first_action": false,
+          "nominal_ok": true,
+          "nominal_reasons": [],
+          "mean_value": 156.17212568075195,
+          "any_scenario_invalid": false,
+          "all_scenarios_minus_1e9": false,
+          "scenarios": [
+            {
+              "value": 156.25229946773794,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s0_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.747701,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.747701",
+                "events=74"
+              ]
+            },
+            {
+              "value": 156.09195189376598,
+              "replay_ok": true,
+              "replay_code": "ok",
+              "replay_detail": "",
+              "completed": [
+                "C1",
+                "syn_s1_0"
+              ],
+              "accepted_unfulfilled": [],
+              "residual_feasible_pending": [],
+              "executed_distance": 43.908048,
+              "notes": [
+                "causal_scenario_rollout",
+                "recourse=b1_validated",
+                "quiescent_epoch",
+                "horizon_end_residual_feasible",
+                "executed_distance=43.908048",
+                "events=73"
+              ]
+            }
+          ]
+        }
+      ],
+      "chosen": "alns",
+      "chosen_value": 156.17212568075195,
+      "verdict": "OBJECTIVE_MISSPECIFICATION",
+      "reason": "Fork/replay valid and first action matches B1 at this epoch; closed-loop underserving (if any) arises later or from objective elsewhere."
+    }
+  ]
+}

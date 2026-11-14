@@ -1,8 +1,19 @@
 """Causal closed-loop scenario rollouts from a public observation.
 
-Preserves the observation clock and remaining noninterruptible actions. Busy
-vehicles are **not** teleported to future anchors. Terminal scoring distinguishes
-feasible residual obligations from genuine commitment breaks.
+Snapshot-to-fork contract
+-------------------------
+The fork starts at the observation clock with public vehicle/request state.
+For independent replay, the fork log must include:
+
+* ``vehicle_init`` for every vehicle at the snapshot state
+* ``request_release`` for every *already public* customer (announced/accepted/
+  completed/rejected/deferred/in_service), timestamped at the snapshot time
+  with ``source=decision_epoch_snapshot`` — this reconstructs information
+  history for the fork suffix; it does **not** invent hidden future releases
+* For busy vehicles: matching ``depart`` / ``service_start`` / ``charge_start``
+  evidence for the remaining noninterruptible action
+
+Accessing a still-HIDDEN customer continues to fail replay and plant physics.
 """
 
 from __future__ import annotations
@@ -49,10 +60,11 @@ class ScenarioRolloutScore:
     events: int
     notes: tuple[str, ...]
     quiescent_epoch: bool = True
+    replay_code: str = "ok"
+    replay_detail: str = ""
 
 
 def is_quiescent(observation: Observation) -> bool:
-    """True iff no vehicle is mid-travel / mid-service / mid-charge."""
     for v in observation.vehicles:
         st = v.status if isinstance(v.status, VehicleStatus) else VehicleStatus(v.status)
         if st in _BUSY:
@@ -61,11 +73,21 @@ def is_quiescent(observation: Observation) -> bool:
 
 
 def announcement_release_time(fc: ForecastCustomer, now: float) -> float:
-    """Schedule plant release from announcement time (not service-window ready)."""
     announce = getattr(fc, "announcement_time", None)
     if announce is None:
         announce = fc.ready_time
     return max(float(announce), float(now))
+
+
+def _public_customer_ids(observation: Observation) -> set[str]:
+    return (
+        set(observation.released_open)
+        | set(observation.accepted)
+        | set(observation.completed)
+        | set(observation.rejected)
+        | set(observation.in_service)
+        | set(observation.deferred)
+    )
 
 
 def seed_simulator_from_observation(
@@ -75,17 +97,12 @@ def seed_simulator_from_observation(
     energy: NominalLinearEnergy | None = None,
     require_quiescent: bool = False,
 ) -> FleetSimulator:
-    """Build a plant fork matching the observation clock and physical vehicle state.
-
-    Busy vehicles keep their current node/SOC and a restored completion event at
-    ``anchor.time``. Candidates applied while busy only update suffixes (plant rule).
-    """
+    """Build a plant fork matching the observation clock with replayable history prefix."""
     if require_quiescent and not is_quiescent(observation):
         raise SimulatorError("predictive comparison restricted to quiescent decision epochs")
 
     fleet_size = len(observation.vehicles)
     sim = FleetSimulator(instance, fleet_size=fleet_size, energy=energy)
-    # Drop misleading t=0 init records; fork begins at the observation epoch.
     sim.log.clear()
     sim._log_seq = 0
     sim.time = float(observation.time)
@@ -98,6 +115,7 @@ def seed_simulator_from_observation(
             new_vehicles[view.id] = old
         sim.vehicles = new_vehicles
 
+    # 1) vehicle_init at snapshot state (required by replay).
     for view in observation.vehicles:
         vehicle = sim.vehicles[view.id]
         status = view.status if isinstance(view.status, VehicleStatus) else VehicleStatus(view.status)
@@ -110,21 +128,61 @@ def seed_simulator_from_observation(
         vehicle.locked_destination = view.locked_destination
         vehicle.anchor_after = None
         vehicle.action = None
-
+        vehicle.status = VehicleStatus.IDLE  # temporary; busy restored below
         sim._record(
-            "fork_seed",
+            "vehicle_init",
             vehicle.id,
             {
                 "node": vehicle.node,
                 "soc": vehicle.soc,
                 "load": vehicle.load,
-                "status": status.value,
-                "locked_destination": view.locked_destination,
-                "anchor_time": view.anchor.time,
-                "anchor_node": view.anchor.node,
+                "snapshot": True,
+                "observed_status": status.value,
             },
         )
 
+    # 2) Reconstruct public request_release history for already-known customers.
+    # Timestamp = observation.time (decision-epoch snapshot). Hidden customers stay absent.
+    for cid in sorted(_public_customer_ids(observation)):
+        if cid not in sim.requests:
+            continue
+        sim.release_time[cid] = float(observation.time)
+        sim._record(
+            "request_release",
+            None,
+            {
+                "customer_id": cid,
+                "time": float(observation.time),
+                "source": "decision_epoch_snapshot",
+            },
+        )
+
+    # 3) Apply public request statuses.
+    for cid in instance.customer_ids():
+        sim.requests[cid] = RequestStatus.HIDDEN
+    for cid in observation.completed:
+        if cid in sim.requests:
+            sim.requests[cid] = RequestStatus.COMPLETED
+    for cid in observation.rejected:
+        if cid in sim.requests:
+            sim.requests[cid] = RequestStatus.REJECTED
+    for cid in observation.in_service:
+        if cid in sim.requests:
+            sim.requests[cid] = RequestStatus.IN_SERVICE
+    for cid in observation.accepted:
+        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
+            sim.requests[cid] = RequestStatus.ACCEPTED
+    for cid in observation.deferred:
+        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
+            sim.requests[cid] = RequestStatus.DEFERRED
+    for cid in observation.released_open:
+        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
+            sim.requests[cid] = RequestStatus.ANNOUNCED
+
+    # 4) Restore busy noninterruptible actions with matching log evidence.
+    for view in observation.vehicles:
+        vehicle = sim.vehicles[view.id]
+        status = view.status if isinstance(view.status, VehicleStatus) else VehicleStatus(view.status)
         if status in _BUSY and view.anchor.time > observation.time + EPS:
             vehicle.status = status
             vehicle.anchor_after = Anchor(
@@ -138,6 +196,22 @@ def seed_simulator_from_observation(
                 dest = view.locked_destination or view.anchor.node
                 energy_left = max(0.0, float(view.soc) - float(view.anchor.soc))
                 travel_left = max(0.0, float(view.anchor.time) - float(observation.time))
+                sim._record(
+                    "depart",
+                    vehicle.id,
+                    {
+                        "origin": view.node,
+                        "destination": dest,
+                        "soc": view.soc,
+                        "load": view.load,
+                        "onboard": sorted(view.onboard),
+                        "travel_time": travel_left,
+                        "energy": energy_left,
+                        "time_factor": 1.0,
+                        "energy_factor": 1.0,
+                        "snapshot_remainder": True,
+                    },
+                )
                 event_id = sim._push(
                     view.anchor.time,
                     0,
@@ -160,6 +234,20 @@ def seed_simulator_from_observation(
                 if cid is None:
                     raise SimulatorError("serving vehicle missing locked customer")
                 sim.requests[cid] = RequestStatus.IN_SERVICE
+                sim._record(
+                    "service_start",
+                    vehicle.id,
+                    {
+                        "customer_id": cid,
+                        "node": view.node,
+                        "soc": view.soc,
+                        "load": view.load,
+                        "service_time": max(0.0, view.anchor.time - observation.time),
+                        "window_ready": 0.0,
+                        "window_due": 1e9,
+                        "snapshot_remainder": True,
+                    },
+                )
                 event_id = sim._push(
                     view.anchor.time,
                     0,
@@ -170,58 +258,40 @@ def seed_simulator_from_observation(
                 vehicle.action = {"kind": "service", "event_id": event_id, "customer_id": cid}
             elif status is VehicleStatus.CHARGING:
                 target = view.anchor.soc
+                duration = max(0.0, view.anchor.time - observation.time)
+                sim._record(
+                    "charge_start",
+                    vehicle.id,
+                    {
+                        "station": view.node,
+                        "soc": view.soc,
+                        "target": target,
+                        "duration": duration,
+                        "load": view.load,
+                        "node": view.node,
+                        "snapshot_remainder": True,
+                    },
+                )
                 event_id = sim._push(
                     view.anchor.time,
                     0,
                     "charge_end",
                     vehicle_id=view.id,
-                    payload={
-                        "station": view.node,
-                        "target": target,
-                        "soc_before": view.soc,
-                    },
+                    payload={"station": view.node, "target": target, "soc_before": view.soc},
                 )
                 vehicle.action = {"kind": "charge", "event_id": event_id, "target": target}
                 vehicle.locked_destination = view.node
         elif status is VehicleStatus.WAITING:
             vehicle.status = VehicleStatus.WAITING
-            # Waiting is interruptible; no forced completion event.
         else:
             vehicle.status = VehicleStatus.IDLE
             vehicle.locked_destination = None
-
-    known_customers = set(instance.customer_ids())
-    for cid in known_customers:
-        if sim.requests.get(cid) is RequestStatus.IN_SERVICE:
-            continue
-        sim.requests[cid] = RequestStatus.HIDDEN
-    for cid in observation.completed:
-        if cid in sim.requests:
-            sim.requests[cid] = RequestStatus.COMPLETED
-    for cid in observation.rejected:
-        if cid in sim.requests:
-            sim.requests[cid] = RequestStatus.REJECTED
-    for cid in observation.in_service:
-        if cid in sim.requests and sim.requests[cid] is not RequestStatus.IN_SERVICE:
-            sim.requests[cid] = RequestStatus.IN_SERVICE
-    for cid in observation.accepted:
-        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
-            sim.requests[cid] = RequestStatus.ACCEPTED
-    for cid in observation.deferred:
-        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
-            sim.requests[cid] = RequestStatus.DEFERRED
-    for cid in observation.released_open:
-        if cid in sim.requests and sim.requests[cid] is RequestStatus.HIDDEN:
-            sim.requests[cid] = RequestStatus.ANNOUNCED
-
-    for vehicle in sim.vehicles.values():
-        if vehicle.status is VehicleStatus.IDLE:
-            sim._record(
-                "vehicle_init",
-                vehicle.id,
-                {"node": vehicle.node, "soc": vehicle.soc, "load": vehicle.load, "fork": True},
-            )
     return sim
+
+
+def fork_log_for_replay(sim: FleetSimulator):
+    """Log view for independent replay (drop diagnostic-only markers if any)."""
+    return [rec for rec in sim.log if rec.kind != "fork_seed"]
 
 
 def _terminal_score(
@@ -231,16 +301,13 @@ def _terminal_score(
     *,
     last_routes: dict | None,
 ) -> tuple[float, tuple[str, ...], tuple[str, ...], tuple[str, ...], list[str]]:
-    """Score at prediction horizon without false AU penalties for feasible residuals."""
     notes: list[str] = []
     completed = tuple(sorted(cid for cid, st in sim.requests.items() if st.value == "completed"))
     pending = sorted(
         cid for cid, st in sim.requests.items() if st.value in {"accepted", "in_service", "accepted_unfulfilled"}
     )
-    # Prefer not calling mark_finished — it forces AU.
     obs_end = sim.observation()
     routes = last_routes or {v.id: [] for v in obs_end.vehicles}
-    # Try last routes, then insertion residual probe.
     snap = make_public_snapshot(planning, obs_end, horizon=max(1.0, planning.vehicle_type.battery_capacity))
     public = snap.instance
     report = validate_continuation(public, obs_end, routes, require_new=frozenset())
@@ -248,12 +315,9 @@ def _terminal_score(
         probe = EventTriggeredMPC(planning, horizon=50.0).decide(obs_end, "horizon_residual_probe")
         report = validate_continuation(public, obs_end, probe.routes, require_new=frozenset())
         routes = probe.routes
-    residual_ok = report.ok
-    residual_feasible: tuple[str, ...]
-    genuine_au: tuple[str, ...]
-    if residual_ok:
+    if report.ok:
         residual_feasible = tuple(pending)
-        genuine_au = ()
+        genuine_au: tuple[str, ...] = ()
         notes.append("horizon_end_residual_feasible")
     else:
         residual_feasible = ()
@@ -262,7 +326,6 @@ def _terminal_score(
         notes.extend(report.reasons[:2])
     dist = executed_distance_from_log(planning, sim.log)
     value = SERVICE_REWARD * len(completed) - UNFULFILLED_PENALTY * len(genuine_au) - DISTANCE_PENALTY * dist
-    # Small credit for feasible unfinished work (not a fake service reward).
     value += 10.0 * len(residual_feasible)
     notes.append(f"executed_distance={dist:.6f}")
     return value, completed, genuine_au, residual_feasible, notes
@@ -281,7 +344,6 @@ def rollout_candidate(
     energy: NominalLinearEnergy | None = None,
     require_quiescent: bool = False,
 ) -> ScenarioRolloutScore:
-    """Causal closed-loop value of ``candidate`` under one forecast scenario."""
     model = energy or NominalLinearEnergy()
     notes: list[str] = ["causal_scenario_rollout", "recourse=b1_validated"]
     quiescent = is_quiescent(observation)
@@ -300,6 +362,8 @@ def rollout_candidate(
             events=0,
             notes=("seed_failed", str(exc)),
             quiescent_epoch=quiescent,
+            replay_code="seed_failed",
+            replay_detail=str(exc),
         )
 
     horizon_end = observation.time + (t_max if t_max is not None else horizon)
@@ -347,6 +411,8 @@ def rollout_candidate(
             events=0,
             notes=tuple(notes),
             quiescent_epoch=quiescent,
+            replay_code="dispatch_rejected",
+            replay_detail=str(exc),
         )
 
     controller = B1ValidatedRecourse(planning, horizon=horizon)
@@ -381,13 +447,11 @@ def rollout_candidate(
     )
     notes.extend(term_notes)
     notes.append(f"events={events}")
-    # Replay against planning instance; fork_seed records are ignored by physics checks if present.
-    report = validate_log(planning, [rec for rec in sim.log if rec.kind != "fork_seed"])
+    report = validate_log(planning, fork_log_for_replay(sim))
     if not report.ok:
         notes.append("replay_failed")
         if report.detail:
             notes.append(report.detail[:120])
-        # Invalid physical rollouts must not look like high-value wins.
         value = -1e9
     return ScenarioRolloutScore(
         value=value,
@@ -402,6 +466,8 @@ def rollout_candidate(
         events=events,
         notes=tuple(notes),
         quiescent_epoch=quiescent,
+        replay_code=report.code,
+        replay_detail=report.detail,
     )
 
 
@@ -415,7 +481,7 @@ def expected_rollout_value(
     max_scenarios: int | None = None,
     **kwargs,
 ) -> tuple[float, tuple[ScenarioRolloutScore, ...]]:
-    """Mean causal value over forecast scenarios (equal weight; CRN-friendly index order)."""
+    """Mean causal value — **fail closed** if any scenario replay is invalid."""
     scenarios = scenario_forecasts if max_scenarios is None else scenario_forecasts[:max_scenarios]
     if not scenarios:
         public = make_public_snapshot(full_instance, observation, horizon).instance
@@ -436,13 +502,14 @@ def expected_rollout_value(
             events=0,
             notes=("no_forecast_nominal_only",),
             quiescent_epoch=is_quiescent(observation),
+            replay_code="ok" if rep.ok else "nominal_invalid",
+            replay_detail="" if rep.ok else ";".join(rep.reasons[:2]),
         )
         return value, (score,)
     scores = tuple(
         rollout_candidate(full_instance, observation, candidate, fcs, horizon=horizon, **kwargs) for fcs in scenarios
     )
-    # Drop invalid replay scores from the mean (treat as -inf contribution → exclude).
-    valid = [s for s in scores if s.replay_ok]
-    if not valid:
+    # Fail closed: any invalid scenario invalidates the candidate ranking value.
+    if any(not s.replay_ok for s in scores):
         return -1e9, scores
-    return sum(s.value for s in valid) / len(valid), scores
+    return sum(s.value for s in scores) / len(scores), scores

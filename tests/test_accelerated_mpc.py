@@ -178,13 +178,21 @@ def test_first_action_key_canonicalizes():
     assert FirstActionKey.from_decision(d1) == FirstActionKey.from_decision(d2)
 
 
-def test_accelerated_pilot_smoke_and_artifacts():
-    art = run_accelerated_pilot(max_cases=2, alns_iterations=6, alns_time=0.25, seed=3)
+def test_accelerated_pilot_smoke_writes_tmp_only(tmp_path):
+    out = tmp_path / "accelerated_smoke.json"
+    before = None
+    tracked = Path("docs/mpc_central/accelerated_results.json")
+    if tracked.exists():
+        before = tracked.read_text(encoding="utf-8")
+    art = run_accelerated_pilot(
+        max_cases=2, alns_iterations=6, alns_time=0.25, seed=3, out_path=out, write_tracked_default=False
+    )
     assert art["verdict"] in {"GO", "REVISE", "NO-GO"}
-    # Full matrix (when not truncated) currently yields NO-GO; smoke may be REVISE/NO-GO.
     assert art["holdout_untouched"]
     assert all(d["valid_commitment_safe"] >= 1 for d in art["diversity_gate"])
-    path = Path("docs/mpc_central/accelerated_results.json")
-    assert path.exists()
-    loaded = json.loads(path.read_text(encoding="utf-8"))
-    assert loaded["verdict"] == art["verdict"]
+    assert out.exists()
+    loaded = json.loads(out.read_text(encoding="utf-8"))
+    assert loaded["summary"]["n_cases"] == 2
+    # Unit tests must not overwrite the tracked research artifact.
+    if before is not None:
+        assert tracked.read_text(encoding="utf-8") == before

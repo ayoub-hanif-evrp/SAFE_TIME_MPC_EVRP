@@ -6,11 +6,11 @@
 **Remote:** `https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP.git`  
 **Repo path (local):** `SAFE_TIME_MPC_EVRP`
 
-### Latest milestone — Accelerated MPC mission (NO-GO for current mechanism)
+### Latest milestone — Root-cause gate (implementation defect fixed → REVISE)
 
-See `docs/mpc_central/ACCELERATED_MPC_RESEARCH_AUDIT.md`, `COUNTERFACTUAL_ACTION_GATE.md`, `ACCELERATED_DEVELOPMENT_RESULTS.md`, `accelerated_results.json`.
+See `docs/mpc_central/ROOT_CAUSE_OF_UNDERSERVING.md`, `ROLL_OUT_REPLAY_CONTRACT.md`, `root_cause_trace.json`, `repaired_development_results.json`.
 
-Repaired busy-vehicle cloning, residual terminal scoring, preregistered announcement timing; added counterfactual first-action generator. Diversity gate **PASS**. Matched 6-case pilot: proposed MPC **dominated by B1** (0 wins / 6 losses) and ties identical-candidate stochastic rollout → **NO-GO** as a publishable superiority claim. Do not scale holdouts. Next: fix why predictive scoring under-serves before inventing new allocation rules.
+**Confirmed:** fork omitted `request_release` history → false `early_request_access` → serve scored `-1e9` (**IMPLEMENTATION_DEFECT_CONFIRMED**, fixed). Also fixed fail-closed scenario averaging, wait/charge auto-reject, idle-preferring tie-break, and tmp_path artifact writes. `ecab5a8` CI failed on external `metadata_request_failed` (not pytest). Post-repair 6-case pilot: **REVISE** (not a clean six-loss NO-GO). Archived smoke JSON: `accelerated_results_ecab5a8_smoke2_ARCHIVE.json`.
 
 ---
 
