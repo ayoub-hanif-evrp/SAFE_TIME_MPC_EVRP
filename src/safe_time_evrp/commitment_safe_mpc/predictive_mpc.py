@@ -19,6 +19,7 @@ from safe_time_evrp.mpc_central.counterfactual_actions import (
     CounterfactualDiagnostics,
     FirstActionKey,
     generate_counterfactual_actions,
+    sanitize_newly_accepted,
     sanitize_rejects,
     sanitize_routes,
 )
@@ -213,7 +214,9 @@ class CommitmentSafePredictiveMpc:
 
             scored.sort(key=_rank, reverse=True)
             _best_v, best_name, best, served = scored[0]
-            newly = [c for c in best.newly_accepted if c in served and c not in observation.completed]
+            newly = sanitize_newly_accepted(
+                observation, [c for c in best.newly_accepted if c in served and c not in observation.completed]
+            )
             routes = sanitize_routes(observation, best.routes)
             self._verified = {vid: list(vs) for vid, vs in routes.items()}
             status = "CERTIFIED_FEASIBLE"

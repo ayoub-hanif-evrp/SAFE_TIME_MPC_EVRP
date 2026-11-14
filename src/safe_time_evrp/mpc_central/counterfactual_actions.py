@@ -57,9 +57,37 @@ def _empty_routes(observation: Observation) -> dict[str, list[Visit]]:
     return {v.id: [] for v in observation.vehicles}
 
 
+def admission_blocked(observation: Observation) -> set[str]:
+    """Customers that must never appear in newly_accepted."""
+    return (
+        set(observation.accepted) | set(observation.in_service) | set(observation.completed) | set(observation.rejected)
+    )
+
+
+def eligible_new_accepts(observation: Observation) -> list[str]:
+    """Announcement/deferred customers eligible for a new admission decision.
+
+    ``released_open`` includes ACCEPTED / IN_SERVICE / ACCEPTED_UNFULFILLED for
+    visibility; those are not new-admission candidates. Eligible set is effectively
+    ANNOUNCED ∪ DEFERRED (members of released_open absent from blocked statuses).
+    """
+    blocked = admission_blocked(observation)
+    return [c for c in observation.released_open if c not in blocked]
+
+
+def sanitize_newly_accepted(observation: Observation, newly: list[str]) -> list[str]:
+    """Keep only customers with admissible announcement/deferred status."""
+    eligible = set(eligible_new_accepts(observation)) | set(observation.deferred)
+    blocked = admission_blocked(observation)
+    # deferred may already be in released_open; still exclude blocked.
+    return [c for c in newly if c in eligible and c not in blocked]
+
+
 def sanitize_routes(observation: Observation, routes: dict[str, list[Visit]]) -> dict[str, list[Visit]]:
-    """Drop service visits that are already completed/rejected or still illegal."""
-    banned = set(observation.completed) | set(observation.rejected)
+    """Drop illegal service visits (completed/rejected/in-service or unknown)."""
+    # IN_SERVICE is already covered by the noninterruptible plant service; a second
+    # vehicle must not be dispatched toward that customer as a new service visit.
+    banned = set(observation.completed) | set(observation.rejected) | set(observation.in_service)
     visible = (
         set(observation.released_open)
         | set(observation.accepted)
@@ -155,9 +183,7 @@ def generate_counterfactual_actions(
         raw.append(("b1", b1.decide(observation, "counterfactual")))
 
     idle = _idle_vehicles(observation)
-    announced = [
-        c for c in observation.released_open if c not in observation.accepted and c not in observation.rejected
-    ]
+    announced = eligible_new_accepts(observation)
     chargers = [n.id for n in public.nodes.values() if n.kind is NodeKind.CHARGER]
 
     # --- Accept vs reject marginal announced customers ---
@@ -249,8 +275,7 @@ def generate_counterfactual_actions(
     seen: dict[FirstActionKey, tuple[str, Decision]] = {}
     for name, cand in raw:
         routes = sanitize_routes(observation, cand.routes)
-        newly = [c for c in cand.newly_accepted if c not in observation.completed and c not in observation.rejected]
-        newly = [c for c in newly if c in observation.released_open or c in observation.deferred]
+        newly = sanitize_newly_accepted(observation, list(cand.newly_accepted))
         rejected = sanitize_rejects(observation, [c for c in cand.rejected if c not in newly])
         cand = _base_decision(
             observation,

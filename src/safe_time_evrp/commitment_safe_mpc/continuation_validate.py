@@ -79,6 +79,13 @@ def validate_continuation(
         | set(observation.deferred)
     )
     rejected = set(observation.rejected)
+    in_service = set(observation.in_service)
+    if require_new:
+        illegal_new = set(require_new) & (
+            set(observation.accepted) | in_service | set(observation.completed) | rejected
+        )
+        for cid in sorted(illegal_new):
+            reasons.append(f"illegal_new_accept:{cid}")
 
     for vehicle in observation.vehicles:
         visits = list(routes.get(vehicle.id, []))
@@ -88,6 +95,8 @@ def validate_continuation(
             if v.purpose == "service":
                 if v.node_id in rejected:
                     reasons.append(f"serves_rejected:{v.node_id}")
+                if v.node_id in in_service:
+                    reasons.append(f"serves_already_in_service:{v.node_id}")
                 if v.node_id not in visible and v.node_id not in pending:
                     reasons.append(f"serves_unreleased_or_unknown:{v.node_id}")
 
