@@ -33,7 +33,7 @@ All were ancestors of `a0cb460` and remain reachable from `main` / the recovery 
 - `research/multistage-viability-gate`
 - `research/realdata-mpc-gate`
 - `research/safe-dual-mpc`
-- `research/commitment-safe-predictive-mpc` (removed after promotion to `main`)
+- `research/commitment-safe-predictive-mpc` (removed after promotion to `main` and CI green on cleanup)
 
 ## Final scientific label
 

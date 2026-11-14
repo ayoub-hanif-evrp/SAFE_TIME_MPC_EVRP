@@ -9,7 +9,7 @@
 |-------|-----------------|----------------|
 | Pre-cleanup | 12 (`main` + 11 `research/*`) | `main` + research tips |
 | After obsolete-gate deletion | 2 (`main`, `research/commitment-safe-predictive-mpc`) | same |
-| Final target | 1 (`main`) | 1 (`main`) |
+| **Final** | **1 (`main`)** | **1 (`main`)** |
 
 ## 2. Branches deleted
 
@@ -25,9 +25,7 @@ Verified as ancestors of research HEAD `a0cb460` before deletion:
 8. `research/realdata-mpc-gate`
 9. `research/safe-dual-mpc`
 
-Pending removal after this cleanup commit + CI green:
-
-10. `research/commitment-safe-predictive-mpc` (local + `origin`)
+10. `research/commitment-safe-predictive-mpc` (local + `origin`) — deleted after CI green on cleanup commit `6799141`
 
 **Never deleted:** `main`.
 
@@ -102,9 +100,8 @@ git checkout archive/pre-repository-cleanup-2026-11-14
 | Ruff | pass | pass (`ruff check` + format check) |
 | Pytest collect | 278 | 278 |
 | Pytest full | pass at `a0cb460` | **278 passed** (post-reorg worktree) |
-| CI on `main` | green run `43635807536` at `a0cb460` | re-run after cleanup push |
+| CI on `main` | green run `43635807536` at `a0cb460` | **green** run [`43636791333`](https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP/actions/runs/43636791333) at `6799141` |
 
 ## 8. Unresolved blockers
 
-- None anticipated for ancestor-checked branch deletion.  
-- If GitHub branch protection or permissions block deleting `research/commitment-safe-predictive-mpc`, record the exact API/CLI error here after the attempt.
+None. Recovery tag verified (peels to `a0cb460`; e.g. `docs/research_gate_3e/RESEARCH_DECISION.md` still listed on the tag tree). Only remote branch remaining: `origin/main`.
