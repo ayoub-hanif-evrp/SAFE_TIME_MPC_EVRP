@@ -78,6 +78,12 @@ def sanitize_routes(observation: Observation, routes: dict[str, list[Visit]]) ->
     return cleaned
 
 
+def sanitize_rejects(observation: Observation, rejected: list[str]) -> list[str]:
+    """Never reject customers already completed or currently in service."""
+    blocked = set(observation.completed) | set(observation.in_service)
+    return [c for c in rejected if c not in blocked]
+
+
 def _base_decision(observation: Observation, trigger: str, routes, *, newly, rejected, notes) -> Decision:
     accepted = list(observation.accepted)
     for c in newly:
@@ -245,12 +251,13 @@ def generate_counterfactual_actions(
         routes = sanitize_routes(observation, cand.routes)
         newly = [c for c in cand.newly_accepted if c not in observation.completed and c not in observation.rejected]
         newly = [c for c in newly if c in observation.released_open or c in observation.deferred]
+        rejected = sanitize_rejects(observation, [c for c in cand.rejected if c not in newly])
         cand = _base_decision(
             observation,
             cand.trigger,
             routes,
             newly=newly,
-            rejected=[c for c in cand.rejected if c not in newly],
+            rejected=rejected,
             notes=list(cand.notes),
         )
         report = validate_continuation(

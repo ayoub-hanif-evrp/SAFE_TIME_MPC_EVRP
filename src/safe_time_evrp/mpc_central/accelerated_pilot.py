@@ -204,6 +204,8 @@ def run_accelerated_pilot(
                 max_replan_interval=case.max_replan_interval,
                 rollout_max_events=200,
             ),
+            # Fairness: proposed uses the SAME seed and allocation label as stochastic_uniform.
+            # allocation currently does not change the algorithm; differing seeds alone are not a method.
             "proposed_mpc": CommitmentSafePredictiveMpc(
                 case.instance,
                 case.horizon,
@@ -211,8 +213,8 @@ def run_accelerated_pilot(
                 n_scenarios=2,
                 alns_iterations=alns_iterations,
                 time_limit_seconds=alns_time,
-                seed=seed + 1,
-                allocation="paired_crn",
+                seed=seed,
+                allocation="uniform",
                 use_counterfactuals=True,
                 use_forecast=True,
                 max_replan_interval=case.max_replan_interval,
@@ -225,7 +227,7 @@ def run_accelerated_pilot(
                 n_scenarios=2,
                 alns_iterations=alns_iterations,
                 time_limit_seconds=alns_time,
-                seed=seed + 2,
+                seed=seed,
                 allocation="uniform",
                 use_counterfactuals=True,
                 use_forecast=False,

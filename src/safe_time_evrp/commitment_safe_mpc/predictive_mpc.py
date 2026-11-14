@@ -19,6 +19,7 @@ from safe_time_evrp.mpc_central.counterfactual_actions import (
     CounterfactualDiagnostics,
     FirstActionKey,
     generate_counterfactual_actions,
+    sanitize_rejects,
     sanitize_routes,
 )
 from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value, is_quiescent
@@ -222,7 +223,7 @@ class CommitmentSafePredictiveMpc:
             for c in newly:
                 if c not in accepted:
                     accepted.append(c)
-            rejected = [c for c in best.rejected if c not in newly]
+            rejected = sanitize_rejects(observation, [c for c in best.rejected if c not in newly])
             deferred = list(best.deferred)
             fallback = bool(best.fallback_used)
             no_cont = False
