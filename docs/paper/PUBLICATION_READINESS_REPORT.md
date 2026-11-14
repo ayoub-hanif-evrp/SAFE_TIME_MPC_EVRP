@@ -16,6 +16,7 @@ Closeout worktree evaluated after certificate-accounting fixes (history on forme
 | Distinct vs M1? | **No compelling new certificate mechanism** — same `CertificateStore`; cert on/off ablation **9/9 equal** completed counts with forecast on |
 | Development predictive gains | Mixed/negative mean (1 win / 2 losses vs B1 on frozen core) |
 | Holdout (one shot) | Tied with B1/M1/stochastic (2 completed, 0 AU on all seeds) — **no holdout win** |
+| Schneider-derived dynamic EVRPTW (36×5, medium) | Broader workload run; paired CC-E vs B1 mixed (+0.60 mean Δ, CI includes 0); high stall rates for forecast MPC — **does not overturn** incremental label |
 | Top-tier / submission-ready | **Not demonstrated** |
 
 ## What can be claimed

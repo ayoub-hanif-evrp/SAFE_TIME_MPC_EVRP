@@ -48,7 +48,18 @@ python -m safe_time_evrp.mpc_central.publication_closeout
 python -m safe_time_evrp.mpc_central.final_mpc_package
 ```
 
-Authoritative numerical artifacts: [`docs/experiments/`](docs/experiments/) (including `FROZEN_HOLDOUT_RESULTS.json` and `final_development_results.json`).
+Authoritative numerical artifacts: [`docs/experiments/`](docs/experiments/) (including `FROZEN_HOLDOUT_RESULTS.json`, `final_development_results.json`, and Schneider-derived `SCHNEIDER_DYNAMIC_RESULTS.json`).
+
+### Schneider-derived dynamic benchmark
+
+Requires a verified local Schneider download (`python -m safe_time_evrp.data.download && python -m safe_time_evrp.data.verify`).
+
+```bash
+python -m safe_time_evrp.mpc_central.schneider_dynamic_eval --tier smoke
+python -m safe_time_evrp.mpc_central.schneider_dynamic_eval --tier small
+```
+
+Protocol: [`docs/datasets/DYNAMIC_SCHNEIDER_PROTOCOL.md`](docs/datasets/DYNAMIC_SCHNEIDER_PROTOCOL.md).
 
 ## Documentation map
 
