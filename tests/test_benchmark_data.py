@@ -10,7 +10,10 @@ from safe_time_evrp.data.schneider import iter_instance_files, parse_schneider_f
 def test_schneider_archive_matches_its_deposited_structure():
     if not manifest_path().exists():
         pytest.skip("run python -m safe_time_evrp.data.download")
-    files = iter_instance_files(schneider_dir() / "extracted")
+    extracted = schneider_dir() / "extracted"
+    if not extracted.is_dir():
+        pytest.skip("Schneider archive not extracted locally")
+    files = iter_instance_files(extracted)
     if not files:
         pytest.skip("Schneider archive not extracted locally")
     assert len(files) == 92
