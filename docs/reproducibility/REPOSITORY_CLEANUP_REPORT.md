@@ -100,7 +100,7 @@ git checkout archive/pre-repository-cleanup-2026-11-14
 | Ruff | pass | pass (`ruff check` + format check) |
 | Pytest collect | 278 | 278 |
 | Pytest full | pass at `a0cb460` | **278 passed** (post-reorg worktree) |
-| CI on `main` | green run `43635807536` at `a0cb460` | **green** run [`43636791333`](https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP/actions/runs/43636791333) at `6799141` |
+| CI on `main` | green run `43635807536` at `a0cb460` | **green** on cleanup `6799141` ([43636791333](https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP/actions/runs/43636791333)); final HEAD `534b714` ([43638157125](https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP/actions/runs/43638157125)) |
 
 ## 8. Unresolved blockers / CI note
 
