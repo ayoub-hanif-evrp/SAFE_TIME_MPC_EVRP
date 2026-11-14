@@ -6,7 +6,7 @@
     "verdict": "REVISE",
     "reason": "Evidence does not yet support claiming a novel MPC contribution over established rollout/B1 baselines.",
     "predictive_wins_vs_b1": 0,
-    "predictive_losses_vs_b1": 0,
+    "predictive_losses_vs_b1": 2,
     "adaptive_vs_equal_base": {
       "adaptive": 3,
       "equal": 0,
@@ -19,8 +19,8 @@
       "case_c_commitment_plus_uncertain budget=3: adaptive win vanishes under reversed candidate order (now winner=tie)"
     ],
     "notes": [
-      "B_phase_b: predictive indistinguishable from B1 on completed/AU",
-      "B_easy_dynamic: predictive indistinguishable from B1 on completed/AU"
+      "B_phase_b: predictive worse vs B1",
+      "B_easy_dynamic: predictive worse vs B1"
     ],
     "supported": [
       "Executed distance now uses arc-table reconstruction (nonzero on traveled routes).",
@@ -337,7 +337,7 @@
     "holdout_untouched": [
       "B_adversarial_overaccept"
     ],
-    "forecast_model_id": "train_atoms=7;pooled_ready_gap_mean=8.333333;NOT_valid_announcement_interarrival",
+    "forecast_model_id": "train_atoms=7;pooled_ready_gap_mean=8.333333;NOT_valid_announcement_interarrival;preregistered_announcement_mu=12.0",
     "rows": [
       {
         "case_id": "B_phase_b",
@@ -352,7 +352,7 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.0005371000152081251,
+            "optimize_seconds": 0.0012824999867007136,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -400,7 +400,7 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.0176181000424549,
+            "optimize_seconds": 0.02643309999257326,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -466,7 +466,7 @@
             "rejected_count": 2,
             "executed_distance": 32.492422502470646,
             "charge_starts": 0,
-            "optimize_seconds": 0.016822100020362996,
+            "optimize_seconds": 0.025487300008535385,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -523,128 +523,112 @@
           },
           "predictive_uniform": {
             "controller": "predictive_uniform",
-            "completed_count": 2,
+            "completed_count": 0,
             "accepted_unfulfilled_count": 0,
-            "rejected_count": 2,
-            "executed_distance": 32.492422502470646,
+            "rejected_count": 4,
+            "executed_distance": 0.0,
             "charge_starts": 0,
-            "optimize_seconds": 0.042599699983838946,
+            "optimize_seconds": 0.08577960002003238,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
-            "causal_rollout_decisions": 11,
+            "causal_rollout_decisions": 5,
             "first_decisions": [
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C1"
-                ],
-                "planned_service": [
-                  "C1"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
                 "trigger": "request_release",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
-                "trigger": "arrive",
+                "trigger": "replan_interval",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               }
             ],
-            "completed": [
-              "C1",
-              "C3"
-            ],
+            "completed": [],
             "accepted_unfulfilled": []
           },
           "predictive_paired_crn": {
             "controller": "predictive_paired_crn",
-            "completed_count": 2,
+            "completed_count": 0,
             "accepted_unfulfilled_count": 0,
-            "rejected_count": 2,
-            "executed_distance": 32.492422502470646,
+            "rejected_count": 4,
+            "executed_distance": 0.0,
             "charge_starts": 0,
-            "optimize_seconds": 0.045264300002600066,
+            "optimize_seconds": 0.07895440002903342,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
-            "causal_rollout_decisions": 11,
+            "causal_rollout_decisions": 5,
             "first_decisions": [
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C1"
-                ],
-                "planned_service": [
-                  "C1"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
                 "trigger": "request_release",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
-                "trigger": "arrive",
+                "trigger": "replan_interval",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               }
             ],
-            "completed": [
-              "C1",
-              "C3"
-            ],
+            "completed": [],
             "accepted_unfulfilled": []
           }
         }
@@ -662,7 +646,7 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.000514300016220659,
+            "optimize_seconds": 0.000772099825553596,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -715,7 +699,7 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.021113299982971512,
+            "optimize_seconds": 0.033212600043043494,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -786,7 +770,7 @@
             "rejected_count": 0,
             "executed_distance": 68.2842712474619,
             "charge_starts": 0,
-            "optimize_seconds": 0.020724500020151027,
+            "optimize_seconds": 0.03673130017705262,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
@@ -848,138 +832,112 @@
           },
           "predictive_uniform": {
             "controller": "predictive_uniform",
-            "completed_count": 3,
+            "completed_count": 0,
             "accepted_unfulfilled_count": 0,
-            "rejected_count": 0,
-            "executed_distance": 68.2842712474619,
+            "rejected_count": 3,
+            "executed_distance": 0.0,
             "charge_starts": 0,
-            "optimize_seconds": 0.04264359999797307,
+            "optimize_seconds": 0.06675769994035363,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
-            "causal_rollout_decisions": 12,
+            "causal_rollout_decisions": 3,
             "first_decisions": [
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C1"
-                ],
-                "planned_service": [
-                  "C1"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C2"
-                ],
-                "planned_service": [
-                  "C1",
-                  "C2"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
-                "trigger": "arrive",
+                "trigger": "request_release",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1",
-                  "C2"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=uniform",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               }
             ],
-            "completed": [
-              "C1",
-              "C2",
-              "C3"
-            ],
+            "completed": [],
             "accepted_unfulfilled": []
           },
           "predictive_paired_crn": {
             "controller": "predictive_paired_crn",
-            "completed_count": 3,
+            "completed_count": 0,
             "accepted_unfulfilled_count": 0,
-            "rejected_count": 0,
-            "executed_distance": 68.2842712474619,
+            "rejected_count": 3,
+            "executed_distance": 0.0,
             "charge_starts": 0,
-            "optimize_seconds": 0.04259359998104628,
+            "optimize_seconds": 0.05502129998058081,
             "fallback_count": 0,
             "no_feasible_continuation_count": 0,
             "termination_reason": "natural_completion",
             "replay_ok": true,
             "deadline_overruns": 0,
-            "causal_rollout_decisions": 12,
+            "causal_rollout_decisions": 3,
             "first_decisions": [
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C1"
-                ],
-                "planned_service": [
-                  "C1"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
                 "trigger": "request_release",
-                "newly_accepted": [
-                  "C2"
-                ],
-                "planned_service": [
-                  "C1",
-                  "C2"
-                ],
+                "newly_accepted": [],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               },
               {
-                "trigger": "arrive",
+                "trigger": "request_release",
                 "newly_accepted": [],
-                "planned_service": [
-                  "C1",
-                  "C2"
-                ],
+                "planned_service": [],
                 "notes": [
                   "commitment_safe_predictive_mpc",
                   "allocation=paired_crn",
                   "causal_rollouts=1",
-                  "selected=insertion"
+                  "counterfactual_actions=1",
+                  "quiescent"
                 ]
               }
             ],
-            "completed": [
-              "C1",
-              "C2",
-              "C3"
-            ],
+            "completed": [],
             "accepted_unfulfilled": []
           }
         }
@@ -988,10 +946,10 @@
   },
   "au_residual_summary": null,
   "mean_closed_loop_optimize_seconds": {
-    "insertion": 0.0005257000157143921,
-    "b1": 0.019365700012713205,
-    "m1": 0.01877330002025701,
-    "predictive_uniform": 0.04262164999090601,
-    "predictive_paired_crn": 0.043928949991823174
+    "insertion": 0.0010272999061271548,
+    "b1": 0.029822850017808378,
+    "m1": 0.031109300092794,
+    "predictive_uniform": 0.076268649980193,
+    "predictive_paired_crn": 0.06698785000480711
   }
 }

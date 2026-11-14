@@ -6,9 +6,11 @@
 **Remote:** `https://github.com/ayoub-hanif-evrp/SAFE_TIME_MPC_EVRP.git`  
 **Repo path (local):** `SAFE_TIME_MPC_EVRP`
 
-### Latest milestone — Phase 3D (REVISE)
+### Latest milestone — Accelerated MPC mission (NO-GO for current mechanism)
 
-MPC-central track (`docs/mpc_central/`): repaired plant distance + B1 scenario recourse + non-renormalizing expectation; `CommitmentSafePredictiveMpc` with **causal scenario rollouts**; train/dev/holdout splits (holdout untouched); full AU residual audit (`phase3d_au_residual.json`: 0/21 cutoff residuals feasible). **Verdict REVISE** — predictive MPC not yet better than B1 on development cases; Phase 3C adaptive wins remain order-fragile. See `PHASE3D_VALIDITY.md`, `PHASE3D_CLOSED_LOOP_RESULTS.md`, `phase3d_results.json`. Do not treat adaptive top-two allocation as the paper contribution.
+See `docs/mpc_central/ACCELERATED_MPC_RESEARCH_AUDIT.md`, `COUNTERFACTUAL_ACTION_GATE.md`, `ACCELERATED_DEVELOPMENT_RESULTS.md`, `accelerated_results.json`.
+
+Repaired busy-vehicle cloning, residual terminal scoring, preregistered announcement timing; added counterfactual first-action generator. Diversity gate **PASS**. Matched 6-case pilot: proposed MPC **dominated by B1** (0 wins / 6 losses) and ties identical-candidate stochastic rollout → **NO-GO** as a publishable superiority claim. Do not scale holdouts. Next: fix why predictive scoring under-serves before inventing new allocation rules.
 
 ---
 

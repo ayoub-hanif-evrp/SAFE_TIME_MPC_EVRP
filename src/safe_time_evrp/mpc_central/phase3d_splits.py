@@ -35,8 +35,14 @@ def holdout_cases() -> list[BaselineCase]:
     return [table[i] for i in HOLDOUT_CASE_IDS]
 
 
-def fit_train_forecast(*, n_scenarios: int = 2, customers_per_scenario: int = 2, seed: int = 0) -> ArrivalForecast:
-    """Fit anonymous arrival atoms on **train cases only**, then materialize scenarios."""
+def fit_train_forecast(
+    *,
+    n_scenarios: int = 2,
+    customers_per_scenario: int = 2,
+    seed: int = 0,
+    announcement_mean: float = 12.0,
+) -> ArrivalForecast:
+    """Fit spatial atoms on **train cases only**; announcements use preregistered Poisson μ."""
     instances = [c.instance for c in train_cases()]
     model = fit_empirical_arrivals(instances)
     return build_anonymous_scenarios(
@@ -44,6 +50,7 @@ def fit_train_forecast(*, n_scenarios: int = 2, customers_per_scenario: int = 2,
         n_scenarios=n_scenarios,
         customers_per_scenario=customers_per_scenario,
         seed=stable_seed("phase3d_train_forecast", str(seed)),
+        announcement_mean=announcement_mean,
     )
 
 

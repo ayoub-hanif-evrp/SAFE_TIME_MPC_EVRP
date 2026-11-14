@@ -28,7 +28,11 @@ from safe_time_evrp.mpc3c.seeds import stable_seed
 
 @dataclass(frozen=True)
 class ForecastCustomer:
-    """Anonymous forecast demand unit (not an evaluation customer id)."""
+    """Anonymous forecast demand unit (not an evaluation customer id).
+
+    ``announcement_time`` is when the request becomes known (plant release).
+    ``ready_time`` / ``due_time`` are the service window — distinct from announcement.
+    """
 
     customer_id: str
     ready_time: float
@@ -38,6 +42,7 @@ class ForecastCustomer:
     demand: float = 1.0
     service_time: float = 1.0
     source: str = "anonymous_scenario"
+    announcement_time: float | None = None
 
 
 @dataclass(frozen=True)
@@ -75,7 +80,8 @@ class ArrivalForecast:
         for item in self.scenarios[idx]:
             if item.customer_id in ban:
                 continue
-            if now - 1e-12 <= item.ready_time <= now + horizon + 1e-12:
+            announce = item.announcement_time if item.announcement_time is not None else item.ready_time
+            if now - 1e-12 <= announce <= now + horizon + 1e-12:
                 out.append(item)
         return out
 
@@ -132,8 +138,15 @@ def build_anonymous_scenarios(
     seed: int = 0,
     rate_scale: float = 1.0,
     day_horizon: float = 200.0,
+    announcement_mean: float | None = None,
 ) -> ArrivalForecast:
-    """Sample anonymous forecast customers from train atoms (no eval IDs)."""
+    """Sample anonymous forecast customers from train atoms (no eval IDs).
+
+    Announcement times use a homogeneous Poisson process with ``announcement_mean``
+    (preregistered). Service-window ready/due are sampled from train atoms and are
+    **not** used as announcement interarrivals. If ``announcement_mean`` is omitted,
+    falls back to ``model.train_interarrival_mean`` only with an explicit model_id warning.
+    """
     if not model.train_atoms:
         return ArrivalForecast(
             scenarios=[[] for _ in range(n_scenarios)],
@@ -141,25 +154,31 @@ def build_anonymous_scenarios(
             train_interarrival_mean=model.train_interarrival_mean,
             model_id=model.model_id,
         )
-    mu = model.train_interarrival_mean or 1.0
+    if announcement_mean is not None and announcement_mean > 0:
+        mu_announce = float(announcement_mean)
+        timing_note = f"preregistered_announcement_mu={mu_announce}"
+    else:
+        mu_announce = float(model.train_interarrival_mean or 1.0)
+        timing_note = "FALLBACK_pooled_ready_gap_as_announce_NOT_recommended"
     scenarios: list[list[ForecastCustomer]] = []
     state = seed & 0x7FFFFFFF
     for s in range(n_scenarios):
         items: list[ForecastCustomer] = []
-        t = 0.0
+        t_announce = 0.0
         for k in range(customers_per_scenario):
             state, u_gap = _lcg(state)
             state, u_pick = _lcg(state)
             atom = model.train_atoms[int(u_pick * len(model.train_atoms)) % len(model.train_atoms)]
-            # Jitter location slightly so samples are not exact train clones of eval geometry.
             state, jx = _lcg(state)
             state, jy = _lcg(state)
             x = atom.x + (jx - 0.5) * 0.5
             y = atom.y + (jy - 0.5) * 0.5
-            gap = _exponential_gap(mu / rate_scale, u_gap)
-            t += gap
-            ready = min(t, day_horizon)
+            gap = _exponential_gap(mu_announce / rate_scale, u_gap)
+            t_announce += gap
+            announce = min(t_announce, day_horizon)
+            # Service window relative to atom shape, shifted so ready >= announcement.
             span = max(atom.due - atom.ready, 1.0)
+            ready = min(day_horizon, max(announce, announce + max(0.0, atom.ready * 0.0)))
             due = min(day_horizon, ready + span)
             items.append(
                 ForecastCustomer(
@@ -171,14 +190,15 @@ def build_anonymous_scenarios(
                     demand=max(atom.demand, 0.01),
                     service_time=max(atom.service_time, 0.0),
                     source=f"anonymous_scenario_{s}",
+                    announcement_time=announce,
                 )
             )
         scenarios.append(items)
     return ArrivalForecast(
         scenarios=scenarios,
         train_atoms=model.train_atoms,
-        train_interarrival_mean=model.train_interarrival_mean,
-        model_id=model.model_id,
+        train_interarrival_mean=mu_announce,
+        model_id=f"{model.model_id};{timing_note}",
     )
 
 
