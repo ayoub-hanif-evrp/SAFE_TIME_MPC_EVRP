@@ -2,7 +2,7 @@
 
 **Final assessment: `INCREMENTAL_RESULT`**
 
-Closeout worktree evaluated after certificate-accounting fixes on branch `research/commitment-safe-predictive-mpc`. See `docs/mpc_central/REPRODUCIBILITY_MANIFEST.json` and `FROZEN_HOLDOUT_RESULTS.json` for the frozen protocol and one-shot holdout.
+Closeout worktree evaluated after certificate-accounting fixes (history on former `research/commitment-safe-predictive-mpc`, now on `main`). See `docs/reproducibility/REPRODUCIBILITY_MANIFEST.json` and `docs/experiments/FROZEN_HOLDOUT_RESULTS.json` for the frozen protocol and one-shot holdout.
 
 ## Checklist
 

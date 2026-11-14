@@ -42,7 +42,7 @@ at each decision event on observation o:
 
 ## 3. Theorem and assumptions
 
-See `docs/mpc_central/CERTIFICATE_FEASIBILITY_PROOF.md`.
+See `docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md`.
 
 **NominalCommitmentInvariance** (induction over epochs): under exact nominal dynamics, noninterruptible action preservation, and accept-only-with-certificate, accepted obligations retain a feasible completion plan at decision epochs.
 

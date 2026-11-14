@@ -588,7 +588,7 @@ def final_decision(
 
 
 def run_final_package(*, out_dir: Path | None = None) -> dict:
-    out_dir = out_dir or Path("docs/mpc_central")
+    out_dir = out_dir or Path("docs/experiments")
     out_dir.mkdir(parents=True, exist_ok=True)
     theorem = theorem_document()
     oracle = live_oracle_charge_test()

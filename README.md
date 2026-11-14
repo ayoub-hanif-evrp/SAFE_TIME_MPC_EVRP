@@ -1,63 +1,81 @@
-# SAFE-TIME MPC for dynamic electric vehicle routing
+# SAFE_TIME_MPC_EVRP
 
-Part 1 foundation for a feasibility-preserving, computation-aware model predictive controller on the dynamic electric vehicle routing problem.
+Feasibility-preserving, computation-aware **model predictive control** for the dynamic electric vehicle routing problem (EVRP), with irreversible customer acceptances, battery and time-window constraints, and an ALNS route engine used as an internal optimizer.
 
-The controller in this repository is a deterministic event-triggered baseline. It is a working receding-horizon loop with an insertion heuristic. It is not a new algorithm, and it does not prove recursive feasibility.
+**Primary branch:** `main`  
+**Scientific assessment (honest):** incremental certificate-aware economic MPC synthesis — **not** demonstrated top-tier predictive superiority.
 
-Part 1 is the verified simulator, the information boundary, and a deterministic insertion MPC. Part 2 adds an exact rectangle certificate for that plant, a backup that commits only after a fresh certificate, a process-level solver deadline, and a validity-aware trigger. The trigger's proved property is that a still-valid backup does not need another solve in order to stay feasible. That is not a new self-triggered stability theorem. See `docs/part2/PART2_RESEARCH_DECISION.md`.
+## What this repository implements
 
-## Scope
+| Component | Role |
+|-----------|------|
+| **CC-E-MPC** (`CertificateCarryingEconomicMpc`) | Hard nominal commitment feasibility + expected-value ranking of first actions + persistent certificate fallback |
+| **B1** | Reactive full-validation ALNS–MPC baseline |
+| **M1** | Certificate-carrying ALNS (same `CertificateStore` family; no forecast EV ranking) |
+| **Stochastic MPC** | Counterfactual expected-value MPC without the full persistent-store closeout path |
+| Plant + replay | Event-driven multi-vehicle simulator and independent log validation |
+| Forecasts | Train-only anonymous arrival scenarios (holdout frozen until closeout) |
 
-- Nominal Schneider et al. (2014) physics: Euclidean distance as defined by the deposited readme, energy `r * distance`, recharge time `g` per unit of energy, hard windows on the start of service, full recharge by default.
-- Event-driven multi-vehicle simulation, independent log replay, and dynamic releases that are not conditioned on an offline route.
-- A rectangular travel-time and energy certificate for a fixed sequence, a certified backup, and a deadline enforced by a separate process.
+**Limitations.** Certificate persistence is largely shared with M1 and did not improve completed-service counts vs “certificate off” when forecast scoring was on (9/9 ties). Development gains vs B1 are mixed; the frozen holdout tied B1/M1/stochastic MPC. See the manuscript and readiness report.
 
-Part 3 (large comparisons and holdout evaluation) is not implemented and is not justified by the Part 2 theory result.
+## Install
 
-## Data licences
-
-The Schneider instances are CC BY-NC 3.0, deposited by Dominik Goeke, DOI [10.17632/h3mrm5dhxw.1](https://doi.org/10.17632/h3mrm5dhxw.1). They are downloaded into `data/raw` and are not part of this source tree.
-
-The KU Leuven BEV energy-dynamics archive is CC BY 4.0, DOI [10.48804/8KPDTW](https://doi.org/10.48804/8KPDTW). It is a calibration source, not a routing benchmark.
-
-EVRPTW-ARC, DOI [10.5281/zenodo.22800776](https://doi.org/10.5281/zenodo.22800776), was restricted when queried (no public files, files endpoint HTTP 403). This project does not substitute another road dataset for it.
-
-See `docs/datasets/DATA_PROVENANCE.md`.
-
-## Commands
-
-Python 3.11 or newer.
+Python 3.11+.
 
 ```bash
 pip install -e ".[dev]"
-python -m safe_time_evrp.data.download
+python -m safe_time_evrp.data.download   # optional public benchmarks
 python -m safe_time_evrp.data.verify
-python -m pytest -q
-python -m safe_time_evrp.evaluation.smoke_test
-python -m safe_time_evrp.robust.pilot
 ```
 
-`robust.pilot` runs one development episode for the nominal baseline and the robust trigger policies. If `experiments/development/part2_pilot/manifest.json` is already marked completed, the command does not overwrite it. Delete that manifest to run again. The output is gitignored.
+Benchmark archives stay under `data/raw/` (gitignored). Provenance: `docs/datasets/DATA_PROVENANCE.md`.
 
-The certified controller is `safe_time_evrp.robust.controller.SafeTimeController`. The deadline supervisor is `safe_time_evrp.robust.supervisor.SolverSupervisor`. Trigger names are `fixed_period`, `every_event`, `slack_heuristic`, and `validity_aware`.
+## Tests and lint
 
-`download` is idempotent: a file whose publisher checksum already matches is kept. A checksum mismatch fails. A restricted ARC record is reported as `access_restricted` and is not replaced by a different dataset.
+```bash
+python -m ruff check src tests
+python -m ruff format --check src tests
+python -m pytest -q
+python -m safe_time_evrp.evaluation.smoke_test
+```
 
-The development episode writes a manifest, a service summary, decisions, a trajectory, and a route/state-of-charge figure under `experiments/development/`. Those outputs are gitignored.
+## Reproduce final experiments
 
-## Documentation
+Frozen protocol and seeds: [`docs/reproducibility/REPRODUCIBILITY_MANIFEST.json`](docs/reproducibility/REPRODUCIBILITY_MANIFEST.json)
 
-- `docs/literature/PRIOR_ART_AND_RESEARCH_GAP.md`
-- `docs/formulation/PROBLEM_DEFINITION.md`
-- `docs/formulation/INITIAL_MPC_BASELINE.md`
-- `docs/datasets/DATA_PROVENANCE.md`
-- `docs/datasets/DATA_COMPATIBILITY.md`
-- `docs/validation/PHYSICAL_VALIDATION.md`
-- `docs/validation/INFORMATION_BOUNDARY.md`
-- `docs/validation/EXACT_TOY_CASES.md`
-- `docs/validation/PART1_REPORT.md`
-- `docs/part2/FOUNDATION_AUDIT.md`
-- `docs/part2/NOVELTY_AND_THEORY_GAP.md`
-- `docs/part2/MATHEMATICAL_FORMULATION.md`
-- `docs/part2/FEASIBILITY_PROOFS.md`
-- `docs/part2/PART2_RESEARCH_DECISION.md`
+```bash
+python -m safe_time_evrp.mpc_central.publication_closeout
+python -m safe_time_evrp.mpc_central.final_mpc_package
+```
+
+Authoritative numerical artifacts: [`docs/experiments/`](docs/experiments/) (including `FROZEN_HOLDOUT_RESULTS.json` and `final_development_results.json`).
+
+## Documentation map
+
+| Path | Contents |
+|------|----------|
+| [`docs/methodology/FINAL_MPC_FORMULATION.md`](docs/methodology/FINAL_MPC_FORMULATION.md) | CC-E-MPC control law |
+| [`docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md`](docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md) | Conditional certificate proposition |
+| [`docs/experiments/`](docs/experiments/) | Audits, Phase 3E/3F evidence, frozen holdout |
+| [`docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md`](docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md) | Manuscript draft |
+| [`docs/paper/PUBLICATION_READINESS_REPORT.md`](docs/paper/PUBLICATION_READINESS_REPORT.md) | `INCREMENTAL_RESULT` decision |
+| [`docs/reproducibility/`](docs/reproducibility/) | Cleanup report, file manifest, research history |
+| [`docs/formulation/`](docs/formulation/), [`docs/validation/`](docs/validation/), [`docs/datasets/`](docs/datasets/) | Plant, validation, data licences |
+| [`docs/mpc_central/`](docs/mpc_central/) | Compatibility JSON outputs for gate/tests |
+| [`docs/commitment_safe_mpc/`](docs/commitment_safe_mpc/) | Frozen B1/M1 JSON artifacts still read by tests |
+
+## Recovering the pre-cleanup archive
+
+Full historical experiment trees and superseded research-gate docs are preserved on the annotated tag:
+
+```bash
+git fetch origin tag archive/pre-repository-cleanup-2026-11-14
+git checkout archive/pre-repository-cleanup-2026-11-14
+```
+
+SHA: `a0cb460b3bef26a40d22ac53dff2150ef0a5548d`  
+See [`docs/reproducibility/RESEARCH_HISTORY.md`](docs/reproducibility/RESEARCH_HISTORY.md).
+
+## Licence / data
+
+Schneider EVRP instances and other deposits: see `docs/datasets/DATA_PROVENANCE.md`. Do not commit raw benchmark blobs.

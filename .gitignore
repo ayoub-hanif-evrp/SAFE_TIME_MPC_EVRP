@@ -17,6 +17,11 @@ data/processed/
 experiments/development/**
 !experiments/development/.gitkeep
 
+# Local cleanup / inventory scratch
+docs_inventory_pre.txt
+src_inventory_pre.txt
+*_inventory_pre.txt
+
 # OS and editor noise.
 .DS_Store
 Thumbs.db

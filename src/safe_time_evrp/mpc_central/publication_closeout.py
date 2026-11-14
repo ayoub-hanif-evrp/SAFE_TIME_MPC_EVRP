@@ -464,10 +464,12 @@ def final_assessment(audit: dict, theorem: dict, ablation: dict, dev: dict, hold
 
 
 def run_closeout(*, out_dir: Path | None = None) -> dict:
-    out_dir = out_dir or Path("docs/mpc_central")
+    out_dir = out_dir or Path("docs/experiments")
     paper_dir = Path("docs/paper")
+    repro_dir = Path("docs/reproducibility")
     out_dir.mkdir(parents=True, exist_ok=True)
     paper_dir.mkdir(parents=True, exist_ok=True)
+    repro_dir.mkdir(parents=True, exist_ok=True)
 
     sha = _git_sha()
     theorem = theorem_document()
@@ -528,7 +530,7 @@ def run_closeout(*, out_dir: Path | None = None) -> dict:
     holdout_path.write_text(json.dumps(holdout_artifact, indent=2), encoding="utf-8")
 
     # Also write reproducibility manifest
-    (out_dir / "REPRODUCIBILITY_MANIFEST.json").write_text(
+    (repro_dir / "REPRODUCIBILITY_MANIFEST.json").write_text(
         json.dumps(
             {
                 **freeze,
@@ -537,8 +539,8 @@ def run_closeout(*, out_dir: Path | None = None) -> dict:
                     "python -m pytest -q",
                 ],
                 "artifacts": [
-                    "docs/mpc_central/FINAL_CERTIFICATE_AUDIT.md",
-                    "docs/mpc_central/FROZEN_HOLDOUT_RESULTS.json",
+                    "docs/experiments/FINAL_CERTIFICATE_AUDIT.md",
+                    "docs/experiments/FROZEN_HOLDOUT_RESULTS.json",
                     "docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md",
                     "docs/paper/PUBLICATION_READINESS_REPORT.md",
                 ],
