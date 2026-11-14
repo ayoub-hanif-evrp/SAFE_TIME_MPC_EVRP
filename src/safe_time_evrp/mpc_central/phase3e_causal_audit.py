@@ -3,24 +3,21 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
 from pathlib import Path
 from statistics import mean
 
 from safe_time_evrp.commitment_safe_mpc.baseline_compare import executed_distance_from_log
-from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_continuation
 from safe_time_evrp.commitment_safe_mpc.full_validation_mpc import FullValidationAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.m1_mpc import CertificateCarryingAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.predictive_mpc import CommitmentSafePredictiveMpc
-from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
 from safe_time_evrp.controllers.episode import run_episode
-from safe_time_evrp.environment.simulator import FleetSimulator, SimulatorError
-from safe_time_evrp.models.state import Decision, Observation, Visit
+from safe_time_evrp.environment.simulator import FleetSimulator
+from safe_time_evrp.models.state import Decision, Observation
+from safe_time_evrp.mpc3c.forecast import visible_forecast
 from safe_time_evrp.mpc_central.accelerated_pilot import build_accelerated_dev_matrix
 from safe_time_evrp.mpc_central.counterfactual_actions import FirstActionKey, generate_counterfactual_actions
 from safe_time_evrp.mpc_central.phase3d_splits import fit_train_forecast
-from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value, rollout_candidate
-from safe_time_evrp.mpc3c.forecast import visible_forecast
+from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value
 from safe_time_evrp.validation.replay import validate_log
 
 FOCUS_CASES = ("A_dense_arrivals", "A_low_soc_charge", "B_easy_dynamic")
@@ -275,7 +272,9 @@ class StickyFirstActionController:
     Used to test whether first-action interventions are overwritten by immediate recourse.
     """
 
-    def __init__(self, instance, horizon, forced: Decision, *, seed: int = 7, alns_iterations: int = 10, alns_time: float = 0.2):
+    def __init__(
+        self, instance, horizon, forced: Decision, *, seed: int = 7, alns_iterations: int = 10, alns_time: float = 0.2
+    ):
         self._forced = forced
         self._used = False
         self._b1 = FullValidationAlnsMpc(
@@ -330,7 +329,6 @@ def first_action_matter_tests(case_id: str = "B_phase_b", *, seed: int = 7) -> d
     )
     by_name = {n: d for n, d in cands}
 
-    pairs = []
     # Pick named interventions if present
     names = []
     if any(n.startswith("accept:") for n in by_name):
@@ -395,7 +393,12 @@ def first_action_matter_tests(case_id: str = "B_phase_b", *, seed: int = 7) -> d
     # Value-tie analysis
     vals = {r["name"]: r["mean_value"] for r in score_rows}
     unique_vals = sorted(set(round(v, 6) for v in vals.values() if v > -1e8))
-    sticky_unique = sorted({(o["completed_count"], o["accepted_unfulfilled_count"], round(o["executed_distance"], 4)) for o in sticky_outcomes})
+    sticky_unique = sorted(
+        {
+            (o["completed_count"], o["accepted_unfulfilled_count"], round(o["executed_distance"], 4))
+            for o in sticky_outcomes
+        }
+    )
     if len(unique_vals) <= 1 and len(sticky_unique) == 1:
         tie_verdict = "MODELING_ARTIFACT_OR_PERFECT_RECOURSE_CATCHUP"
         tie_reason = (
@@ -404,7 +407,10 @@ def first_action_matter_tests(case_id: str = "B_phase_b", *, seed: int = 7) -> d
         )
     elif len(unique_vals) <= 1 and len(sticky_unique) > 1:
         tie_verdict = "SCORING_BLIND_BUT_ACTIONS_MATTER"
-        tie_reason = "Rollout values tie, but sticky plant outcomes differ — evaluator fails to distinguish consequential actions."
+        tie_reason = (
+            "Rollout values tie, but sticky plant outcomes differ — "
+            "evaluator fails to distinguish consequential actions."
+        )
     elif len(unique_vals) > 1 and len(sticky_unique) > 1:
         tie_verdict = "ACTIONS_MATTER"
         tie_reason = "Both predicted values and sticky plant outcomes differ across first actions."
@@ -514,8 +520,12 @@ def matched_seed_eval(
             rows.append(cell)
 
     valid = [r for r in rows if r["paired"]["valid_for_claim"]]
-    wins = sum(1 for r in valid if r["paired"]["proposed_minus_b1_completed"] > 0 and r["paired"]["proposed_minus_b1_au"] <= 0)
-    losses = sum(1 for r in valid if r["paired"]["proposed_minus_b1_completed"] < 0 or r["paired"]["proposed_minus_b1_au"] > 0)
+    wins = sum(
+        1 for r in valid if r["paired"]["proposed_minus_b1_completed"] > 0 and r["paired"]["proposed_minus_b1_au"] <= 0
+    )
+    losses = sum(
+        1 for r in valid if r["paired"]["proposed_minus_b1_completed"] < 0 or r["paired"]["proposed_minus_b1_au"] > 0
+    )
     stoch_eq = sum(1 for r in valid if r["paired"]["stoch_equals_proposed"])
     return {
         "seeds": list(seeds),
@@ -580,9 +590,7 @@ def run_phase3e(*, out_dir: Path | None = None) -> dict:
         reason = "Replay/scoring artifacts still dominate; quarantine invalid episodes."
     else:
         decision = "MIXED_OR_EQUIVALENT"
-        reason = (
-            "No distinct proposed-vs-stochastic mechanism; B1 comparison is mixed or tied after fairness repairs."
-        )
+        reason = "No distinct proposed-vs-stochastic mechanism; B1 comparison is mixed or tied after fairness repairs."
 
     traces = {
         "fairness": fairness,
@@ -602,4 +610,8 @@ def run_phase3e(*, out_dir: Path | None = None) -> dict:
 if __name__ == "__main__":
     art = run_phase3e()
     print(art["traces"]["decision"], art["traces"]["reason"])
-    print(art["matched"]["wins_vs_b1_valid"], art["matched"]["losses_vs_b1_valid"], art["matched"]["stoch_equals_proposed_valid"])
+    print(
+        art["matched"]["wins_vs_b1_valid"],
+        art["matched"]["losses_vs_b1_valid"],
+        art["matched"]["stoch_equals_proposed_valid"],
+    )

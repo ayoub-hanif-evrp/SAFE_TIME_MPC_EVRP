@@ -74,7 +74,10 @@ def test_matched_seed_proposed_equals_stochastic_on_easy():
     r_s = run_episode(case.instance, case.releases, controller=stoch, **ep_kwargs)
     r_p = run_episode(case.instance, case.releases, controller=prop, **ep_kwargs)
     assert r_s.final_requests == r_p.final_requests
-    assert abs(executed_distance_from_log(case.instance, r_s.log) - executed_distance_from_log(case.instance, r_p.log)) < 1e-9
+    assert (
+        abs(executed_distance_from_log(case.instance, r_s.log) - executed_distance_from_log(case.instance, r_p.log))
+        < 1e-9
+    )
     rep_s = validate_log(case.instance, r_s.log)
     rep_p = validate_log(case.instance, r_p.log)
     assert rep_s.ok and rep_s.code == "ok"
