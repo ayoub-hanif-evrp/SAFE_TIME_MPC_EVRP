@@ -1,42 +1,37 @@
-# Nominal commitment-certificate feasibility
+# Corrected certificate proposition
 
-## Certificate object
+## Withdrawn claim
 
-A `ContinuationCertificate` is a **persisted executable continuation**, not a metric:
+**NominalCommitmentInvariance** (unconditional preservation of a feasible plan at every decision epoch) is **withdrawn**. It is incompatible with implemented behavior: certificates can invalidate, and `decide()` can emit `UNKNOWN` while accepted customers remain pending (documented historically around t≈73 on `A_low_soc_charge` seed 7).
 
-- versioned fleet route suffixes
-- served / planned service coverage
-- per-vehicle anchors at publication
-- accepted customer set
-- assumptions tuple (`nominal_physics`, …)
+## Proposition: ConditionalCertificateValidity
 
-## Theorem (NominalCommitmentInvariance)
+At any decision epoch where the controller emits `CERTIFIED_FEASIBLE` for observation \(o\) and decision \(d\), and an independent `validate_continuation(o, d.\mathrm{routes}, \mathrm{require\_new}=d.\mathrm{newly\_accepted})` returns ok under nominal physics, the published certificate’s routes cover every customer in \(\mathrm{pending}(o)\cup d.\mathrm{newly\_accepted}\).
 
-**Claim.** Given an initially feasible certificate, exact nominal transition dynamics matching `FleetSimulator`, preservation of noninterruptible locked actions, and acceptance only when a complete feasible updated certificate exists (else execute a validated fallback), every accepted obligation retains a feasible completion plan at every subsequent decision epoch until completion, legal rejection, or episode termination with residual validation (or recorded accepted-unfulfilled when residual validation fails).
+### Assumptions
 
-### Assumptions (explicit)
+Nominal linear energy; deterministic Euclidean travel/energy; independent chargers; noninterruptible locked actions; deadlines = window due dates; finite horizon; public information only; soundness of `validate_continuation` for nominal suffixes.
 
-1. Nominal linear energy model  
-2. Deterministic Euclidean travel and energy  
-3. Independent chargers (no station capacity)  
-4. Noninterruptible locked travel / service / charge  
-5. Deadlines = customer window due dates  
-6. Finite episode horizon / idle completion  
-7. Accept only with a complete feasible updated certificate  
-8. Public information only at decision epochs  
+### Proof
 
-### Induction sketch
+1. The emit path sets `CERTIFIED_FEASIBLE` only after independent `validate_continuation(..., require_new=newly)` succeeds.  
+2. By validator semantics, obligations are `pending(o) ∪ newly`, and ok implies this set is ⊆ `served ∪ in_service(o)`.  
+3. Publish records `accepted := accepted(o) ∪ newly`.  
+4. Therefore every certified publish covers the post-decision obligation set at that epoch.  
 
-- **Base.** First accept publishes a `validate_continuation`-approved suffix covering pending ∪ newly accepted customers from current/post-action anchors.  
-- **Event step.** Locked actions complete exactly; `advance_or_invalidate` strips realized visits; revalidation from new anchors succeeds or the certificate is cleared and coverage is not claimed.  
-- **Decision step.** Execute only candidates that validate with `require_new`; otherwise execute the advanced fallback certificate, preserving already accepted obligations.  
-- **Admission hygiene.** No resurrection of rejected customers; no re-admission of `in_service` customers; no second-vehicle dispatch to customers already in service.
+This does **not** extend to `UNKNOWN` epochs or empty stores.
 
-### What is **not** claimed
+### Failure conditions
 
-- Robustness to energy/travel disturbances or forecast misspecification  
-- Global multistage optimality of economic selection  
-- That horizon-end residuals never fail (AU can still occur)  
-- Novelty of expected-value rollout by itself  
+Advance/invalidate clearing the store; scored-candidate exhaustion with failed fallback; horizon residual failure → accepted-unfulfilled; busy-anchor mismatch.
 
-**Supported by the plant:** yes (see `certificate_theory.theorem_document()`). No counterexample found under the stated assumptions; the statement is intentionally narrowed to **nominal** feasibility.
+### Distinctions
+
+| Outcome | Meaning |
+|---------|---------|
+| CERTIFIED_FEASIBLE | Independent nominal coverage now |
+| UNKNOWN + obligation_gap | Accepted customers currently uncovered by the emitted plan |
+| accepted_unfulfilled | Plant terminal: accepted without residual-feasible completion |
+| Simulator natural end | May still leave residual-feasible pending (not AU) |
+
+Machine-readable statement: `certificate_theory.theorem_document()`.

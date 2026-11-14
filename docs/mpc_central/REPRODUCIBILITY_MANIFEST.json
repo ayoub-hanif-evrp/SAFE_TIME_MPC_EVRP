@@ -1,0 +1,52 @@
+{
+  "frozen_parent_sha_requested": "954ce92099733b2c6beeac9d904615de94a3179a",
+  "closeout_worktree_sha_at_run": "954ce92099733b2c6beeac9d904615de94a3179a",
+  "controller": "CertificateCarryingEconomicMpc",
+  "alns_iterations": 10,
+  "alns_time_limit_seconds": 0.35,
+  "n_scenarios": 2,
+  "seed_manifest": [
+    3,
+    7,
+    11
+  ],
+  "development_cases": [
+    "A_dense_arrivals",
+    "A_low_soc_charge",
+    "B_easy_dynamic"
+  ],
+  "holdout_cases": [
+    "B_adversarial_overaccept"
+  ],
+  "objective": {
+    "SERVICE_REWARD": 100.0,
+    "UNFULFILLED_PENALTY": 250.0,
+    "DISTANCE_PENALTY": 1.0,
+    "tuned_on_wins": false
+  },
+  "splits": {
+    "train": [
+      "B_tight_battery",
+      "B_competing"
+    ],
+    "development": [
+      "B_phase_b",
+      "B_easy_dynamic"
+    ],
+    "holdout": [
+      "B_adversarial_overaccept"
+    ],
+    "holdout_status": "untouched",
+    "forecast_rule": "fit_empirical_arrivals on train instances only; anonymous scenarios only"
+  },
+  "commands": [
+    "python -m safe_time_evrp.mpc_central.publication_closeout",
+    "python -m pytest -q"
+  ],
+  "artifacts": [
+    "docs/mpc_central/FINAL_CERTIFICATE_AUDIT.md",
+    "docs/mpc_central/FROZEN_HOLDOUT_RESULTS.json",
+    "docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md",
+    "docs/paper/PUBLICATION_READINESS_REPORT.md"
+  ]
+}

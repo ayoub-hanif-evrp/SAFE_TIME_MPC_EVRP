@@ -9,9 +9,11 @@ from safe_time_evrp.mpc_central.final_mpc_package import (
 )
 
 
-def test_theorem_is_nominal_not_robust():
+def test_theorem_is_conditional_not_unconditional():
     doc = theorem_document()
+    assert doc["name"] == "ConditionalCertificateValidity"
     assert doc["supported_by_plant"] is True
+    assert "withdrawn_claim" in doc
     assert any("misspecification" in x.lower() or "disturb" in x.lower() for x in doc["what_is_not_claimed"])
 
 

@@ -1,7 +1,9 @@
-"""Formal commitment-certificate definitions and nominal feasibility claim.
+"""Formal commitment-certificate definitions — corrected closeout statement.
 
-This module states the theorem that the simulator and controller actually support.
-It does **not** claim uncertainty-robust recursive feasibility.
+The original ``NominalCommitmentInvariance`` claim was stronger than the
+implemented controller supports: certificates can invalidate, decide() can emit
+``UNKNOWN`` while accepted customers remain pending, and horizon residuals may
+fail. This module states what *is* proved for the actual code path.
 """
 
 from __future__ import annotations
@@ -22,8 +24,8 @@ ASSUMPTIONS = (
     "noninterruptible_locked_travel_service_charge",
     "deadlines_are_customer_window_due_dates",
     "episode_ends_at_finite_horizon_or_idle_completion",
-    "accept_only_with_complete_feasible_updated_certificate",
     "public_information_only_at_decision_epochs",
+    "validate_continuation_is_sound_for_nominal_suffix_feasibility",
 )
 
 
@@ -32,50 +34,67 @@ class TheoremStatement:
     name: str
     claim: str
     assumptions: tuple[str, ...]
-    induction_sketch: tuple[str, ...]
+    proof: tuple[str, ...]
+    failure_conditions: tuple[str, ...]
     what_is_not_claimed: tuple[str, ...]
     supported_by_plant: bool
     counterexample: str | None = None
 
 
-NOMINAL_COMMITMENT_INVARIANCE = TheoremStatement(
-    name="NominalCommitmentInvariance",
+# Corrected proposition (replaces overstated NominalCommitmentInvariance).
+CONDITIONAL_CERTIFICATE_VALIDITY = TheoremStatement(
+    name="ConditionalCertificateValidity",
     claim=(
-        "Let C_k be a ContinuationCertificate that validate_continuation accepts at "
-        "decision epoch k for observation o_k under nominal physics. Suppose the "
-        "controller (i) advances C_k through realized noninterruptible events via "
-        "CertificateStore.advance_or_invalidate, (ii) accepts a customer only when a "
-        "complete updated certificate C_{k+1} validates coverage of all pending "
-        "accepted and newly accepted obligations, and (iii) otherwise executes a "
-        "validated fallback certificate. Then, under exact nominal transition dynamics "
-        "matching FleetSimulator, every accepted obligation retains a feasible "
-        "completion plan at every subsequent decision epoch until it is completed, "
-        "rejected under the plant reject rules, or the episode terminates with a "
-        "validated residual continuation (or is recorded accepted-unfulfilled when "
-        "residual validation fails at horizon end)."
+        "At any decision epoch where the controller emits status CERTIFIED_FEASIBLE for "
+        "observation o and decision d, and an independent call to validate_continuation(o, d.routes, "
+        "require_new=d.newly_accepted) returns ok under nominal physics, the published "
+        "ContinuationCertificate's routes cover every customer in "
+        "pending(o) ∪ d.newly_accepted, where pending(o) = accepted(o) \\ (completed(o) ∪ in_service(o)). "
+        "Coverage means each such customer is either already IN_SERVICE or appears as a future "
+        "service visit in the certified suffixes. This is a per-epoch conditional validity "
+        "proposition for certified claims — not an unconditional invariant across all epochs."
     ),
     assumptions=ASSUMPTIONS,
-    induction_sketch=(
-        "Base: at the first accept, validate_continuation certifies a full fleet suffix "
-        "covering pending ∪ newly accepted customers from current/post-action anchors.",
-        "Inductive step (physical event): locked travel/service/charge completes exactly "
-        "as recorded; advance_or_invalidate strips realized visits; revalidation from "
-        "the new anchors succeeds or the certificate is invalidated and the controller "
-        "must not claim coverage without a new validated plan.",
-        "Inductive step (decision): a candidate is executed only if validate_continuation "
-        "succeeds with require_new; otherwise the previously validated advanced certificate "
-        "is executed (fallback), preserving coverage of already accepted obligations.",
-        "Accepts never resurrect rejected customers; in-service customers are covered by "
-        "the ongoing noninterruptible service and are not re-admitted.",
+    proof=(
+        "Definition. Let pending(o) and newly = d.newly_accepted. The controller's emit path "
+        "sets status=CERTIFIED_FEASIBLE only after validate_continuation(..., require_new=newly) "
+        "returns ok (independent verify before publish).",
+        "By the semantics of validate_continuation (continuation_validate.py): pending obligations "
+        "are pending(o); require_new adds newly; coverage is served_all ∪ in_service(o); "
+        "missing = (pending(o) ∪ newly) \\ covered must be empty for ok=True; duplicate service "
+        "and illegal new accepts are rejected.",
+        "Therefore, whenever the controller publishes a certificate under CERTIFIED_FEASIBLE, "
+        "the independently verified routes cover pending(o) ∪ newly at that epoch.",
+        "Publish records accepted := accepted(o) ∪ newly (post-decision set), so the certificate "
+        "object's accepted field matches the obligations that were certified.",
+        "QED (conditional on the certified-claim gate firing). This proof does not extend to "
+        "epochs where status=UNKNOWN or the store is empty.",
+    ),
+    failure_conditions=(
+        "CertificateStore.advance_or_invalidate may clear the certificate when accepted "
+        "obligations appear dropped without completion/rejection, or when revalidation fails.",
+        "decide() may return UNKNOWN with pending accepted customers when no scored feasible "
+        "candidate exists and fallback revalidation fails — obligations may remain uncovered "
+        "until a later epoch recovers or the episode records accepted-unfulfilled.",
+        "Horizon-end residual probes may fail; accepted-unfulfilled is then honest plant state, "
+        "not a certified continuation.",
+        "Busy-vehicle / mid-action epochs can invalidate advanced suffixes relative to new anchors.",
     ),
     what_is_not_claimed=(
+        "Unconditional preservation of a feasible plan at every decision epoch.",
         "Robustness to energy/travel disturbances or forecast misspecification.",
-        "Global multistage optimality of the economic selection rule.",
-        "That residual horizon-end probes cannot fail (accepted-unfulfilled may occur).",
-        "Novelty of expected-value stochastic rollout by itself.",
+        "That UNKNOWN epochs cannot occur while accepted customers remain pending.",
+        "Global multistage optimality of economic selection.",
+        "Novelty of CertificateStore relative to M1 (same store object).",
     ),
     supported_by_plant=True,
-    counterexample=None,
+    counterexample=(
+        "Concrete failure of the stronger (withdrawn) unconditional claim: on A_low_soc_charge "
+        "seed 7 around t≈73.03 (arrive), CC-E-MPC emitted UNKNOWN while C4 and C5 remained "
+        "accepted and store.current was absent — so preservation-at-every-epoch is false for "
+        "the implemented controller. After accounting fixes, such epochs must be labeled "
+        "obligation gaps, not CERTIFIED_FEASIBLE."
+    ),
 )
 
 
@@ -91,27 +110,35 @@ def check_certificate_feasible(
         return {"ok": False, "reason": "no_certificate"}
     public = make_public_snapshot(instance, observation, horizon).instance
     report = validate_continuation(public, observation, certificate.routes, energy=energy)
+    pending = set(observation.accepted) - set(observation.completed) - set(observation.in_service)
+    cert_pending = set(certificate.accepted) - set(observation.completed) - set(observation.in_service)
     return {
         "ok": report.ok,
         "status": report.status,
         "reasons": list(report.reasons),
         "version": certificate.version,
-        "n_pending_accepted": len(set(observation.accepted) - set(observation.completed) - set(observation.in_service)),
+        "n_pending_accepted": len(pending),
+        "certificate_accepted_includes_pending": pending <= cert_pending | set(observation.in_service),
     }
 
 
 def theorem_document() -> dict:
-    t = NOMINAL_COMMITMENT_INVARIANCE
+    t = CONDITIONAL_CERTIFICATE_VALIDITY
     return {
         "name": t.name,
         "claim": t.claim,
         "assumptions": list(t.assumptions),
-        "induction_sketch": list(t.induction_sketch),
+        "proof": list(t.proof),
+        "failure_conditions": list(t.failure_conditions),
         "what_is_not_claimed": list(t.what_is_not_claimed),
         "supported_by_plant": t.supported_by_plant,
         "counterexample": t.counterexample,
+        "withdrawn_claim": (
+            "NominalCommitmentInvariance (unconditional preservation at every epoch) — "
+            "withdrawn; contradicted by UNKNOWN-with-accepted epochs."
+        ),
         "certificate_object": (
             "ContinuationCertificate: versioned routes, served set, per-vehicle anchors, "
-            "accepted set, assumptions — a persisted executable continuation, not a metric."
+            "post-decision accepted set, assumptions — a persisted executable continuation."
         ),
     }

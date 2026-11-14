@@ -27,15 +27,28 @@ class CertificateStore:
     advance_count: int = 0
 
     def publish(
-        self, routes: dict[str, list[Visit]], observation: Observation, served: list[str]
+        self,
+        routes: dict[str, list[Visit]],
+        observation: Observation,
+        served: list[str],
+        *,
+        accepted: frozenset[str] | None = None,
     ) -> ContinuationCertificate:
+        """Publish a verified continuation.
+
+        ``accepted`` must be the **post-decision** obligation set (observation.accepted
+        union newly accepted). Defaulting to observation.accepted alone omits customers
+        accepted in this same decide() call — a certificate-accounting defect.
+        """
         self.version += 1
+        if accepted is None:
+            accepted = frozenset(observation.accepted)
         cert = ContinuationCertificate(
             version=self.version,
             routes={vid: list(vs) for vid, vs in routes.items()},
             served=tuple(served),
             anchors={v.id: v.anchor for v in observation.vehicles},
-            accepted=frozenset(observation.accepted),
+            accepted=frozenset(accepted),
         )
         self.current = cert
         return cert

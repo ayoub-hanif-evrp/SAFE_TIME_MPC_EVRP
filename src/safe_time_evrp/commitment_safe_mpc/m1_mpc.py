@@ -117,7 +117,6 @@ class CertificateCarryingAlnsMpc:
         if report.ok:
             newly = [c for c in proposed_new if c in report.served]
             self._verified_routes = {vid: list(vs) for vid, vs in routes.items()}
-            self.store.publish(routes, observation, report.served)
             status = "CERTIFIED_FEASIBLE"
             notes.append("validated_with_new_accepts" if newly else "validated_commitments_only")
         else:
@@ -131,7 +130,6 @@ class CertificateCarryingAlnsMpc:
                 routes = candidate_routes
                 status = "CERTIFIED_FEASIBLE"
                 self._verified_routes = {vid: list(vs) for vid, vs in routes.items()}
-                self.store.publish(routes, observation, report2.served)
                 notes.append("rejected_unvalidated_new_accepts")
             elif prev_ok and self._verified_routes is not None:
                 routes = self._verified_routes
@@ -150,6 +148,28 @@ class CertificateCarryingAlnsMpc:
         for c in newly:
             if c not in accepted:
                 accepted.append(c)
+        if status == "CERTIFIED_FEASIBLE":
+            pub_rep = validate_continuation(
+                public,
+                observation,
+                routes,
+                energy=self.energy,
+                require_new=frozenset(newly),
+            )
+            this_val += pub_rep.seconds
+            self.profile.validation_seconds += pub_rep.seconds
+            if pub_rep.ok:
+                self.store.publish(
+                    routes,
+                    observation,
+                    list(pub_rep.served),
+                    accepted=frozenset(accepted),
+                )
+            else:
+                status = "UNKNOWN"
+                notes.append("m1_publish_blocked_independent_verify_failed")
+                notes.extend(pub_rep.reasons[:3])
+                self.last_validation_status = status
         planned = [v.node_id for vs in routes.values() for v in vs if v.purpose == "service"]
         elapsed = perf_counter() - started
         overrun = elapsed > self._alns.time_limit_seconds

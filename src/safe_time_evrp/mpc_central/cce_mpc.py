@@ -91,9 +91,13 @@ class CertificateCarryingEconomicMpc:
         # Optional restricted first-action set (Case-A paper oracle). None = full generator.
         self.first_leg_allowlist = first_leg_allowlist
         self.store = CertificateStore()
+        # Dual retention (same pattern as M1): store may invalidate on advance while
+        # the last independently verified routes remain available for fallback attempts.
+        self._last_certified_routes: dict[str, list[Visit]] | None = None
         self.profile = CCEMpcProfile()
         self.last_validation_status = "UNKNOWN"
         self.last_audit: dict = {}
+        self.last_obligation_gap: list[str] = []
 
     def _scenario_forecasts(self, observation: Observation) -> list[list[ForecastCustomer]]:
         if self.scenario_override is not None:
@@ -121,6 +125,8 @@ class CertificateCarryingEconomicMpc:
         trigger: str,
         served: list[str] | None = None,
     ) -> Decision:
+        snapshot = make_public_snapshot(self._full, observation, self.horizon)
+        public = snapshot.instance
         routes = sanitize_routes(observation, routes)
         newly = sanitize_newly_accepted(observation, newly)
         rejected = sanitize_rejects(observation, [c for c in rejected if c not in newly])
@@ -128,9 +134,44 @@ class CertificateCarryingEconomicMpc:
         for c in newly:
             if c not in accepted:
                 accepted.append(c)
-        if status == "CERTIFIED_FEASIBLE" and self.use_persistent_certificate:
-            self.store.publish(routes, observation, list(served or newly))
-            self.profile.certificate_publishes += 1
+        accepted_set = frozenset(accepted)
+
+        # Independent verify: CERTIFIED_FEASIBLE requires coverage of the full post-decision set.
+        if status == "CERTIFIED_FEASIBLE":
+            rep = validate_continuation(
+                public,
+                observation,
+                routes,
+                energy=self.energy,
+                require_new=frozenset(newly),
+            )
+            if not rep.ok:
+                status = "UNKNOWN"
+                fallback = True
+                no_cont = True
+                notes.append("certified_claim_demoted_independent_verify_failed")
+                notes.extend(rep.reasons[:3])
+            else:
+                served = list(rep.served)
+                if self.use_persistent_certificate:
+                    self.store.publish(
+                        routes,
+                        observation,
+                        served,
+                        accepted=accepted_set,
+                    )
+                    self.profile.certificate_publishes += 1
+                self._last_certified_routes = {vid: list(vs) for vid, vs in routes.items()}
+
+        pending = set(accepted) - set(observation.completed) - set(observation.in_service)
+        if status != "CERTIFIED_FEASIBLE" and pending:
+            # Do not silently pretend commitments are covered.
+            notes.append(f"uncovered_accepted_obligations:{sorted(pending)}")
+            self.last_obligation_gap = sorted(pending)
+            no_cont = True
+        else:
+            self.last_obligation_gap = []
+
         planned = [v.node_id for vs in routes.values() for v in vs if v.purpose == "service"]
         elapsed = perf_counter() - started
         if elapsed > self.time_limit_seconds:
@@ -167,6 +208,9 @@ class CertificateCarryingEconomicMpc:
             "certificate_version": None if self.store.current is None else self.store.current.version,
             "first_legs": [list(x) for x in key.first_legs],
             "newly_accepted": list(newly),
+            "accepted_post_decision": sorted(accepted_set),
+            "obligation_gap": list(self.last_obligation_gap),
+            "independent_cert_ok": status == "CERTIFIED_FEASIBLE",
         }
         return Decision(
             time=observation.time,
@@ -212,6 +256,7 @@ class CertificateCarryingEconomicMpc:
                 if rep.ok:
                     prev_ok = True
                     fallback_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
+                    self._last_certified_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
                     self.profile.certificate_reuses += 1
                     notes.append("certificate_advanced_ok")
                 else:
@@ -221,6 +266,15 @@ class CertificateCarryingEconomicMpc:
                     notes.append("certificate_invalidated_on_recheck")
             elif self.store.current is None and self.store.invalidate_count:
                 notes.append("certificate_absent_after_invalidation")
+            # Secondary fallback: last independently verified routes (M1-style retention).
+            if not prev_ok and self._last_certified_routes is not None:
+                rep2 = validate_continuation(public, observation, self._last_certified_routes, energy=self.energy)
+                this_val += rep2.seconds
+                if rep2.ok:
+                    prev_ok = True
+                    fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
+                    notes.append("fallback_last_certified_routes_revalidated")
+                    self.profile.certificate_reuses += 1
 
         t_gen = perf_counter()
         candidates, diag = generate_counterfactual_actions(
