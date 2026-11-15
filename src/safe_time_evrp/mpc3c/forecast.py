@@ -354,6 +354,157 @@ def visible_forecast(
     )
 
 
+def sample_conditional_scenarios(
+    model: ArrivalForecast,
+    observation: Observation,
+    *,
+    horizon: float,
+    n_scenarios: int = 2,
+    seed: int = 0,
+    announcement_mean: float | None = None,
+    max_customers: int = 32,
+) -> list[list[ForecastCustomer]]:
+    """Draw anonymous futures relative to the *current* observation clock.
+
+    Arrivals are sampled on ``(now, now + horizon]`` from a homogeneous Poisson
+    process. The count is random (not forced to a fixed catalogue size). Empty
+    scenarios are valid when the process draws no events in the remaining window.
+
+    Uses train atoms for spatial/service attributes only. Never injects evaluation
+    customer IDs, coordinates, windows, or true future release times.
+    """
+    now = float(observation.time)
+    h = max(float(horizon), 0.0)
+    if h <= 1e-12 or not model.train_atoms:
+        return [[] for _ in range(max(1, n_scenarios))]
+    mu = (
+        float(announcement_mean)
+        if announcement_mean and announcement_mean > 0
+        else float(model.train_interarrival_mean or 12.0)
+    )
+    mu = max(mu, 1e-6)
+    # Time bucket for auditable CRN (0.1 time units).
+    bucket = int(round(now * 10.0))
+    known = (
+        set(observation.released_open)
+        | set(observation.accepted)
+        | set(observation.completed)
+        | set(observation.rejected)
+        | set(observation.in_service)
+        | set(observation.deferred)
+    )
+    out: list[list[ForecastCustomer]] = []
+    for s_idx in range(max(1, n_scenarios)):
+        state = stable_seed(
+            "conditional_fc",
+            str(seed),
+            str(s_idx),
+            str(bucket),
+            f"mu={mu:.6f}",
+            model.model_id[:48],
+        )
+        items: list[ForecastCustomer] = []
+        t = now
+        k = 0
+        while k < max_customers:
+            state, u_gap = _lcg(state)
+            gap = _exponential_gap(mu, u_gap)
+            t += gap
+            if t > now + h + 1e-12:
+                break
+            state, u_pick = _lcg(state)
+            atom = model.train_atoms[int(u_pick * len(model.train_atoms)) % len(model.train_atoms)]
+            state, jx = _lcg(state)
+            state, jy = _lcg(state)
+            x = atom.x + (jx - 0.5) * 0.5
+            y = atom.y + (jy - 0.5) * 0.5
+            span = max(atom.due - atom.ready, 1.0)
+            ready = float(t)
+            due = ready + span
+            cid = f"syn_cond_s{s_idx}_{k}_t{bucket}"
+            if cid in known:
+                k += 1
+                continue
+            items.append(
+                ForecastCustomer(
+                    customer_id=cid,
+                    ready_time=ready,
+                    due_time=due,
+                    x=x,
+                    y=y,
+                    demand=max(atom.demand, 0.01),
+                    service_time=max(atom.service_time, 0.0),
+                    source=f"conditional_scenario_{s_idx}",
+                    announcement_time=float(t),
+                )
+            )
+            k += 1
+        out.append(items)
+    return out
+
+
+def sample_conditional_scenarios_crn(
+    model: ArrivalForecast,
+    observation: Observation,
+    *,
+    horizon: float,
+    n_scenarios: int,
+    seed: int,
+    announcement_means: tuple[float, ...],
+    max_customers: int = 32,
+) -> dict[float, list[list[ForecastCustomer]]]:
+    """Common-random-number scenarios for multiple μ values (parameter differs only).
+
+    Shared uniforms drive gaps/atom picks; scaling ``gap = -mu * log(1-u)`` makes
+    scenarios differ only through the arrival-rate parameter.
+    """
+    now = float(observation.time)
+    h = max(float(horizon), 0.0)
+    result: dict[float, list[list[ForecastCustomer]]] = {float(m): [] for m in announcement_means}
+    if h <= 1e-12 or not model.train_atoms:
+        empty = [[] for _ in range(max(1, n_scenarios))]
+        return {float(m): [list(x) for x in empty] for m in announcement_means}
+    bucket = int(round(now * 10.0))
+    for s_idx in range(max(1, n_scenarios)):
+        # Draw a shared skeleton of uniforms once per scenario.
+        state = stable_seed("conditional_fc_crn", str(seed), str(s_idx), str(bucket), model.model_id[:48])
+        uniforms: list[tuple[float, float, float, float]] = []
+        for _ in range(max_customers):
+            state, u_gap = _lcg(state)
+            state, u_pick = _lcg(state)
+            state, jx = _lcg(state)
+            state, jy = _lcg(state)
+            uniforms.append((u_gap, u_pick, jx, jy))
+        for mu_raw in announcement_means:
+            mu = max(float(mu_raw), 1e-6)
+            items: list[ForecastCustomer] = []
+            t = now
+            for k, (u_gap, u_pick, jx, jy) in enumerate(uniforms):
+                gap = _exponential_gap(mu, u_gap)
+                t += gap
+                if t > now + h + 1e-12:
+                    break
+                atom = model.train_atoms[int(u_pick * len(model.train_atoms)) % len(model.train_atoms)]
+                x = atom.x + (jx - 0.5) * 0.5
+                y = atom.y + (jy - 0.5) * 0.5
+                span = max(atom.due - atom.ready, 1.0)
+                items.append(
+                    ForecastCustomer(
+                        customer_id=f"syn_crn_s{s_idx}_{k}_t{bucket}",
+                        ready_time=float(t),
+                        due_time=float(t) + span,
+                        x=x,
+                        y=y,
+                        demand=max(atom.demand, 0.01),
+                        service_time=max(atom.service_time, 0.0),
+                        source=f"crn_scenario_{s_idx}_mu{mu:.4f}",
+                        announcement_time=float(t),
+                    )
+                )
+            result[float(mu_raw)].append(items)
+    return result
+
+
 def information_safe_remaining(
     observation: Observation,
     forecast_customers: list[ForecastCustomer],

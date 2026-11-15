@@ -59,6 +59,8 @@ class CommitmentSafePredictiveMpc:
         rollout_max_events: int = 300,
         use_counterfactuals: bool = True,
         use_forecast: bool = True,
+        conditional_forecast: bool = False,
+        announcement_mean: float | None = None,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -71,6 +73,8 @@ class CommitmentSafePredictiveMpc:
         self.rollout_max_events = rollout_max_events
         self.use_counterfactuals = use_counterfactuals
         self.use_forecast = use_forecast
+        self.conditional_forecast = conditional_forecast
+        self.announcement_mean = announcement_mean
         self.alns_iterations = alns_iterations
         self.seed = seed
         self._verified: dict[str, list[Visit]] | None = None
@@ -79,7 +83,19 @@ class CommitmentSafePredictiveMpc:
 
     def _scenario_forecasts(self, observation: Observation) -> list[list]:
         if not self.use_forecast or self.forecast is None:
-            return []
+            # Causal empty-future: same objective path as forecast mode.
+            return [[]]
+        if getattr(self, "conditional_forecast", False):
+            from safe_time_evrp.mpc3c.forecast import sample_conditional_scenarios
+
+            return sample_conditional_scenarios(
+                self.forecast,
+                observation,
+                horizon=self.horizon,
+                n_scenarios=self.n_scenarios,
+                seed=self.seed,
+                announcement_mean=getattr(self, "announcement_mean", None),
+            )
         return [
             visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx)
             for s_idx in range(self.n_scenarios)

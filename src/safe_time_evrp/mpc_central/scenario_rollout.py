@@ -471,6 +471,42 @@ def rollout_candidate(
     )
 
 
+def greedy_nominal_value(
+    full_instance: Instance,
+    observation: Observation,
+    candidate: Decision,
+    *,
+    horizon: float,
+) -> tuple[float, tuple[ScenarioRolloutScore, ...]]:
+    """Legacy nominal continuation score (NOT the causal no-forecast ablation).
+
+    Preserved as the named ``greedy_nominal`` baseline. Do not use this as the
+    default meaning of ``use_forecast=False``.
+    """
+    public = make_public_snapshot(full_instance, observation, horizon).instance
+    rep = validate_continuation(
+        public,
+        observation,
+        candidate.routes,
+        require_new=frozenset(candidate.newly_accepted),
+    )
+    value = (100.0 * len(rep.served) - rep.distance) if rep.ok else -1e9
+    score = ScenarioRolloutScore(
+        value=value,
+        completed=tuple(rep.served),
+        accepted_unfulfilled=(),
+        residual_feasible_pending=(),
+        executed_distance=rep.distance,
+        replay_ok=rep.ok,
+        events=0,
+        notes=("greedy_nominal_continuation",),
+        quiescent_epoch=is_quiescent(observation),
+        replay_code="ok" if rep.ok else "nominal_invalid",
+        replay_detail="" if rep.ok else ";".join(rep.reasons[:2]),
+    )
+    return value, (score,)
+
+
 def expected_rollout_value(
     full_instance: Instance,
     observation: Observation,
@@ -479,33 +515,25 @@ def expected_rollout_value(
     *,
     horizon: float,
     max_scenarios: int | None = None,
+    scoring_mode: str = "causal",
     **kwargs,
 ) -> tuple[float, tuple[ScenarioRolloutScore, ...]]:
-    """Mean causal value — **fail closed** if any scenario replay is invalid."""
-    scenarios = scenario_forecasts if max_scenarios is None else scenario_forecasts[:max_scenarios]
+    """Mean causal value — **fail closed** if any scenario replay is invalid.
+
+    ``scoring_mode``:
+    - ``causal`` (default): always use ``rollout_candidate``. An empty forecast list
+      means *no future announcements*, scored with the same causal objective as
+      non-empty forecast scenarios.
+    - ``greedy_nominal``: legacy ``100 * served - distance`` continuation heuristic.
+    """
+    if scoring_mode == "greedy_nominal":
+        return greedy_nominal_value(full_instance, observation, candidate, horizon=horizon)
+    if scoring_mode != "causal":
+        raise ValueError(f"unknown scoring_mode={scoring_mode!r}")
+    scenarios = list(scenario_forecasts if max_scenarios is None else scenario_forecasts[:max_scenarios])
+    # Fair no-forecast ablation: one empty-future scenario through the same causal path.
     if not scenarios:
-        public = make_public_snapshot(full_instance, observation, horizon).instance
-        rep = validate_continuation(
-            public,
-            observation,
-            candidate.routes,
-            require_new=frozenset(candidate.newly_accepted),
-        )
-        value = (100.0 * len(rep.served) - rep.distance) if rep.ok else -1e9
-        score = ScenarioRolloutScore(
-            value=value,
-            completed=tuple(rep.served),
-            accepted_unfulfilled=(),
-            residual_feasible_pending=(),
-            executed_distance=rep.distance,
-            replay_ok=rep.ok,
-            events=0,
-            notes=("no_forecast_nominal_only",),
-            quiescent_epoch=is_quiescent(observation),
-            replay_code="ok" if rep.ok else "nominal_invalid",
-            replay_detail="" if rep.ok else ";".join(rep.reasons[:2]),
-        )
-        return value, (score,)
+        scenarios = [[]]
     scores = tuple(
         rollout_candidate(full_instance, observation, candidate, fcs, horizon=horizon, **kwargs) for fcs in scenarios
     )

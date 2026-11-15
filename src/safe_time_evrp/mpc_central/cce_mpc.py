@@ -23,7 +23,12 @@ from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snaps
 from safe_time_evrp.environment.energy import NominalLinearEnergy
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
-from safe_time_evrp.mpc3c.forecast import ArrivalForecast, ForecastCustomer, visible_forecast
+from safe_time_evrp.mpc3c.forecast import (
+    ArrivalForecast,
+    ForecastCustomer,
+    sample_conditional_scenarios,
+    visible_forecast,
+)
 from safe_time_evrp.mpc_central.counterfactual_actions import (
     CounterfactualDiagnostics,
     FirstActionKey,
@@ -74,6 +79,9 @@ class CertificateCarryingEconomicMpc:
         use_persistent_certificate: bool = True,
         scenario_override: list[list[ForecastCustomer]] | None = None,
         first_leg_allowlist: frozenset[tuple[tuple[str, str, str], ...]] | None = None,
+        scoring_mode: str = "causal",
+        conditional_forecast: bool = False,
+        announcement_mean: float | None = None,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -90,6 +98,11 @@ class CertificateCarryingEconomicMpc:
         self.scenario_override = scenario_override
         # Optional restricted first-action set (Case-A paper oracle). None = full generator.
         self.first_leg_allowlist = first_leg_allowlist
+        # ``causal`` (default): empty-future uses the same causal rollout as forecasts.
+        # ``greedy_nominal``: legacy 100*served - distance heuristic (named baseline only).
+        self.scoring_mode = scoring_mode
+        self.conditional_forecast = conditional_forecast
+        self.announcement_mean = announcement_mean
         self.store = CertificateStore()
         # Dual retention (same pattern as M1): store may invalidate on advance while
         # the last independently verified routes remain available for fallback attempts.
@@ -103,7 +116,17 @@ class CertificateCarryingEconomicMpc:
         if self.scenario_override is not None:
             return list(self.scenario_override)
         if not self.use_forecast or self.forecast is None:
-            return []
+            # Causal empty-future ablation: one empty scenario list (not a formula switch).
+            return [[]]
+        if self.conditional_forecast:
+            return sample_conditional_scenarios(
+                self.forecast,
+                observation,
+                horizon=self.horizon,
+                n_scenarios=self.n_scenarios,
+                seed=self.seed,
+                announcement_mean=self.announcement_mean,
+            )
         return [
             visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx)
             for s_idx in range(self.n_scenarios)
@@ -240,6 +263,8 @@ class CertificateCarryingEconomicMpc:
             "certificate_carrying_economic_mpc",
             f"use_forecast={int(self.use_forecast)}",
             f"persistent_certificate={int(self.use_persistent_certificate)}",
+            f"scoring_mode={self.scoring_mode}",
+            f"conditional_forecast={int(self.conditional_forecast)}",
             "quiescent" if is_quiescent(observation) else "busy_epoch",
             "hard_commitment_feasibility=1",
             "no_scenario_regret_floor=1",
@@ -366,7 +391,8 @@ class CertificateCarryingEconomicMpc:
                 cand,
                 scenario_fcs,
                 horizon=self.horizon,
-                max_scenarios=self.n_scenarios if scenario_fcs else None,
+                max_scenarios=None if self.scoring_mode == "greedy_nominal" else len(scenario_fcs),
+                scoring_mode=self.scoring_mode,
                 max_replan_interval=self.max_replan_interval,
                 max_events=self.rollout_max_events,
                 energy=self.energy,

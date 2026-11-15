@@ -157,20 +157,22 @@ def _run_one(case, ctrl, name: str) -> dict:
         }
 
 
-def _perfect_info_diagnostic(episode, classifications) -> dict:
-    """Non-deployable oracle: score with scenarios equal to the realized remaining releases."""
-    # At t=0, "perfect" future is the full release list as anonymous-ineligible true times.
-    # We only record release statistics — controllers never receive hidden IDs.
+def release_statistics_diagnostic(episode, classifications) -> dict:
+    """Release-history summary only — not a perfect-information oracle."""
     return {
-        "label": "perfect_information_diagnostic_nondeployable",
+        "label": "release_statistics_diagnostic",
         "n_releases": len(episode.releases),
         "n_late_for_depot_admit": sum(1 for c in classifications if c.late_for_depot_admit),
         "note": (
-            "Not a deployable controller. Records realized release statistics only; "
-            "no hidden customer IDs are passed into online decide()."
+            "Not a perfect-information oracle and not a deployable controller. "
+            "Records realized release statistics only; no hindsight decisions/values."
         ),
-        "first_action_eval_available": callable(rollout_candidate),
+        "rollout_candidate_available": callable(rollout_candidate),
     }
+
+
+# Backward-compatible alias (deprecated name).
+_perfect_info_diagnostic = release_statistics_diagnostic
 
 
 def run_diagnostic(*, out_json: Path | None = None, out_md: Path | None = None) -> dict:
@@ -213,7 +215,9 @@ def run_diagnostic(*, out_json: Path | None = None, out_md: Path | None = None) 
                 "n_customers": episode.n_customers,
                 "family": episode.family,
                 "variants": {},
-                "perfect_info_diagnostic": _perfect_info_diagnostic(episode, classifications),
+                "release_statistics_diagnostic": release_statistics_diagnostic(
+                    episode, classifications
+                ),
             }
             variants = {
                 "misspecified_forecast_mu12": (forecast_miss, True),
