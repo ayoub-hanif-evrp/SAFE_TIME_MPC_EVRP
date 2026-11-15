@@ -61,7 +61,16 @@ class VehicleView:
 
 @dataclass(frozen=True)
 class Observation:
-    """Policy view. Hidden future releases are not fields of this object."""
+    """Policy view. Hidden future releases are not fields of this object.
+
+    Information contract (Schneider EVRPTW-D / protocol v2):
+    - ``public_customer_count`` is the **public** static population size N
+      (number of customers in the known instance file). Announcement *times*
+      of unreleased customers are hidden; their identities, coordinates and
+      windows must not be used by online forecasts as if observed.
+    - If ``public_customer_count`` is None, controllers must not invent N from
+      private plant fields; use train priors only.
+    """
 
     time: float
     vehicles: tuple[VehicleView, ...]
@@ -71,6 +80,7 @@ class Observation:
     rejected: tuple[str, ...]
     in_service: tuple[str, ...]
     deferred: tuple[str, ...]
+    public_customer_count: int | None = None
 
 
 @dataclass

@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from math import sqrt
 from time import perf_counter
 
-from safe_time_evrp.commitment_safe_mpc.certificate_store import CertificateStore
 from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_continuation
 from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
 from safe_time_evrp.environment.energy import NominalLinearEnergy
@@ -73,6 +72,8 @@ class BaselineAnchoredPredictiveCCE:
         improvement_margin: float = DEFAULT_IMPROVEMENT_MARGIN,
         max_rollout_candidates: int = 5,
         use_finite_demand: bool = True,
+        allow_override: bool = True,
+        equivalence_mode: bool = False,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -80,7 +81,10 @@ class BaselineAnchoredPredictiveCCE:
         self.finite_model = finite_model
         self.n_scenarios = max(1, n_scenarios)
         self.energy = energy or NominalLinearEnergy()
-        self.time_limit_seconds = time_limit_seconds
+        # Equivalence mode: iteration-primary budgets (wall clock effectively off) so
+        # ALNS is seed+iteration deterministic. Production keeps cooperative wall limits.
+        self.equivalence_mode = equivalence_mode
+        self.time_limit_seconds = 1e9 if equivalence_mode else time_limit_seconds
         self.seed = seed
         self.alns_iterations = alns_iterations
         self.max_replan_interval = max_replan_interval
@@ -88,14 +92,15 @@ class BaselineAnchoredPredictiveCCE:
         self.improvement_margin = improvement_margin
         self.max_rollout_candidates = max_rollout_candidates
         self.use_finite_demand = use_finite_demand
-        # Unchanged greedy-nominal CC-E as persistent incumbent generator.
+        self.allow_override = allow_override
+        # Matched-resource greedy-nominal incumbent (same wall/iteration budget).
         self._incumbent = CertificateCarryingEconomicMpc(
             instance,
             horizon,
             forecast=forecast,
             n_scenarios=n_scenarios,
             alns_iterations=alns_iterations,
-            time_limit_seconds=max(0.05, time_limit_seconds * 0.45),
+            time_limit_seconds=self.time_limit_seconds,
             seed=seed,
             energy=self.energy,
             use_forecast=False,
@@ -104,7 +109,8 @@ class BaselineAnchoredPredictiveCCE:
             max_replan_interval=max_replan_interval,
             rollout_max_events=rollout_max_events,
         )
-        self.store = CertificateStore()
+        # Single shared certificate store: BAP and incumbent must stay synchronized.
+        self.store = self._incumbent.store
         self._last_certified_routes: dict[str, list[Visit]] | None = None
         self.profile = BAPProfile()
         # Expose CCE-like fields for eval summarizers.
@@ -220,18 +226,55 @@ class BaselineAnchoredPredictiveCCE:
             audit={"bap_cce": self.last_audit},
         )
 
+    def _sync_store_after_choice(self, observation: Observation, decision: Decision, served: list[str]) -> None:
+        """Keep shared certificate store aligned with the *executed* decision."""
+        accepted = frozenset(list(observation.accepted) + list(decision.newly_accepted))
+        self.store.publish(decision.routes, observation, served, accepted=accepted)
+        self._last_certified_routes = {vid: list(vs) for vid, vs in decision.routes.items()}
+        self._incumbent._last_certified_routes = {vid: list(vs) for vid, vs in decision.routes.items()}
+
     def decide(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
         notes = [
             "baseline_anchored_predictive_cce",
             "incumbent=greedy_nominal_cce",
             f"use_finite_demand={int(self.use_finite_demand)}",
+            f"allow_override={int(self.allow_override)}",
+            f"equivalence_mode={int(self.equivalence_mode)}",
             f"improvement_margin={self.improvement_margin}",
+            "matched_incumbent_budget=1",
+            "shared_certificate_store=1",
             "quiescent" if is_quiescent(observation) else "busy_epoch",
             "hard_commitment_feasibility=1",
         ]
         # 1) Always compute feasible greedy-nominal incumbent first (anytime fallback).
+        # Zero-override mode: return this decision unchanged (trajectory equivalence).
         incumb_raw = self._incumbent.decide(observation, trigger)
+        if not self.allow_override:
+            self.profile.incumbent_kept += 1
+            self.profile.decisions += 1
+            self.last_validation_status = getattr(self._incumbent, "last_validation_status", "UNKNOWN")
+            out_notes = list(incumb_raw.notes) + notes + ["zero_override_passthrough"]
+            return Decision(
+                time=incumb_raw.time,
+                routes={vid: list(vs) for vid, vs in incumb_raw.routes.items()},
+                accepted=list(incumb_raw.accepted),
+                newly_accepted=list(incumb_raw.newly_accepted),
+                rejected=list(incumb_raw.rejected),
+                deferred=list(incumb_raw.deferred),
+                fallback_used=incumb_raw.fallback_used,
+                no_feasible_continuation=incumb_raw.no_feasible_continuation,
+                horizon_extended=incumb_raw.horizon_extended,
+                planned_service=list(incumb_raw.planned_service),
+                total_distance=incumb_raw.total_distance,
+                total_charge_time=incumb_raw.total_charge_time,
+                optimize_seconds=incumb_raw.optimize_seconds,
+                trigger=trigger,
+                locked_destinations=dict(incumb_raw.locked_destinations),
+                notes=out_notes,
+                audit={"bap_cce": {"zero_override": True}},
+            )
+
         incumbent = self._sanitize(observation, incumb_raw, trigger="greedy_nominal_incumbent")
         public = make_public_snapshot(self._full, observation, self.horizon).instance
         inc_rep = validate_continuation(
@@ -452,6 +495,30 @@ class BaselineAnchoredPredictiveCCE:
             notes.append("override_incumbent")
             chosen, chosen_newly, chosen_served = best, list(best.newly_accepted), served
             rejected, deferred = list(best.rejected), list(best.deferred)
+            # Critical: after override, shared store must track the executed action,
+            # not the inner greedy-nominal publish from this tick.
+            self._sync_store_after_choice(
+                observation,
+                Decision(
+                    time=observation.time,
+                    routes=chosen.routes,
+                    accepted=list(observation.accepted) + list(chosen_newly),
+                    newly_accepted=list(chosen_newly),
+                    rejected=rejected,
+                    deferred=deferred,
+                    fallback_used=False,
+                    no_feasible_continuation=False,
+                    horizon_extended=False,
+                    planned_service=[],
+                    total_distance=0.0,
+                    total_charge_time=0.0,
+                    optimize_seconds=0.0,
+                    trigger=trigger,
+                    locked_destinations={},
+                    notes=["store_resync_after_override"],
+                ),
+                list(chosen_served),
+            )
 
         return self._emit(
             observation,

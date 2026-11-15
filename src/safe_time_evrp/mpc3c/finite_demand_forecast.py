@@ -82,8 +82,17 @@ def _announced_ids(observation: Observation) -> set[str]:
 
 
 def remaining_announcement_count(instance: Instance, observation: Observation) -> int:
-    """Public finite remaining: static instance customers not yet announced."""
-    total = len(instance.customer_ids())
+    """Public finite remaining using the formal public population size.
+
+    Prefer ``observation.public_customer_count`` (information contract). Fall back
+    to ``len(instance.customer_ids())`` only when that field is unset (legacy tests).
+    Unreleased customer *attributes* are never read here.
+    """
+    pub = getattr(observation, "public_customer_count", None)
+    if pub is not None:
+        total = int(pub)
+    else:
+        total = len(instance.customer_ids())
     seen = len(_announced_ids(observation))
     return max(0, total - seen)
 
@@ -186,7 +195,8 @@ def expected_remaining_given_public(
     horizon: float,
 ) -> dict:
     """Calibrated remaining-count estimate from public state + train timing."""
-    n = len(instance.customer_ids())
+    pub = getattr(observation, "public_customer_count", None)
+    n = int(pub) if pub is not None else len(instance.customer_ids())
     remaining_hard = remaining_announcement_count(instance, observation)
     stats = model.stats_for(n)
     now = float(observation.time)
@@ -395,6 +405,21 @@ def calibration_report_finite_vs_poisson(
     def _sum_field(key: str) -> float:
         return float(sum(r[key] for r in rows))
 
+    seg_errs_f: list[float] = []
+    seg_errs_p: list[float] = []
+    by_size: dict[str, dict] = {}
+    for r in rows:
+        for a, b in zip(r["realized_by_segment"], r["predicted_finite_by_segment"], strict=True):
+            seg_errs_f.append(abs(float(a) - float(b)))
+        for a, b in zip(r["realized_by_segment"], r["predicted_poisson_by_segment"], strict=True):
+            seg_errs_p.append(abs(float(a) - float(b)))
+        key = str(r["n_customers"])
+        bucket = by_size.setdefault(key, {"realized": 0.0, "finite": 0.0, "poisson": 0.0, "n": 0})
+        bucket["realized"] += float(r["realized_total"])
+        bucket["finite"] += float(r["predicted_finite_total"])
+        bucket["poisson"] += float(r["predicted_poisson_total"])
+        bucket["n"] += 1
+
     return {
         "protocol_version": PROTOCOL_VERSION_V2,
         "n_rows": len(rows),
@@ -405,7 +430,15 @@ def calibration_report_finite_vs_poisson(
         "poisson_over_realized_ratio": (
             _sum_field("predicted_poisson_total") / max(_sum_field("realized_total"), 1e-9)
         ),
+        "mean_abs_segment_error_finite": (sum(seg_errs_f) / len(seg_errs_f)) if seg_errs_f else None,
+        "mean_abs_segment_error_poisson": (sum(seg_errs_p) / len(seg_errs_p)) if seg_errs_p else None,
+        "totals_by_customer_count": by_size,
         "rows": rows,
+        "honesty_note": (
+            "Pooled predicted==realized totals can be partly mechanical when N and "
+            "dynamicity fractions are known. Prefer segment MAE, size-stratified totals, "
+            "and temporal survival calibration over the pooled ratio alone."
+        ),
         "note": (
             "Finite model uses train empirical announce-time fractions * mean dynamic count. "
             "Poisson uses homogeneous rate over the full horizon (old misspecification)."

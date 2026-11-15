@@ -32,6 +32,7 @@ def test_finite_demand_does_not_phantom_after_active_end():
         rejected=(),
         in_service=(),
         deferred=(),
+        public_customer_count=len(inst.customer_ids()),
     )
     # Force remaining_hard=0 via completed=all
     assert remaining_announcement_count(inst, obs) == 0

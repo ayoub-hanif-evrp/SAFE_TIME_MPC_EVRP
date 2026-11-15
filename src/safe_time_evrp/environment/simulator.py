@@ -168,6 +168,8 @@ class FleetSimulator:
             rejected=tuple(rejected),
             in_service=tuple(in_service),
             deferred=tuple(deferred),
+            # Public static population size (Schneider EVRPTW-D convention).
+            public_customer_count=len(self.instance.customer_ids()),
         )
 
     def apply_decision(self, decision: Decision) -> None:
