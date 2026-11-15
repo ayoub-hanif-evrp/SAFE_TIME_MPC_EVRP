@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import replace
 from pathlib import Path
 
 from safe_time_evrp.commitment_safe_mpc.baseline_compare import executed_distance_from_log
@@ -21,7 +20,7 @@ from safe_time_evrp.data.dynamic_schneider_v2 import (
     environment_seed_for,
     policy_seed_for,
 )
-from safe_time_evrp.models.instance import VehicleType
+from safe_time_evrp.models.energy_rebuild import infinite_battery_instance
 from safe_time_evrp.mpc3c.finite_demand_forecast import fit_finite_demand_model
 from safe_time_evrp.mpc3c.forecast import fit_empirical_arrivals
 from safe_time_evrp.mpc_central.baseline_anchored_predictive_cce import BaselineAnchoredPredictiveCCE
@@ -107,20 +106,13 @@ def _run(case, ctrl, name):
 
 
 def _infinite_battery(inst):
-    vt = inst.vehicle_type
-    fat = VehicleType(
-        battery_capacity=1e9,
-        load_capacity=vt.load_capacity,
-        consumption_rate=0.0,
-        inverse_recharge_rate=vt.inverse_recharge_rate,
-        velocity=vt.velocity,
-        recharge_policy=vt.recharge_policy,
-    )
-    return replace(inst, vehicle_type=fat, name=inst.name + "_infbat")
+    """Relax energy consistently: rebuild arcs so plant log matches replay."""
+    return infinite_battery_instance(inst)
 
 
 def _controllers(case, *, arrival, finite, pol, budget, infinite_battery=False):
-    inst = _infinite_battery(case.instance) if infinite_battery else case.instance
+    del infinite_battery  # case.instance already swapped when needed
+    inst = case.instance
     # Rebuild case-like namespace
     common = dict(
         alns_iterations=ALNS_ITER,

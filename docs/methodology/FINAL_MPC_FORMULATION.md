@@ -1,6 +1,14 @@
 # Final MPC formulation — Certificate-Carrying Economic MPC (CC-E-MPC)
 
-**Assessment: `CERTIFICATE_ONLY`**
+> **Research refocus (2026-11):** The paper track’s **proposed method** is now
+> Commitment-Safe Stochastic MPC — see
+> `docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md`,
+> `docs/proofs/RECURSIVE_FEASIBILITY_STOCHASTIC_MPC.md`, and
+> `src/safe_time_evrp/mpc_central/commitment_safe_stochastic_mpc.py`.
+> CC-E-MPC (especially greedy-nominal) remains a **named baseline**, not the
+> proposed contribution. Do not proliferate BAP/DF-BAP-style wrappers.
+
+**Assessment: `CERTIFICATE_ONLY` (historical CC-E baseline track)**
 
 Parent SHA: `9f075541`. Holdout frozen. Phase 3F worst-scenario regret floor is **retired**.
 
