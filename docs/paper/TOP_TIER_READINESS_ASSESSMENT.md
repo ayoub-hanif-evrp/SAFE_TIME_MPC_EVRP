@@ -1,20 +1,11 @@
 # Top-tier readiness assessment
 
-**As of SHA `8c2a5d7` (Stage 0–1 complete; Stage 2–5 foundations started).**
+**Verdict:** Not ready: decision-focused policy failed the development gate vs greedy-nominal.
+**Evidence-based probability:** ~10-20%
 
-## Evidence-based probability (not optimism)
+**Label:** `not_ready_gates_failed`
 
-| Requirement | Status | Readiness signal |
-| --- | --- | --- |
-| Distinguishable contribution | Ingredients known (Ulmer/SPIBB/Sivagnanam/Soeffker/Spinelli); EV+commitment+budgeted SPI niche plausible | Low–medium until theorem + EV ablation |
-| Correct algorithm | Stage 1 validity repairs + green CI | Improving |
-| Strong empirics vs greedy-nominal | Not shown; BAP historically hurt service | Low |
-| Substantial theory | Draft conditional viability + SPI-style bound only | Low until proved on plant semantics |
-| Independent confirmatory eval | Stage 6 blocked; prior 6-stem final is inspected | None yet |
+Decision-focused policy did not beat greedy-nominal on development; Stage 6 confirmatory withheld per stopping rule. Detail: Decision-focused BAP does not clear the development gate vs greedy-nominal. paired={'completed_delta': {'n': 18, 'mean': -1.6666666666666667, 'std': 3.646109933485114}, 'tally': {'better': 0, 'worse': 5, 'tie': 13}}.
 
-**Overall probability of a top-tier submission under current evidence: low (~15–25%).**  
-Path to raise it: (1) nontrivial proved viability proposition; (2) decision-advantage
-beats incumbent on development; (3) EV ablation confirms mechanism; (4) fresh
-confirmatory protocol with larger instances.
-
-**Not ready for top-tier submission.**
+Stage 6 confirmatory was run only if development gates passed.
+Do not claim top-tier readiness from methodology alone.

@@ -1,17 +1,22 @@
-# Decision-advantage validation (Stage 3 — in progress)
+# Decision-advantage validation
 
-**Module:** `src/safe_time_evrp/mpc_central/decision_advantage.py`
+**Gate pass:** `False`
 
-## Implemented
+```json
+{
+  "completed_delta": {
+    "n": 18,
+    "mean": -1.6666666666666667,
+    "std": 3.646109933485114
+  },
+  "tally": {
+    "better": 0,
+    "worse": 5,
+    "tie": 13
+  }
+}
+```
 
-- Paired causal advantage \(\widehat{A}(o,a)\) under shared scenarios.
-- Interpretable feature score for cheap screening (SoC slack, idle capacity, charge legs, accepts).
+BAP vs GN (dev): `{'completed_delta': {'n': 18, 'mean': -1.0555555555555556, 'std': 2.7540819378263675}, 'tally': {'better': 1, 'worse': 5, 'tie': 12}}`
 
-## Not yet demonstrated (gate)
-
-- Offline training corpus of (state, incumbent, alternative, paired Δ) on train/dev only.
-- Better ranking than hand features on **untouched development** states.
-- Confidence / confirmation-scenario override rule replacing the fixed margin.
-- Integration into a new selectable controller that beats greedy-nominal on development.
-
-**Stage 6 remains blocked** until this gate passes.
+Controller: `DecisionFocusedBAP` (feature screen + paired causal + confirmation batch).
