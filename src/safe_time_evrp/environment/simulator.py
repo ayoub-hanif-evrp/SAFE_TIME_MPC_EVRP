@@ -87,6 +87,7 @@ class FleetSimulator:
         self._event_ids = 0
         self._cancelled: set[int] = set()
         self._log_seq = 0
+        self._suffix_depth = 0
         for vehicle in self.vehicles.values():
             self._record(
                 "vehicle_init",
@@ -224,6 +225,7 @@ class FleetSimulator:
                 vehicle.status = VehicleStatus.IDLE
                 vehicle.action = None
                 vehicle.wait_customer = None
+            self._suffix_depth = 0
             self._start_suffix(vehicle, list(visits))
 
     def mark_finished(self) -> None:
@@ -243,37 +245,43 @@ class FleetSimulator:
         self._record("episode_end", None, {"vehicles": end_state, "time": self.time})
 
     def _start_suffix(self, vehicle: _Vehicle, visits: list[Visit]) -> None:
-        vehicle.suffix = visits
-        if not visits:
-            vehicle.locked_destination = None
-            return
-        first = visits[0]
-        if first.purpose == "return" and first.node_id == vehicle.node and len(visits) == 1:
-            vehicle.suffix = []
-            vehicle.locked_destination = None
-            self._record(
-                "depot_idle",
-                vehicle.id,
-                {"node": vehicle.node, "soc": vehicle.soc, "load": vehicle.load},
-            )
-            return
-        if first.node_id != vehicle.node:
-            self._load_tour(vehicle, visits)
-            self._start_travel(vehicle, first.node_id)
-            return
-        if first.purpose == "service":
-            vehicle.suffix = visits[1:]
-            self._start_service(vehicle, first.node_id)
-        elif first.purpose == "charge":
-            vehicle.suffix = visits[1:]
-            self._start_charge(vehicle, first)
-        elif first.purpose == "reload":
-            self._reload(vehicle, visits)
-        elif first.purpose == "return":
-            vehicle.suffix = visits[1:]
-            self._start_suffix(vehicle, vehicle.suffix)
-        else:
-            raise SimulatorError(f"cannot start purpose {first.purpose}")
+        if self._suffix_depth > 256:
+            raise SimulatorError(f"{vehicle.id}: instantaneous suffix chain exceeded depth 256")
+        self._suffix_depth += 1
+        try:
+            vehicle.suffix = visits
+            if not visits:
+                vehicle.locked_destination = None
+                return
+            first = visits[0]
+            if first.purpose == "return" and first.node_id == vehicle.node and len(visits) == 1:
+                vehicle.suffix = []
+                vehicle.locked_destination = None
+                self._record(
+                    "depot_idle",
+                    vehicle.id,
+                    {"node": vehicle.node, "soc": vehicle.soc, "load": vehicle.load},
+                )
+                return
+            if first.node_id != vehicle.node:
+                self._load_tour(vehicle, visits)
+                self._start_travel(vehicle, first.node_id)
+                return
+            if first.purpose == "service":
+                vehicle.suffix = visits[1:]
+                self._start_service(vehicle, first.node_id)
+            elif first.purpose == "charge":
+                vehicle.suffix = visits[1:]
+                self._start_charge(vehicle, first)
+            elif first.purpose == "reload":
+                self._reload(vehicle, visits)
+            elif first.purpose == "return":
+                vehicle.suffix = visits[1:]
+                self._start_suffix(vehicle, vehicle.suffix)
+            else:
+                raise SimulatorError(f"cannot start purpose {first.purpose}")
+        finally:
+            self._suffix_depth -= 1
 
     def _load_tour(self, vehicle: _Vehicle, visits: list[Visit]) -> None:
         if vehicle.node != self.instance.depot_id:
@@ -321,6 +329,57 @@ class FleetSimulator:
         start_soc = vehicle.soc
         end_soc = start_soc - energy
         end_time = self.time + travel_time
+        self._record(
+            "depart",
+            vehicle.id,
+            {
+                "origin": vehicle.node,
+                "destination": destination,
+                "soc": start_soc,
+                "load": vehicle.load,
+                "onboard": sorted(vehicle.onboard),
+                "travel_time": travel_time,
+                "energy": energy,
+                "time_factor": time_factor,
+                "energy_factor": energy_factor,
+                "nominal_travel_time": arc.travel_time,
+                "nominal_energy": base_energy,
+            },
+        )
+        # Zero-duration arcs (e.g. colocated depot/charger) must complete inside this
+        # decision application. Scheduling an arrive at the current clock time would
+        # re-trigger decide() forever without advancing simulation time.
+        if travel_time <= EPS:
+            vehicle.soc = end_soc if end_soc >= 0 else 0.0
+            origin = vehicle.node
+            vehicle.node = destination
+            vehicle.status = VehicleStatus.IDLE
+            vehicle.action = None
+            vehicle.locked_destination = None
+            vehicle.anchor_after = None
+            self._record(
+                "arrive",
+                vehicle.id,
+                {
+                    "origin": origin,
+                    "destination": destination,
+                    "energy": energy,
+                    "travel_time": travel_time,
+                    "soc_before": start_soc,
+                    "soc": vehicle.soc,
+                    "load": vehicle.load,
+                    "node": vehicle.node,
+                    "instantaneous": True,
+                },
+            )
+            if destination == self.instance.depot_id:
+                self._record(
+                    "depot_arrival",
+                    vehicle.id,
+                    {"soc": vehicle.soc, "load": vehicle.load, "node": destination},
+                )
+            self._start_suffix(vehicle, vehicle.suffix)
+            return
         vehicle.status = VehicleStatus.TRAVELING
         vehicle.locked_destination = destination
         event_id = self._push(
@@ -345,23 +404,6 @@ class FleetSimulator:
             soc=end_soc,
             load=vehicle.load,
             onboard=frozenset(vehicle.onboard),
-        )
-        self._record(
-            "depart",
-            vehicle.id,
-            {
-                "origin": vehicle.node,
-                "destination": destination,
-                "soc": start_soc,
-                "load": vehicle.load,
-                "onboard": sorted(vehicle.onboard),
-                "travel_time": travel_time,
-                "energy": energy,
-                "time_factor": time_factor,
-                "energy_factor": energy_factor,
-                "nominal_travel_time": arc.travel_time,
-                "nominal_energy": base_energy,
-            },
         )
 
     def _start_service(self, vehicle: _Vehicle, customer_id: str) -> None:
