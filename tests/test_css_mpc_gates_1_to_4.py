@@ -266,3 +266,27 @@ def test_approximation_class_documented():
     inst = _toy()
     ctrl = CommitmentSafeStochasticMpc(inst, horizon=40.0, use_forecast=False)
     assert "restricted_candidate_set" in ctrl.approximation_class
+
+
+def test_ablation_flags_no_charge_and_no_warm_start():
+    inst = _toy()
+    obs = make_observation(inst, 1)
+    obs = Observation(0.0, obs.vehicles, ("C1",), (), (), (), (), (), public_customer_count=2)
+    ctrl = CommitmentSafeStochasticMpc(
+        inst,
+        horizon=80.0,
+        use_forecast=False,
+        alns_iterations=4,
+        time_limit_seconds=0.25,
+        seed=11,
+        allow_charge_candidates=False,
+        use_warm_start=False,
+    )
+    d = ctrl.decide(obs, "request_release")
+    assert "allow_charge_candidates=0" in d.notes or "warm_start=0" in d.notes
+    assert "warm_start=0" in d.notes
+    # No charge first legs among notes/selection path — if selected exists, legs lack charge.
+    from safe_time_evrp.mpc_central.counterfactual_actions import FirstActionKey
+
+    key = FirstActionKey.from_decision(d)
+    assert all(leg[2] != "charge" for leg in key.first_legs)

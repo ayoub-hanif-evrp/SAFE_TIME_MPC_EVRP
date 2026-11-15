@@ -107,6 +107,8 @@ class CommitmentSafeStochasticMpc:
         use_finite_demand: bool = False,
         require_terminal_commitment: bool = True,
         adaptive_scenarios: bool = True,
+        allow_charge_candidates: bool = True,
+        use_warm_start: bool = True,
         scenario_override: list[list[ForecastCustomer]] | None = None,
     ) -> None:
         self._full = instance
@@ -124,6 +126,8 @@ class CommitmentSafeStochasticMpc:
         self.use_finite_demand = use_finite_demand
         self.require_terminal_commitment = require_terminal_commitment
         self.adaptive_scenarios = adaptive_scenarios
+        self.allow_charge_candidates = allow_charge_candidates
+        self.use_warm_start = use_warm_start
         self.scenario_override = scenario_override
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
@@ -434,32 +438,36 @@ class CommitmentSafeStochasticMpc:
             f"distance_penalty={DISTANCE_PENALTY}",
         ]
 
-        # --- Warm-start incumbent ---
+        # --- Warm-start incumbent (ablation: use_warm_start=False disables reuse) ---
         prev_ok = False
         fallback_routes: dict[str, list[Visit]] | None = None
-        retained = self.store.advance_or_invalidate(observation)
-        if retained is not None:
-            rep = validate_continuation(public, observation, retained.routes, energy=self.energy)
-            self.profile.validation_seconds += rep.seconds
-            if rep.ok:
-                prev_ok = True
-                fallback_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
-                self._last_certified_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
-                self.profile.certificate_reuses += 1
-                notes.append("warm_start_certificate_ok")
-            else:
-                self.store.invalidate_count += 1
-                self.store.current = None
-                self.profile.certificate_invalidations += 1
-                notes.append("certificate_invalidated_on_recheck")
-        if not prev_ok and self._last_certified_routes is not None:
-            rep2 = validate_continuation(public, observation, self._last_certified_routes, energy=self.energy)
-            self.profile.validation_seconds += rep2.seconds
-            if rep2.ok:
-                prev_ok = True
-                fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
-                notes.append("warm_start_last_certified_ok")
-                self.profile.certificate_reuses += 1
+        if self.use_warm_start:
+            retained = self.store.advance_or_invalidate(observation)
+            if retained is not None:
+                rep = validate_continuation(public, observation, retained.routes, energy=self.energy)
+                self.profile.validation_seconds += rep.seconds
+                if rep.ok:
+                    prev_ok = True
+                    fallback_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
+                    self._last_certified_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
+                    self.profile.certificate_reuses += 1
+                    notes.append("warm_start_certificate_ok")
+                else:
+                    self.store.invalidate_count += 1
+                    self.store.current = None
+                    self.profile.certificate_invalidations += 1
+                    notes.append("certificate_invalidated_on_recheck")
+            if not prev_ok and self._last_certified_routes is not None:
+                rep2 = validate_continuation(public, observation, self._last_certified_routes, energy=self.energy)
+                self.profile.validation_seconds += rep2.seconds
+                if rep2.ok:
+                    prev_ok = True
+                    fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
+                    notes.append("warm_start_last_certified_ok")
+                    self.profile.certificate_reuses += 1
+        else:
+            notes.append("warm_start=0")
+            self.store.current = None
 
         # --- Candidate generation (ALNS as internal subroutine) ---
         t_gen = perf_counter()
@@ -476,6 +484,15 @@ class CommitmentSafeStochasticMpc:
             include_solver_baselines=True,
             include_b1=True,
         )
+        if not self.allow_charge_candidates:
+            filtered = []
+            for name, cand in candidates:
+                key = FirstActionKey.from_decision(cand)
+                if any(leg[2] == "charge" for leg in key.first_legs):
+                    continue
+                filtered.append((name, cand))
+            candidates = filtered
+            notes.append("allow_charge_candidates=0")
         self.profile.candidate_gen_seconds += perf_counter() - t_gen
         self.profile.last_diagnostics = diag
         notes.append(f"n_valid_actions={len(candidates)}")

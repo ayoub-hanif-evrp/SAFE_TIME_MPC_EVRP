@@ -21,10 +21,10 @@
 |---|---|---|
 | 1 | Genuinely MPC beyond ordinary scenario rollouts? | **Partially.** Receding-horizon first-action + shared scenarios + hard terminal filter are MPC-structured, but the optimizer remains a **restricted candidate-set rollout**, not a full stochastic program. |
 | 2 | RF stronger than M1 certificate validity? | **Yes, formally:** terminal \(\mathcal{X}_f\) + transactional emit + invariance statement for certified epochs. Still **nominal** only; not robust. |
-| 3 | EV-specific charging/energy mechanism useful? | **Not demonstrated.** Infinite-battery (rebuilt arcs, 0 replay failures) still has CSS behind GN (7.0 vs 9.3 completed on n=3). |
-| 4 | Closed-loop gain vs strong MPC baselines? | **No vs greedy-nominal.** Completed mean 4.5 vs GN 5.5 (paired Δ=−1.0, 7/8/3). Beats B1/M1 on completed tally, which is insufficient. |
-| 5 | Defensible compute budget? | **Weak.** CSS deadline overruns sum=273 vs GN=13 at 0.35s cooperative wall. Not hard real-time. |
-| 6 | Differs from published SMPC / DVRP / commitment routing? | **Incremental package** (EV + irreversible accepts + terminal RF + candidate SMPC). Not a new paradigm; literature already covers pieces (Sivagnanam, Ulmer, Spinelli, classical RF-MPC). |
+| 3 | EV-specific charging/energy mechanism useful? | **Weak / mixed.** Charge-candidate ablation: CSS vs no-charge completed Δ=+0.83 (CI includes 0). Infinite-battery replay OK; CSS still not ahead of GN. |
+| 4 | Closed-loop gain vs strong MPC baselines? | **No clear win vs greedy-nominal.** Completed Δ=−0.72, CI [−2.87, 1.43]; economic Δ=+156 but CI [−285, 596] includes 0. |
+| 5 | Defensible compute budget? | **Improved reporting; still weak.** Warm-start is necessary (Δ=+1.94 vs cold, CI excludes 0). CSS latency ≫ GN; cooperative overruns remain. |
+| 6 | Differs from published SMPC / DVRP / commitment routing? | **Incremental package** (EV + irreversible accepts + terminal RF + candidate SMPC). Not a new paradigm. |
 
 ---
 
