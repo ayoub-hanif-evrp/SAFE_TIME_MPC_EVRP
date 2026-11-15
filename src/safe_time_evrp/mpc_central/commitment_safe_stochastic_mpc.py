@@ -133,9 +133,7 @@ class CommitmentSafeStochasticMpc:
         self.last_audit: dict = {}
         self.last_obligation_gap: list[str] = []
         self.objective_weights = dict(OBJECTIVE_WEIGHTS)
-        self.approximation_class = (
-            "restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse"
-        )
+        self.approximation_class = "restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse"
 
     def _scenario_forecasts(self, observation: Observation, *, n: int | None = None) -> list[list[ForecastCustomer]]:
         """Nonanticipative scenarios: measurable w.r.t. current public information only."""
@@ -160,8 +158,7 @@ class CommitmentSafeStochasticMpc:
         from safe_time_evrp.mpc3c.forecast import visible_forecast
 
         return [
-            visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx)
-            for s_idx in range(n_sc)
+            visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx) for s_idx in range(n_sc)
         ]
 
     def _pending_existing(self, observation: Observation) -> set[str]:
@@ -556,9 +553,7 @@ class CommitmentSafeStochasticMpc:
                 continue
 
             # Distinct horizon-end terminal commitment (Gate 2).
-            term_ok, term_detail = self._terminal_filter(
-                observation, cand, scenario_fcs, deadline=deadline
-            )
+            term_ok, term_detail = self._terminal_filter(observation, cand, scenario_fcs, deadline=deadline)
             if not term_ok:
                 notes.append(f"reject:{name}:{term_detail}")
                 continue
@@ -601,9 +596,7 @@ class CommitmentSafeStochasticMpc:
             diag.selected_key = FirstActionKey.from_decision(best)
             # Transactional commit: only keep new accepts that appear in validated served set
             # AND pass independent re-validation inside _try_commit.
-            newly = sanitize_newly_accepted(
-                observation, [c for c in best.newly_accepted if c in served]
-            )
+            newly = sanitize_newly_accepted(observation, [c for c in best.newly_accepted if c in served])
             committed = self._try_commit(
                 observation,
                 public,

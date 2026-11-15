@@ -353,12 +353,8 @@ def run_development(*, n_real: int = N_REAL, budget: float = BUDGET, include_inf
         mean_comp = comp_pair["delta"].get("mean")
         mean_econ = econ_pair["delta"].get("mean")
         loses_substantially = mean_comp is not None and mean_comp <= -0.5
-        wins_completed = (
-            mean_comp is not None and mean_comp >= 0.25 and comp_t["better"] > comp_t["worse"]
-        )
-        wins_economic = (
-            mean_econ is not None and mean_econ >= 25.0 and econ_t["better"] > econ_t["worse"]
-        )
+        wins_completed = mean_comp is not None and mean_comp >= 0.25 and comp_t["better"] > comp_t["worse"]
+        wins_economic = mean_econ is not None and mean_econ >= 25.0 and econ_t["better"] > econ_t["worse"]
         if loses_substantially:
             gate["reason"] = (
                 f"CSS-MPC loses substantially to greedy-nominal on completed "
