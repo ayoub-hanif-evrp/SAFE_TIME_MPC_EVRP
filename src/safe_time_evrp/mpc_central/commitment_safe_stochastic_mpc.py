@@ -1,18 +1,27 @@
 """Commitment-Safe Stochastic Model Predictive Control (proposed method).
 
-This is the single proposed MPC controller for the paper track. It is a
-receding-horizon optimizer:
+Approximation class (honest)
+----------------------------
+This controller implements a **restricted candidate-set stochastic MPC** with
+scenario-dependent B1-validated recourse (a rollout / policy-search approximation
+of the extensive-form problem in
+``docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md``).
 
-1. Observe public state only.
-2. Sample nonanticipative finite-demand (or empty) scenarios.
-3. Generate commitment-feasible plans; score with the shared economic objective.
-4. Enforce stage-0 commitment coverage and a terminal certified suffix.
-5. Execute only the first plant action; re-solve at the next event.
-6. On timeout / failure, fall back to the verified certificate incumbent.
+It does **not** claim to solve the full multi-stage stochastic MIP.
 
-ALNS is an internal approximate solver, not a separate scientific controller.
-Baseline wrappers (BAP / DF-BAP) are preserved for reproducibility but are not
-extended here.
+First-stage (shared / nonanticipative) variables optimized over a discrete set:
+  newly_accepted, rejected, route certificate, first executable legs.
+
+Scenario recourse: ``B1ValidatedRecourse`` inside horizon projection / scoring.
+
+Hard constraints: stage-0 commitment coverage; horizon-end terminal commitment;
+locks; public-information only.
+
+Soft objective: fixed economic weights (service − AU − distance).
+
+Transactional emission: certificates and new accepts commit only after
+independent validation; failed candidates never leave speculative accepts in
+the Decision returned to the plant.
 """
 
 from __future__ import annotations
@@ -37,6 +46,10 @@ from safe_time_evrp.mpc_central.counterfactual_actions import (
     sanitize_routes,
 )
 from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value, is_quiescent
+from safe_time_evrp.mpc_central.terminal_commitment import (
+    TerminalRejectReason,
+    project_to_horizon,
+)
 
 # Fixed economic weights for controlled comparisons (do not retune on test instances).
 OBJECTIVE_WEIGHTS = {
@@ -44,6 +57,10 @@ OBJECTIVE_WEIGHTS = {
     "unfulfilled_penalty": UNFULFILLED_PENALTY,
     "distance_penalty": DISTANCE_PENALTY,
 }
+
+STATUS_CERTIFIED = "CERTIFIED_FEASIBLE"
+STATUS_LOST = "CERTIFIED_FEASIBILITY_LOST"
+STATUS_UNKNOWN = "UNKNOWN"  # only when no existing obligations need coverage
 
 
 @dataclass
@@ -54,12 +71,16 @@ class CssMpcProfile:
     validation_seconds: float = 0.0
     candidate_gen_seconds: float = 0.0
     scoring_seconds: float = 0.0
+    terminal_seconds: float = 0.0
     fallbacks: int = 0
     certificate_reuses: int = 0
     certificate_invalidations: int = 0
     certificate_publishes: int = 0
     deadline_overruns: int = 0
     terminal_rejects: int = 0
+    rollout_rejects: int = 0
+    stage0_rejects: int = 0
+    transactional_demotions: int = 0
     decide_seconds: list[float] = field(default_factory=list)
     last_diagnostics: CounterfactualDiagnostics | None = None
     notes: list[str] = field(default_factory=list)
@@ -85,6 +106,7 @@ class CommitmentSafeStochasticMpc:
         finite_demand_model=None,
         use_finite_demand: bool = False,
         require_terminal_commitment: bool = True,
+        adaptive_scenarios: bool = True,
         scenario_override: list[list[ForecastCustomer]] | None = None,
     ) -> None:
         self._full = instance
@@ -101,20 +123,25 @@ class CommitmentSafeStochasticMpc:
         self.finite_demand_model = finite_demand_model
         self.use_finite_demand = use_finite_demand
         self.require_terminal_commitment = require_terminal_commitment
+        self.adaptive_scenarios = adaptive_scenarios
         self.scenario_override = scenario_override
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
         self._last_solution_routes: dict[str, list[Visit]] | None = None
         self.profile = CssMpcProfile()
-        self.last_validation_status = "UNKNOWN"
+        self.last_validation_status = STATUS_UNKNOWN
         self.last_audit: dict = {}
         self.last_obligation_gap: list[str] = []
         self.objective_weights = dict(OBJECTIVE_WEIGHTS)
+        self.approximation_class = (
+            "restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse"
+        )
 
-    def _scenario_forecasts(self, observation: Observation) -> list[list[ForecastCustomer]]:
+    def _scenario_forecasts(self, observation: Observation, *, n: int | None = None) -> list[list[ForecastCustomer]]:
         """Nonanticipative scenarios: measurable w.r.t. current public information only."""
+        n_sc = n if n is not None else self.n_scenarios
         if self.scenario_override is not None:
-            return list(self.scenario_override)
+            return list(self.scenario_override)[:n_sc]
         if not self.use_forecast:
             return [[]]
         if self.use_finite_demand and self.finite_demand_model is not None:
@@ -125,7 +152,7 @@ class CommitmentSafeStochasticMpc:
                 observation,
                 self._full,
                 horizon=self.horizon,
-                n_scenarios=self.n_scenarios,
+                n_scenarios=n_sc,
                 seed=self.seed,
             )
         if self.forecast is None:
@@ -134,27 +161,13 @@ class CommitmentSafeStochasticMpc:
 
         return [
             visible_forecast(observation, self.forecast, self.horizon, scenario_index=s_idx)
-            for s_idx in range(self.n_scenarios)
+            for s_idx in range(n_sc)
         ]
 
-    def _terminal_commitment_ok(
-        self,
-        public: Instance,
-        observation: Observation,
-        routes: dict[str, list[Visit]],
-        newly: list[str],
-    ) -> bool:
-        """Terminal / stage-0 hard constraint: validated coverage of all obligations."""
-        rep = validate_continuation(
-            public,
-            observation,
-            routes,
-            energy=self.energy,
-            require_new=frozenset(newly),
-        )
-        return bool(rep.ok)
+    def _pending_existing(self, observation: Observation) -> set[str]:
+        return set(observation.accepted) - set(observation.completed) - set(observation.in_service)
 
-    def _emit(
+    def _finalize_decision(
         self,
         observation: Observation,
         *,
@@ -168,45 +181,25 @@ class CommitmentSafeStochasticMpc:
         no_cont: bool,
         started: float,
         trigger: str,
+        publish: bool,
         served: list[str] | None = None,
     ) -> Decision:
-        snapshot = make_public_snapshot(self._full, observation, self.horizon)
-        assert_no_future_leak(snapshot, self._full)
-        public = snapshot.instance
+        """Build the Decision after commit decisions are already resolved transactionally."""
         routes = sanitize_routes(observation, routes)
         newly = sanitize_newly_accepted(observation, newly)
         rejected = sanitize_rejects(observation, [c for c in rejected if c not in newly])
+        # accepted list mirrors plant post-decision obligations we are willing to claim.
         accepted = list(observation.accepted)
         for c in newly:
             if c not in accepted:
                 accepted.append(c)
-        accepted_set = frozenset(accepted)
-
-        if status == "CERTIFIED_FEASIBLE":
-            rep = validate_continuation(
-                public,
-                observation,
-                routes,
-                energy=self.energy,
-                require_new=frozenset(newly),
-            )
-            if not rep.ok:
-                status = "UNKNOWN"
-                fallback = True
-                no_cont = True
-                notes.append("certified_claim_demoted_independent_verify_failed")
-                notes.extend(rep.reasons[:3])
-            else:
-                served = list(rep.served)
-                self.store.publish(routes, observation, served, accepted=accepted_set)
-                self.profile.certificate_publishes += 1
-                self._last_certified_routes = {vid: list(vs) for vid, vs in routes.items()}
-                self._last_solution_routes = {vid: list(vs) for vid, vs in routes.items()}
 
         pending = set(accepted) - set(observation.completed) - set(observation.in_service)
-        if status != "CERTIFIED_FEASIBLE" and pending:
-            notes.append(f"uncovered_accepted_obligations:{sorted(pending)}")
-            self.last_obligation_gap = sorted(pending)
+        if status == STATUS_CERTIFIED and pending:
+            self.last_obligation_gap = []
+        elif pending:
+            notes.append(f"uncovered_accepted_obligations:{sorted(self._pending_existing(observation))}")
+            self.last_obligation_gap = sorted(self._pending_existing(observation))
             no_cont = True
         else:
             self.last_obligation_gap = []
@@ -223,11 +216,14 @@ class CommitmentSafeStochasticMpc:
             "controller": "commitment_safe_stochastic_mpc",
             "validation_status": status,
             "fallback": fallback,
+            "published": publish,
             "objective_weights": dict(self.objective_weights),
             "require_terminal_commitment": self.require_terminal_commitment,
             "n_scenarios": self.n_scenarios,
             "first_action_only": True,
             "receding_horizon": True,
+            "approximation_class": self.approximation_class,
+            "transactional_emit": True,
         }
         return Decision(
             time=observation.time,
@@ -249,12 +245,180 @@ class CommitmentSafeStochasticMpc:
             audit={"css_mpc": self.last_audit},
         )
 
+    def _try_commit(
+        self,
+        observation: Observation,
+        public: Instance,
+        *,
+        routes: dict[str, list[Visit]],
+        newly: list[str],
+        rejected: list[str],
+        deferred: list[str],
+        notes: list[str],
+        started: float,
+        trigger: str,
+        fallback_flag: bool,
+    ) -> Decision | None:
+        """Validate candidate without mutating store; publish only on success.
+
+        Returns a Decision if commit succeeds, else None (caller must fallback).
+        """
+        routes = sanitize_routes(observation, routes)
+        newly = sanitize_newly_accepted(observation, newly)
+        rejected = sanitize_rejects(observation, [c for c in rejected if c not in newly])
+        rep = validate_continuation(
+            public,
+            observation,
+            routes,
+            energy=self.energy,
+            require_new=frozenset(newly),
+        )
+        self.profile.validation_seconds += rep.seconds
+        if not rep.ok:
+            notes.append("commit_validation_failed")
+            notes.extend(rep.reasons[:3])
+            self.profile.transactional_demotions += 1
+            return None
+
+        accepted_set = frozenset(list(observation.accepted) + list(newly))
+        self.store.publish(routes, observation, list(rep.served), accepted=accepted_set)
+        self.profile.certificate_publishes += 1
+        self._last_certified_routes = {vid: list(vs) for vid, vs in routes.items()}
+        self._last_solution_routes = {vid: list(vs) for vid, vs in routes.items()}
+        notes.append("transactional_commit_ok")
+        return self._finalize_decision(
+            observation,
+            routes=routes,
+            newly=newly,
+            rejected=rejected,
+            deferred=deferred,
+            notes=notes,
+            status=STATUS_CERTIFIED,
+            fallback=fallback_flag,
+            no_cont=False,
+            started=started,
+            trigger=trigger,
+            publish=True,
+            served=list(rep.served),
+        )
+
+    def _emit_fallback(
+        self,
+        observation: Observation,
+        public: Instance,
+        *,
+        fallback_routes: dict[str, list[Visit]] | None,
+        notes: list[str],
+        started: float,
+        trigger: str,
+        rejected: list[str] | None = None,
+        deferred: list[str] | None = None,
+    ) -> Decision:
+        """Emit verified backup with **zero** speculative new accepts, or report loss."""
+        self.profile.fallbacks += 1
+        notes = list(notes)
+        notes.append("fallback_path_no_new_accepts")
+
+        if fallback_routes is not None:
+            committed = self._try_commit(
+                observation,
+                public,
+                routes=fallback_routes,
+                newly=[],
+                rejected=list(rejected or []),
+                deferred=list(deferred or []),
+                notes=notes + ["fallback_verified_incumbent"],
+                started=started,
+                trigger=trigger,
+                fallback_flag=True,
+            )
+            if committed is not None:
+                return committed
+
+        # No valid backup for existing obligations.
+        existing = self._pending_existing(observation)
+        if existing:
+            notes.append("status=CERTIFIED_FEASIBILITY_LOST")
+            notes.append("existing_obligations_uncovered_by_fallback")
+            return self._finalize_decision(
+                observation,
+                routes={v.id: [] for v in observation.vehicles},
+                newly=[],  # never introduce accepts
+                rejected=list(rejected or []),
+                deferred=list(deferred or []),
+                notes=notes,
+                status=STATUS_LOST,
+                fallback=True,
+                no_cont=True,
+                started=started,
+                trigger=trigger,
+                publish=False,
+            )
+
+        notes.append("status=UNKNOWN")
+        return self._finalize_decision(
+            observation,
+            routes={v.id: [] for v in observation.vehicles},
+            newly=[],
+            rejected=list(rejected or []),
+            deferred=list(deferred or []),
+            notes=notes,
+            status=STATUS_UNKNOWN,
+            fallback=True,
+            no_cont=True,
+            started=started,
+            trigger=trigger,
+            publish=False,
+        )
+
+    def _terminal_filter(
+        self,
+        observation: Observation,
+        cand: Decision,
+        scenario_fcs: list[list[ForecastCustomer]],
+        *,
+        deadline: float,
+    ) -> tuple[bool, str]:
+        """Require terminal commitment OK on every scored scenario (or empty-future)."""
+        if not self.require_terminal_commitment:
+            return True, "terminal_disabled"
+        scenarios = scenario_fcs if scenario_fcs else [[]]
+        for s_idx, fcs in enumerate(scenarios):
+            if perf_counter() > deadline:
+                self.profile.terminal_rejects += 1
+                return False, "budget"
+            report, _ = project_to_horizon(
+                self._full,
+                observation,
+                cand,
+                fcs,
+                horizon=self.horizon,
+                max_replan_interval=self.max_replan_interval,
+                max_events=self.rollout_max_events,
+                energy=self.energy,
+                deadline=deadline,
+            )
+            self.profile.terminal_seconds += report.seconds
+            if report.reason == TerminalRejectReason.BUDGET:
+                self.profile.terminal_rejects += 1
+                return False, "budget"
+            if report.reason in {
+                TerminalRejectReason.ROLLOUT_FAILED,
+                TerminalRejectReason.REPLAY_FAILED,
+            }:
+                self.profile.rollout_rejects += 1
+                return False, f"rollout:{report.reason.value}:{report.detail}"
+            if not report.ok:
+                self.profile.terminal_rejects += 1
+                return False, f"terminal_infeasible:sc{s_idx}:{report.detail}"
+        return True, "terminal_ok"
+
     def solve_mpc(self, observation: Observation, trigger: str) -> Decision:
-        """Solve the finite-horizon stochastic MPC and return the first-action decision."""
         return self.decide(observation, trigger)
 
     def decide(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
+        deadline = started + self.time_limit_seconds
         snapshot = make_public_snapshot(self._full, observation, self.horizon)
         assert_no_future_leak(snapshot, self._full)
         public = snapshot.instance
@@ -263,22 +427,23 @@ class CommitmentSafeStochasticMpc:
             "receding_horizon=1",
             "first_action_execution=1",
             "scoring_mode=causal_economic",
+            "transactional_emit=1",
             f"use_forecast={int(self.use_forecast)}",
             f"terminal_commitment={int(self.require_terminal_commitment)}",
             "quiescent" if is_quiescent(observation) else "busy_epoch",
+            f"approximation={self.approximation_class}",
             f"service_reward={SERVICE_REWARD}",
             f"au_penalty={UNFULFILLED_PENALTY}",
             f"distance_penalty={DISTANCE_PENALTY}",
         ]
-        this_val = 0.0
 
-        # --- Warm-start incumbent from previous feasible MPC solution / certificate ---
+        # --- Warm-start incumbent ---
         prev_ok = False
         fallback_routes: dict[str, list[Visit]] | None = None
         retained = self.store.advance_or_invalidate(observation)
         if retained is not None:
             rep = validate_continuation(public, observation, retained.routes, energy=self.energy)
-            this_val += rep.seconds
+            self.profile.validation_seconds += rep.seconds
             if rep.ok:
                 prev_ok = True
                 fallback_routes = {vid: list(vs) for vid, vs in retained.routes.items()}
@@ -292,16 +457,17 @@ class CommitmentSafeStochasticMpc:
                 notes.append("certificate_invalidated_on_recheck")
         if not prev_ok and self._last_certified_routes is not None:
             rep2 = validate_continuation(public, observation, self._last_certified_routes, energy=self.energy)
-            this_val += rep2.seconds
+            self.profile.validation_seconds += rep2.seconds
             if rep2.ok:
                 prev_ok = True
                 fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
                 notes.append("warm_start_last_certified_ok")
                 self.profile.certificate_reuses += 1
 
-        # --- Candidate generation (approximate stochastic program) ---
+        # --- Candidate generation (ALNS as internal subroutine) ---
         t_gen = perf_counter()
-        alns_time = max(0.05, self.time_limit_seconds * 0.3)
+        remaining = max(0.05, deadline - perf_counter())
+        alns_time = max(0.05, min(remaining * 0.35, self.time_limit_seconds * 0.3))
         candidates, diag = generate_counterfactual_actions(
             self._full,
             observation,
@@ -340,13 +506,20 @@ class CommitmentSafeStochasticMpc:
             if all(FirstActionKey.from_decision(c) != key for _, c in candidates):
                 candidates = list(candidates) + [("incumbent_certificate", incumb)]
 
-        # Shared scenarios across candidates ⇒ nonanticipative first-stage comparison.
-        scenario_fcs = self._scenario_forecasts(observation)
+        # Adaptive scenario count under remaining budget.
+        n_sc = self.n_scenarios
+        if self.adaptive_scenarios and self.use_forecast:
+            rem = deadline - perf_counter()
+            if rem < 0.15 * self.time_limit_seconds:
+                n_sc = 1
+            notes.append(f"adaptive_n_scenarios={n_sc}")
+        scenario_fcs = self._scenario_forecasts(observation, n=n_sc)
         notes.append(f"n_scenarios_scored={len(scenario_fcs)}")
+
         scored: list[tuple[float, str, Decision, list[str]]] = []
         t_score = perf_counter()
         for name, cand in candidates:
-            if perf_counter() - started > self.time_limit_seconds:
+            if perf_counter() >= deadline:
                 notes.append("cooperative_deadline_hit_during_scoring")
                 break
             routes = sanitize_routes(observation, cand.routes)
@@ -369,12 +542,7 @@ class CommitmentSafeStochasticMpc:
                 locked_destinations=dict(cand.locked_destinations),
                 notes=list(cand.notes),
             )
-            # Hard stage-0 + terminal commitment constraint.
-            if self.require_terminal_commitment and not self._terminal_commitment_ok(
-                public, observation, cand.routes, cand.newly_accepted
-            ):
-                self.profile.terminal_rejects += 1
-                continue
+            # Hard stage-0 commitment.
             report = validate_continuation(
                 public,
                 observation,
@@ -382,9 +550,19 @@ class CommitmentSafeStochasticMpc:
                 energy=self.energy,
                 require_new=frozenset(cand.newly_accepted),
             )
-            this_val += report.seconds
+            self.profile.validation_seconds += report.seconds
             if not report.ok:
+                self.profile.stage0_rejects += 1
                 continue
+
+            # Distinct horizon-end terminal commitment (Gate 2).
+            term_ok, term_detail = self._terminal_filter(
+                observation, cand, scenario_fcs, deadline=deadline
+            )
+            if not term_ok:
+                notes.append(f"reject:{name}:{term_detail}")
+                continue
+
             mean_v, scores = expected_rollout_value(
                 self._full,
                 observation,
@@ -400,10 +578,10 @@ class CommitmentSafeStochasticMpc:
             self.profile.scenarios_evaluated += len(scores)
             self.profile.causal_rollouts += len(scores)
             if mean_v <= -1e8:
+                self.profile.rollout_rejects += 1
                 continue
             scored.append((mean_v, name, cand, list(report.served)))
         self.profile.scoring_seconds += perf_counter() - t_score
-        self.profile.validation_seconds += this_val
         self.profile.decisions += 1
 
         if scored:
@@ -421,51 +599,33 @@ class CommitmentSafeStochasticMpc:
             notes.append(f"selected={best_name}")
             notes.append(f"expected_value={best_v:.6f}")
             diag.selected_key = FirstActionKey.from_decision(best)
-            return self._emit(
+            # Transactional commit: only keep new accepts that appear in validated served set
+            # AND pass independent re-validation inside _try_commit.
+            newly = sanitize_newly_accepted(
+                observation, [c for c in best.newly_accepted if c in served]
+            )
+            committed = self._try_commit(
                 observation,
+                public,
                 routes=best.routes,
-                newly=sanitize_newly_accepted(observation, [c for c in best.newly_accepted if c in served]),
+                newly=newly,
                 rejected=list(best.rejected),
                 deferred=list(best.deferred),
                 notes=notes,
-                status="CERTIFIED_FEASIBLE",
-                fallback=False,
-                no_cont=False,
                 started=started,
                 trigger=trigger,
-                served=served,
+                fallback_flag=False,
             )
+            if committed is not None:
+                return committed
+            # Speculative winner failed final commit — discard new accepts, use backup.
+            notes.append("winner_commit_failed_discard_new_accepts")
 
-        # Failure-safe: verified incumbent, never an unchecked speculative plan.
-        self.profile.fallbacks += 1
-        if prev_ok and fallback_routes is not None:
-            notes.append("fallback_verified_incumbent")
-            return self._emit(
-                observation,
-                routes=fallback_routes,
-                newly=[],
-                rejected=[],
-                deferred=[],
-                notes=notes,
-                status="CERTIFIED_FEASIBLE",
-                fallback=True,
-                no_cont=False,
-                started=started,
-                trigger=trigger,
-                served=[],
-            )
-        notes.append("status=UNKNOWN")
-        return self._emit(
+        return self._emit_fallback(
             observation,
-            routes={v.id: [] for v in observation.vehicles},
-            newly=[],
-            rejected=[],
-            deferred=[],
+            public,
+            fallback_routes=fallback_routes if prev_ok else None,
             notes=notes,
-            status="UNKNOWN",
-            fallback=True,
-            no_cont=True,
             started=started,
             trigger=trigger,
-            served=[],
         )

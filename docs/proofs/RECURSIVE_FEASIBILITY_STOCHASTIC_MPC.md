@@ -1,143 +1,111 @@
 # Recursive feasibility for Commitment-Safe Stochastic MPC
 
-**Status:** Conditional theorem under explicit plant assumptions.  
-**Not claimed:** Unconditional safety; robustness to unmodeled travel/energy; hard real-time solvability.
+**Status:** Conditional theorem with algorithm–theorem correspondence in code.  
+**Not claimed:** Unconditional safety; robustness to unmodeled travel/energy; hard real-time; stochastic-energy RF.
 
-Related withdrawn claim: unconditional NominalCommitmentInvariance (`docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md`).
+Related withdrawn claim: unconditional NominalCommitmentInvariance (`CERTIFICATE_FEASIBILITY_PROOF.md`).
 
 ---
 
-## 1. System objects
+## 1. Objects
 
-At decision epoch \(t\) with public observation \(o_t\):
-
-| Symbol | Meaning |
-|---|---|
-| \(x_t\) | Public plant state: vehicle nodes, SoC, loads, statuses, anchors, locked destinations |
-| \(A_t\) | Accepted obligation set (irreversible) |
-| \(U_t\) | Announced undecided requests |
-| \(\mathcal{I}_t\) | Public information \(\sigma\)-algebra (no unreleased customer attributes) |
-| \(u_t\) | First executable control (accept/reject subset of \(U_t\), first legs: travel/service/charge/wait) |
-| \(C_t\) | Continuation certificate: routes covering \(A_t \cup A^{\mathrm{new}}_t\) under nominal physics |
-| \(\pi^{\mathrm{b}}\) | Backup policy: advance/revalidate \(C_t\); if invalid, refuse new accepts and emit last independently verified continuation or empty UNKNOWN |
-
-**Feasible commitment set**
+| Symbol | Meaning | Code |
+|---|---|---|
+| \(x_t, A_t\) | Public state and accepted obligations | `Observation` |
+| \(\mathcal{V}\) | Feasible commitment set | \(\exists C:\mathrm{Validate}(x,A,C)\) |
+| \(u_t\) | First-stage control | `Decision` (routes, newly, rejects) |
+| \(C_t\) | Certificate | `CertificateStore` |
+| \(\pi^{\mathrm{b}}\) | Backup | warm-started certified routes, **no new accepts** |
+| \(\mathcal{X}_f\) | Terminal set | `verify_terminal_commitment` |
 
 \[
-\mathcal{V}_t := \bigl\{(x_t,A_t):\exists\,C\text{ s.t. }\mathrm{Validate}(x_t,A_t,C)=\mathrm{true}\bigr\}.
+\mathcal{V}:=\bigl\{(x,A):\exists\,C\;\mathrm{Validate}(x,A,C)=\mathrm{true}\bigr\}.
 \]
 
-In code: `validate_continuation(public_snapshot(o_t), routes, require_new=newly_accepted)`.
+---
+
+## 2. Admissible emission rule (implemented)
+
+A controller output is **admissible** only if one of the following holds:
+
+**(E1) Certified commit.** Independent `Validate` succeeds for \(A_t\cup A^{\mathrm{new}}\), terminal commitment holds on every scored scenario, then the store is published and `newly_accepted = A^{\mathrm{new}}`. Status = `CERTIFIED_FEASIBLE`.
+
+**(E2) Certified backup.** Speculative winner is discarded; `newly_accepted = []`; a previously verified (or revalidated) continuation covering **existing** \(A_t\) is committed. Status = `CERTIFIED_FEASIBLE`.
+
+**(E3) Feasibility loss (assumption failure signal).** No validated continuation for existing \(A_t\) exists. Status = `CERTIFIED_FEASIBILITY_LOST`. Decision still lists existing accepts (never silently drops them) but **claims no certificate** and adds **no** new accepts.
+
+**(E4) Vacuous UNKNOWN.** Only when \(A_t=\emptyset\) and no certified plan is available. Not used to “paper over” uncovered existing obligations.
+
+**Transactional emit (Gate 1):** store mutation and `newly_accepted` occur only inside successful (E1)/(E2). Failed validation never returns speculative accepts.
 
 ---
 
-## 2. MPC law (abstract)
-
-At each event-triggered epoch \(t\in\mathcal{T}\):
-
-1. Observe \(o_t\) measurable w.r.t. \(\mathcal{I}_t\).
-2. Advance certificate; if still valid, retain as incumbent \(u^{\mathrm{inc}}_t\).
-3. Sample finite-demand scenarios \(\{\xi^{(s)}\}_{s=1}^S\) measurable w.r.t. \(\mathcal{I}_t\) (nonanticipative).
-4. Solve (approximately) the finite-horizon problem in `docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md` subject to:
-   - hard coverage of \(A_t \cup A^{\mathrm{new}}_t\) at stage 0,
-   - terminal constraint \((x_{t+H}^{(s)}, A_{t+H}^{(s)}) \in \mathcal{X}_f\) for every scenario (or certified backup suffix),
-   - locked noninterruptible actions unchanged until their anchors.
-5. Apply **only** the stage-0 action \(u_t^\star\); discard open-loop tails.
-6. If the solver fails or the cooperative budget expires without a verified \(u_t^\star\), apply \(\pi^{\mathrm{b}}(o_t)\).
-
----
-
-## 3. Terminal feasible set
-
-Define the **nominal terminal set**
-
-\[
-\mathcal{X}_f := \bigl\{(x,A):\exists\,C_f\text{ covering }A\text{ from }x\text{ under nominal energy/travel/charge, respecting time windows and noninterruptible locks}\bigr\}.
-\]
-
-**Backup-policy condition.** \(\pi^{\mathrm{b}}\) is **admissible** if whenever \((x_t,A_t)\in\mathcal{V}_t\) and no new accepts are forced, \(\pi^{\mathrm{b}}\) returns a control whose independent validation succeeds or explicitly signals UNKNOWN without adding obligations.
-
----
-
-## 4. Assumptions
+## 3. Assumptions
 
 | Id | Assumption |
 |---|---|
-| (N1) | Nominal deterministic energy = Schneider linear arc energy; travel times deterministic Euclidean / instance arcs. |
-| (N2) | Plant, validator, and replay use the **same** energy and timing model (including zero-duration arcs). |
-| (N3) | Between decision epochs, the plant applies the issued first action until the next event; locked actions are noninterruptible. |
-| (N4) | New accepts are issued only when a validated certificate covers \(A_t \cup A^{\mathrm{new}}_t\). |
-| (N5) | On timeout / solver failure, \(\pi^{\mathrm{b}}\) is admissible (N4 holds with \(A^{\mathrm{new}}=\emptyset\) if needed). |
-| (N6) | Terminal constraint: every candidate open-loop plan either ends in \(\mathcal{X}_f\) under nominal physics for the residual accepted set, or attaches a pre-validated certified suffix \(C_f\). |
-| (N7) | No unmodeled disturbances: realized travel/energy match the nominal model used in Validate. |
+| (N1) | Nominal Schneider linear energy; deterministic travel times. |
+| (N2) | Plant, optimizer, validator, replay share the same energy/timing model (arc rebuild when consumption changes). |
+| (N3) | Locked noninterruptible actions execute to their anchors; first-action only between events. |
+| (N4) | New accepts issued only via (E1). |
+| (N5) | On timeout / empty scored set, emission is (E2) if possible, else (E3)/(E4). |
+| (N6) | Every certified candidate satisfies stage-0 Validate **and** horizon-end \(\mathcal{X}_f\) via `project_to_horizon` + `verify_terminal_commitment`. |
+| (N7) | Realized plant transitions match the nominal model used in Validate (no unmodeled disturbances). |
+| (N8) | Certificate `advance_or_invalidate` under (N3)+(N7) either returns a truncated certificate still covering residual \(A\), or invalidates — in which case (E2) re-enters \(\mathcal{V}\) before claiming certified, or (E3) signals loss. |
 
-**Explicitly excluded:** stochastic energy without robust constraints; adversarial travel; claims from scenario sampling alone.
-
----
-
-## 5. Theorem (conditional recursive commitment feasibility)
-
-**Theorem (RF-CS-SMPC).**  
-Assume (N1)–(N7). Suppose \((x_{t_0},A_{t_0})\in\mathcal{V}_{t_0}\) with a published certificate. Let the closed loop apply the MPC law of §2 at every subsequent decision epoch.
-
-Then for every decision epoch \(t\ge t_0\):
-
-1. \(A_t\) only grows by validated new accepts (or stays unchanged under backup);
-2. either \((x_t,A_t)\in\mathcal{V}_t\), or the controller emits UNKNOWN / strips new accepts and **does not** claim `CERTIFIED_FEASIBLE`;
-3. every customer in \(A_t\) that is not yet completed remains covered by some nominal continuation at every certified epoch.
-
-**This is recursive feasibility of the commitment set under the nominal model**, not almost-sure service under demand uncertainty.
+**Excluded:** stochastic energy RF; scenario sampling as a robust guarantee.
 
 ---
 
-## 6. Proof
+## 4. Theorem (RF-CS-SMPC, strengthened)
 
-**Base case.** At \(t_0\), \((x_{t_0},A_{t_0})\in\mathcal{V}_{t_0}\) by hypothesis.
+**Theorem.** Assume (N1)–(N8). Suppose \((x_{t_0},A_{t_0})\in\mathcal{V}\) with a published certificate. Let the closed loop apply `CommitmentSafeStochasticMpc` with the admissible emission rule at every event-triggered epoch.
 
-**Inductive hypothesis.** At epoch \(t\), either \((x_t,A_t)\in\mathcal{V}_t\) with certificate \(C_t\), or the controller is in an explicitly non-certified state with no unverified new accepts (by (N4)–(N5)).
+Then for every decision epoch \(t\ge t_0\) **at which the status is `CERTIFIED_FEASIBLE`**:
 
-**Inductive step.** Consider the next decision epoch \(t^+\).
+1. \((x_t,A_t)\in\mathcal{V}\) with a published certificate matching the emitted routes;
+2. \(A_t\) grew from \(A_{t_0}\) only by (E1) accepts;
+3. after the plant applies the emitted first action and evolves under (N3)+(N7) to the next decision epoch \(t^+\), either advance yields \((x_{t^+},A_{t^+})\in\mathcal{V}\), or the next admissible emission restores \(\mathcal{V}\) via (E1)/(E2) before claiming certified.
 
-**Case A — MPC returns a verified optimizer output.**  
-By construction of the stage-0 constraint and independent `Validate`, \(A_{t^+}=A_t\cup A^{\mathrm{new}}\) is covered at emit time. (N3)–(N2) imply the plant’s first-action evolution matches the certificate prefix. At \(t^+\), `advance_or_invalidate` either:
-
-- returns a truncated certificate still covering residual obligations (still in \(\mathcal{V}_{t^+}\)), or
-- invalidates, forcing re-entry via a new solve or \(\pi^{\mathrm{b}}\).
-
-If the stochastic plan satisfies (N6), residual obligations beyond the prediction horizon remain in \(\mathcal{X}_f\) under nominal physics, so horizon truncation cannot silently drop them at certified emits.
-
-**Case B — Timeout / failure.**  
-(N5) applies \(\pi^{\mathrm{b}}\). No unverified accepts are added. If a previous certificate still validates after advance, \(\mathcal{V}\) is preserved; otherwise the controller must not claim certification (part 2 of the theorem).
-
-**Case C — Realization of new announcements.**  
-New requests enter \(U_{t^+}\) but not \(A_{t^+}\) until accepted. Rejecting them preserves \(\mathcal{V}\). Accepting them requires (N4).
-
-**Conclusion.** By induction, parts (1)–(3) hold for all decision epochs. □
+**Equivalently:** under (N1)–(N8), the set of certified viable states is **forward invariant** for the closed loop. The status `CERTIFIED_FEASIBILITY_LOST` is **not** an RF-preserving mode — it flags that some assumption failed (typically (N7)/(N8)); the algorithm refuses to pretend otherwise.
 
 ---
 
-## 7. What the theorem does *not* say
+## 5. Proof sketch (transition model)
 
-- It does **not** say a route validated at time \(t\) remains valid without revalidation after events — advance may invalidate; the theorem tracks re-entry into \(\mathcal{V}\).
-- It does **not** guarantee feasibility under energy/travel misspecification. If (N7) fails, replace (N1)/(N7) by a robust constraint set before claiming RF.
-- Scenario demand uncertainty affects the **objective**, not the hard commitment invariant under (N1)–(N7).
-- Approximate solvers preserve RF **only** through the independent validation gate and backup policy, not because ALNS is exact.
+**Base.** \((x_{t_0},A_{t_0})\in\mathcal{V}\) by hypothesis.
+
+**Inductive step (certified epoch \(t\)).** Emission is (E1) or (E2).
+
+- **(E1):** Transactional `_try_commit` publishes only after Validate. Terminal filter enforces (N6). First-action execution under (N3) follows the certified prefix. At \(t^+\), (N8) either advances the certificate (still in \(\mathcal{V}\)) or invalidates; the next decide must use (E1)/(E2) to reclaim \(\mathcal{V}\) before certified status.
+- **(E2):** No new accepts; Validate covers existing \(A_t\); same advance argument.
+
+**Loss path.** If Validate fails for all backups, emission is (E3). Theorem’s invariance claim applies only to certified epochs; (E3) is the explicit witness that (N1)–(N8) did not hold for that transition.
+
+**New announcements.** Enter \(U_t\) only; join \(A_t\) solely through (E1).
+
+□
 
 ---
 
-## 8. Code anchors
+## 6. Algorithm–theorem correspondence tests
 
-| Concept | Implementation target |
+| Claim | Test |
 |---|---|
-| \(\mathcal{V}_t\) | `continuation_validate.validate_continuation` |
-| Certificate advance | `CertificateStore.advance_or_invalidate` |
-| Public info | `public_snapshot.make_public_snapshot` |
-| Backup | Incumbent certificate / last verified routes in `CommitmentSafeStochasticMpc` |
-| Terminal suffix | Certified residual routes required before accept; see methodology doc |
-| Tests | `tests/test_commitment_safe_stochastic_mpc.py` |
+| No speculative accepts on failed commit | `test_gate1_invalid_candidate_cannot_introduce_accepts` |
+| Store records only emitted certified action | `test_gate1_failed_commit_does_not_publish_and_strips_new_accepts` |
+| Existing obligations not silently dropped | `test_gate1_loss_reported_when_existing_uncovered` |
+| Terminal ≠ stage-0 | `test_gate2_*` |
+| Certified ⇒ published | `test_gate3_rf_emission_never_adds_accept_without_certificate` |
+| Loss status on uncovered \(A_t\) | `test_gate3_assumption_counterexample_loss_status` |
 
 ---
 
-## 9. Relation to prior Stage-2 note
+## 7. Guarantee taxonomy
 
-`COMMITMENT_VIABILITY_AND_POLICY_IMPROVEMENT.md` formalizes wrapper contracts (BAP/DF-BAP). This document supersedes that **research direction** for the paper: the invariant is attached to the **MPC law**, not to baseline-anchored overrides.
+| Guarantee | Status |
+|---|---|
+| Nominal recursive commitment feasibility under (N1)–(N8) | **Claimed** (this theorem) |
+| Robust RF under energy uncertainty | **Not claimed** |
+| Almost-sure RF under demand scenarios alone | **Not claimed** (scenarios affect objective + terminal checks, not robust sets) |
+| Hard real-time interruptibility | **Not claimed** (cooperative wall + (E2)/(E3)) |

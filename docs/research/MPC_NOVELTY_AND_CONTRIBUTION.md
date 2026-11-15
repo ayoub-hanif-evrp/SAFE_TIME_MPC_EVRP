@@ -1,79 +1,35 @@
 # MPC novelty and contribution assessment
 
 **Working title:** Commitment-Safe Stochastic Model Predictive Control for Dynamic Electric Vehicle Routing with Time Windows  
-**Status:** Research hypothesis under validation — **not** an established novel contribution.  
-**Empirical context (dev, SHA `9570621`):** predictive wrappers lose to greedy-nominal CC-E-MPC; confirmatory withheld.
+**Implementation SHA (this milestone):** see git `HEAD` after CSS-MPC gates 1–4 + development eval.  
+**Approximation class:** restricted candidate-set stochastic MPC with scenario-dependent B1 recourse — **not** an exact extensive-form solve.
 
 ---
 
-## 1. Candidate contribution (hypothesis)
+## 1. What is now technically in place
 
-**Commitment-Safe Stochastic MPC with Recursive Feasibility and Energy-Aware Predictive Optimization** for multi-vehicle dynamic EVRPTW with **irreversible accept/reject**, noninterruptible travel/service/charge, and decision-time computation limits.
-
-The intended scientific object is an **MPC problem formulation and solution method**, not a catalogue of heuristic controllers.
-
----
-
-## 2. Closely related literature (what is already known)
-
-| Theme | Representative work | Overlap | Gap relative to hypothesis |
-|---|---|---|---|
-| Prompt irreversible confirmation + reoptimization | Sivagnanam et al., ICCPS 2026 ([arXiv:2603.07422](https://arxiv.org/abs/2603.07422)) | Accept/reject with feasible-plan confirmation; anytime manifests | Not EV energy/charge theory; not stochastic MPC recursive feasibility |
-| Anticipatory DVRP / ADP rollout | Ulmer et al., TS 2019 | Offline VFA + online rollout over base rules | Single-vehicle non-EV; not commitment certificates + EV physics |
-| Initial routing flexibility for dynamic accepts | Soeffker et al., OR Spectrum 2024 | Preserve capacity for future accepts | ICE/fleet workload features; not battery/charge MPC |
-| Stochastic energy EVRP | Spinelli et al., TRC 2025 | Scenario energy + recourse charging | Static/two-stage style; not online irreversible commitments + MPC RF |
-| Dynamic stochastic EVRP / safe RL | Basso et al., TRE 2022 | Stochastic requests + energy; safety layer | RL + chance constraints; no MPC RF theorem; no rejection commitments |
-| Dynamic EVRP proactive charging | Jiang et al., TS 2026 (abstract) | Lookahead / rollout / DQN; proactive charge | No irrevocable acceptance commitment in abstract; not RF-MPC |
-| Safe / recursive-feasibility MPC | Classical constrained MPC literature | Terminal sets, backup controllers | Rarely combined with discrete routing acceptances + EV energy |
-| Certificate-carrying routing MPC (this repo) | M1 / ConditionalCertificateValidity | Nominal coverage certificates | Restates epoch-wise validation; **not** a nontrivial recursive-feasibility theorem for stochastic MPC |
-
-Prior repo note: `docs/research/TOP_TIER_NOVELTY_AND_GAP.md` and `docs/literature/PRIOR_ART_AND_RESEARCH_GAP.md`.
+1. **Transactional commitment emission** — speculative accepts cannot enter `Decision` or the certificate store without independent Validate (Gate 1).
+2. **Distinct horizon-end terminal commitment constraint** — `verify_terminal_commitment` / `project_to_horizon` (Gate 2), not a rename of stage-0 Validate.
+3. **Strengthened RF theorem** — certified viable set forward invariance under (N1)–(N8); `CERTIFIED_FEASIBILITY_LOST` is an assumption-failure signal, not an RF-preserving escape (Gate 3).
+4. **Honest solver description** — candidate-set MPC + scenario rollout recourse; ALNS as subroutine.
 
 ---
 
-## 3. What would need to be true for a top-tier paper
+## 2. Answers to the six scientific questions
 
-A serious contribution likely requires **all** of:
-
-1. **Nontrivial recursive commitment-feasibility result** for the specified EV system (assumptions on energy/travel, noninterruptible locks, terminal set / backup policy), not merely “validator returned OK at time \(t\)”.
-2. **Distinct tractable stochastic MPC formulation or solution technique** (nonanticipative scenarios, terminal commitment constraint, warm-started solver) that is recognizably MPC.
-3. **Demonstrable gains attributable to EV-specific predictive decisions** (charging / SoC positioning), via controlled ablations with valid replay — not demand forecasting alone.
-4. **Honest computation evidence** (latency percentiles, quality vs budget) without claiming hard real-time guarantees the solver cannot meet.
-
-**Combining** certificates + forecasts + ALNS is **not** novelty by itself.
-
----
-
-## 4. What this repository has demonstrated so far
-
-| Claim | Demonstrated? |
-|---|---|
-| Event-triggered EVRPTW-D simulator + independent replay | Yes |
-| Certificate-carrying reactive MPC (M1) | Yes (empirical) |
-| ConditionalCertificateValidity (epoch-wise) | Yes (limited theorem) |
-| Causal forecast scoring without leakage | Largely yes (tests + contract) |
-| Predictive / BAP / DF-BAP beats greedy-nominal | **No** (dev gate failed) |
-| EV-specific predictive mechanism | **No** (infinite-battery ablation invalid: `replay:travel_energy`) |
-| Recursive feasibility for stochastic MPC | **Not yet** (this milestone drafts the proof under assumptions) |
+| # | Question | Answer (development evidence) |
+|---|---|---|
+| 1 | Genuinely MPC beyond ordinary scenario rollouts? | **Partially.** Receding-horizon first-action + shared scenarios + hard terminal filter are MPC-structured, but the optimizer remains a **restricted candidate-set rollout**, not a full stochastic program. |
+| 2 | RF stronger than M1 certificate validity? | **Yes, formally:** terminal \(\mathcal{X}_f\) + transactional emit + invariance statement for certified epochs. Still **nominal** only; not robust. |
+| 3 | EV-specific charging/energy mechanism useful? | **Not demonstrated.** Infinite-battery (rebuilt arcs, 0 replay failures) still has CSS behind GN (7.0 vs 9.3 completed on n=3). |
+| 4 | Closed-loop gain vs strong MPC baselines? | **No vs greedy-nominal.** Completed mean 4.5 vs GN 5.5 (paired Δ=−1.0, 7/8/3). Beats B1/M1 on completed tally, which is insufficient. |
+| 5 | Defensible compute budget? | **Weak.** CSS deadline overruns sum=273 vs GN=13 at 0.35s cooperative wall. Not hard real-time. |
+| 6 | Differs from published SMPC / DVRP / commitment routing? | **Incremental package** (EV + irreversible accepts + terminal RF + candidate SMPC). Not a new paradigm; literature already covers pieces (Sivagnanam, Ulmer, Spinelli, classical RF-MPC). |
 
 ---
 
-## 5. Precise niche still open (if executed)
+## 3. Top-tier readiness
 
-Stochastic **receding-horizon** control for **electric** fleets where:
+**Not ready.** Correctness/theory gates advanced; **empirical competitive advantage vs the strongest baseline failed.** Confirmatory evaluation must remain withheld.
 
-- acceptances are **irreversible obligations**,
-- a **terminal commitment set** (or certified backup policy) yields a **conditional recursive feasibility** theorem under stated plant assumptions,
-- predictive **charging and positioning** are first-class decisions interacting with request scenarios,
-- and the method remains computationally practical with incumbent-first anytime fallback.
-
-Closest competitors cover pieces (Sivagnanam confirmation; Ulmer rollout; Spinelli energy scenarios; classical RF-MPC) but not this package under EVRPTW-D commitments. That **package gap is a hypothesis**, not a novelty medal.
-
----
-
-## 6. Novelty language policy
-
-Allowed: comparative, conditional, “we prove under assumptions…”, “on this protocol…”.  
-Forbidden until theorem + valid EV ablation + development gate + confirmatory: “first”, “novel paradigm”, “solves dynamic EVRP”.
-
-Negative historical results (predictive loss to greedy-nominal; invalid infinite-battery cell) remain part of the manuscript record.
+Mechanism of failure (current hypothesis): terminal+scenario scoring burns budget and prefers commitment-safe but myopic/conservative first actions relative to greedy-nominal’s unequal but aggressive coverage heuristic — see `MPC_FAILURE_MECHANISM_AUDIT.md` and development paired tables.
