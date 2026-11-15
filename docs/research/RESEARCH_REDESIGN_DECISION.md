@@ -1,6 +1,6 @@
 # Research redesign decision (after Stage 0–1)
 
-**Stage 0+1 SHA:** *(filled at commit)*  
+**Stage 0+1 SHA:** c2951f370e5ca1292cccbe179909a02770b73a69  
 **Novelty gate:** Proceed **conditionally** (see `TOP_TIER_NOVELTY_AND_GAP.md`).
 
 ## Stage 1 outcomes
