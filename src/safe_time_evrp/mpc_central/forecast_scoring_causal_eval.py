@@ -632,16 +632,14 @@ def _render_md(payload: dict) -> str:
         "",
         "## Action-difference audits",
         "",
-        f"Logged episode blocks with first-action disagreements: **{len(audits)}** "
-        f"({n_epochs} epochs).",
+        f"Logged episode blocks with first-action disagreements: **{len(audits)}** ({n_epochs} epochs).",
         "",
         "Disagreements occur on public state under matched seeds; see JSON `action_audits` "
         "for legs and forecast counts. No mechanism is claimed from score gaps alone.",
         "",
         "## Perfect-information labeling",
         "",
-        "The former `perfect_info_diagnostic` is renamed to "
-        "`release_statistics_diagnostic`.",
+        "The former `perfect_info_diagnostic` is renamed to `release_statistics_diagnostic`.",
         "A restricted offline hindsight comparator is recorded under "
         "`hindsight_offline` and does not feed online control.",
         "",
@@ -649,10 +647,8 @@ def _render_md(payload: dict) -> str:
         "",
         "- `cce_greedy_nominal` is the old unequal objective (for diagnosis).",
         "- `cce_causal_empty_future` is the fair no-forecast ablation (same causal scorer).",
-        "- `cce_conditional_calibrated` uses decision-epoch-conditioned forecasts "
-        "with train-calibrated mu.",
-        "- Prior Schneider-v1 / stall-diagnostic artifacts remain frozen and are not "
-        "re-used as fresh validation.",
+        "- `cce_conditional_calibrated` uses decision-epoch-conditioned forecasts with train-calibrated mu.",
+        "- Prior Schneider-v1 / stall-diagnostic artifacts remain frozen and are not re-used as fresh validation.",
         "",
     ]
     return "\n".join(lines)

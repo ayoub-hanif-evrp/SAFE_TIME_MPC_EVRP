@@ -1,6 +1,14 @@
 # Conditional (decision-epoch) anonymous forecast model
 
-**Purpose:** Supply future-demand scenarios to CC-E-MPC / stochastic MPC without the
+**Superseded for online predictive control by**  
+[`FINITE_DEMAND` model](../experiments/FINITE_DEMAND_FORECAST_CALIBRATION.md) /
+`mpc3c/finite_demand_forecast.py` (finite population + active period).
+
+This document retains the decision-epoch Poisson design used in the archived
+equal-objective ablation (`442a423`). Prefer the finite-demand sampler for new
+experiments.
+
+**Purpose (archived):** Supply future-demand scenarios to CC-E-MPC / stochastic MPC without the
 static catalogue that expired after absolute time 200.
 
 ## Information boundary

@@ -215,9 +215,7 @@ def run_diagnostic(*, out_json: Path | None = None, out_md: Path | None = None) 
                 "n_customers": episode.n_customers,
                 "family": episode.family,
                 "variants": {},
-                "release_statistics_diagnostic": release_statistics_diagnostic(
-                    episode, classifications
-                ),
+                "release_statistics_diagnostic": release_statistics_diagnostic(episode, classifications),
             }
             variants = {
                 "misspecified_forecast_mu12": (forecast_miss, True),

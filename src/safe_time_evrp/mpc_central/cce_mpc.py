@@ -82,6 +82,8 @@ class CertificateCarryingEconomicMpc:
         scoring_mode: str = "causal",
         conditional_forecast: bool = False,
         announcement_mean: float | None = None,
+        finite_demand_model=None,
+        use_finite_demand: bool = False,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -103,6 +105,8 @@ class CertificateCarryingEconomicMpc:
         self.scoring_mode = scoring_mode
         self.conditional_forecast = conditional_forecast
         self.announcement_mean = announcement_mean
+        self.finite_demand_model = finite_demand_model
+        self.use_finite_demand = use_finite_demand
         self.store = CertificateStore()
         # Dual retention (same pattern as M1): store may invalidate on advance while
         # the last independently verified routes remain available for fallback attempts.
@@ -115,8 +119,21 @@ class CertificateCarryingEconomicMpc:
     def _scenario_forecasts(self, observation: Observation) -> list[list[ForecastCustomer]]:
         if self.scenario_override is not None:
             return list(self.scenario_override)
-        if not self.use_forecast or self.forecast is None:
+        if not self.use_forecast:
             # Causal empty-future ablation: one empty scenario list (not a formula switch).
+            return [[]]
+        if self.use_finite_demand and self.finite_demand_model is not None:
+            from safe_time_evrp.mpc3c.finite_demand_forecast import sample_finite_demand_scenarios
+
+            return sample_finite_demand_scenarios(
+                self.finite_demand_model,
+                observation,
+                self._full,
+                horizon=self.horizon,
+                n_scenarios=self.n_scenarios,
+                seed=self.seed,
+            )
+        if self.forecast is None:
             return [[]]
         if self.conditional_forecast:
             return sample_conditional_scenarios(
