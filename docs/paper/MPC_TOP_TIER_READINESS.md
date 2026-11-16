@@ -56,7 +56,9 @@ Heavy tails: `c106C15` (+1776 econ) vs `r103C10` (−880). Mean without reliable
 
 ## Runtime
 
-Decision-level (pooled decide seconds, not episode-mean percentiles): CSS frac_over_budget **23.3%**, p99 **0.57s** under cooperative 0.35s. Hard deadlines not enforced; report cooperative-budget compliance separately.
+Decision-level (pooled decide seconds, not episode-mean percentiles): CSS frac_over_budget **23.3%**, p99 **0.57s** under cooperative 0.35s (pre-checkpoint campaign). Hard ALNS preemption unavailable.
+
+Post-`cbbdd36` completion: checkpointed scoring, commit-time reserve, first-action dedup, top-K scenario expansion, terminal cache — see `MPC_RUNTIME_PROFILE.md`. Cooperative-budget hits reported separately from deadline overruns. Does **not** reopen the failed economic development gate.
 
 ## Novelty / contribution assessment (Phase 9)
 

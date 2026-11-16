@@ -77,10 +77,13 @@ class CssMpcProfile:
     certificate_invalidations: int = 0
     certificate_publishes: int = 0
     deadline_overruns: int = 0
+    cooperative_budget_hits: int = 0
     terminal_rejects: int = 0
     rollout_rejects: int = 0
     stage0_rejects: int = 0
     transactional_demotions: int = 0
+    terminal_cache_hits: int = 0
+    dominated_skips: int = 0
     decide_seconds: list[float] = field(default_factory=list)
     # Decision-level phase samples (one entry per decide call) for true p50/p99.
     phase_candidate_gen: list[float] = field(default_factory=list)
@@ -119,6 +122,10 @@ class CommitmentSafeStochasticMpc:
         keep_safety_backup_without_warmstart: bool = True,
         forecast_override_margin: float | None = None,
         scenario_override: list[list[ForecastCustomer]] | None = None,
+        # Fraction of wall budget reserved for final Validate + fallback emission.
+        commit_reserve_fraction: float = 0.20,
+        # After empty-future checkpoint, expand at most this many with full scenarios.
+        max_scenario_expansions: int = 3,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -145,6 +152,8 @@ class CommitmentSafeStochasticMpc:
         # If set: only override the empty-future winner when forecast EV advantage ≥ margin.
         self.forecast_override_margin = forecast_override_margin
         self.scenario_override = scenario_override
+        self.commit_reserve_fraction = min(0.4, max(0.05, float(commit_reserve_fraction)))
+        self.max_scenario_expansions = max(1, int(max_scenario_expansions))
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
         self._last_solution_routes: dict[str, list[Visit]] | None = None
@@ -404,15 +413,22 @@ class CommitmentSafeStochasticMpc:
         scenario_fcs: list[list[ForecastCustomer]],
         *,
         deadline: float,
+        cache: dict[FirstActionKey, tuple[bool, str]] | None = None,
     ) -> tuple[bool, str]:
         """Require terminal commitment OK on every scored scenario (or empty-future)."""
         if not self.require_terminal_commitment:
             return True, "terminal_disabled"
+        key = FirstActionKey.from_decision(cand)
+        if cache is not None and key in cache:
+            self.profile.terminal_cache_hits += 1
+            return cache[key]
         scenarios = scenario_fcs if scenario_fcs else [[]]
+        result = (True, "terminal_ok")
         for s_idx, fcs in enumerate(scenarios):
             if perf_counter() > deadline:
                 self.profile.terminal_rejects += 1
-                return False, "budget"
+                result = (False, "budget")
+                break
             report, _ = project_to_horizon(
                 self._full,
                 observation,
@@ -427,17 +443,22 @@ class CommitmentSafeStochasticMpc:
             self.profile.terminal_seconds += report.seconds
             if report.reason == TerminalRejectReason.BUDGET:
                 self.profile.terminal_rejects += 1
-                return False, "budget"
+                result = (False, "budget")
+                break
             if report.reason in {
                 TerminalRejectReason.ROLLOUT_FAILED,
                 TerminalRejectReason.REPLAY_FAILED,
             }:
                 self.profile.rollout_rejects += 1
-                return False, f"rollout:{report.reason.value}:{report.detail}"
+                result = (False, f"rollout:{report.reason.value}:{report.detail}")
+                break
             if not report.ok:
                 self.profile.terminal_rejects += 1
-                return False, f"terminal_infeasible:sc{s_idx}:{report.detail}"
-        return True, "terminal_ok"
+                result = (False, f"terminal_infeasible:sc{s_idx}:{report.detail}")
+                break
+        if cache is not None:
+            cache[key] = result
+        return result
 
     def solve_mpc(self, observation: Observation, trigger: str) -> Decision:
         return self.decide(observation, trigger)
@@ -445,6 +466,9 @@ class CommitmentSafeStochasticMpc:
     def decide(self, observation: Observation, trigger: str) -> Decision:
         started = perf_counter()
         deadline = started + self.time_limit_seconds
+        # Reserve wall time for final Validate + fallback emission (cooperative interrupt).
+        reserve = max(0.03, self.commit_reserve_fraction * self.time_limit_seconds)
+        score_deadline = deadline - reserve
         snapshot = make_public_snapshot(self._full, observation, self.horizon)
         assert_no_future_leak(snapshot, self._full)
         public = snapshot.instance
@@ -454,6 +478,8 @@ class CommitmentSafeStochasticMpc:
             "first_action_execution=1",
             "scoring_mode=causal_economic",
             "transactional_emit=1",
+            "checkpointed_scoring=1",
+            f"commit_reserve_s={reserve:.3f}",
             f"use_forecast={int(self.use_forecast)}",
             f"terminal_commitment={int(self.require_terminal_commitment)}",
             "quiescent" if is_quiescent(observation) else "busy_epoch",
@@ -505,8 +531,10 @@ class CommitmentSafeStochasticMpc:
         t_gen = perf_counter()
         val_before = self.profile.validation_seconds
         term_before = self.profile.terminal_seconds
-        remaining = max(0.05, deadline - perf_counter())
-        alns_time = max(0.05, min(remaining * 0.35, self.time_limit_seconds * 0.3))
+        remaining = max(0.05, score_deadline - perf_counter())
+        # Keep ALNS share modest so terminal/scoring/commit fit under cooperative wall.
+        alns_cap = 0.22 if prev_ok else 0.30
+        alns_time = max(0.04, min(remaining * 0.30, self.time_limit_seconds * alns_cap))
         candidates, diag = generate_counterfactual_actions(
             self._full,
             observation,
@@ -587,25 +615,28 @@ class CommitmentSafeStochasticMpc:
             if all(FirstActionKey.from_decision(c) != key for _, c in candidates):
                 candidates = list(candidates) + [("incumbent_certificate", incumb)]
 
-        # Adaptive scenario count under remaining budget.
+        # Adaptive scenario count under remaining budget (score phase only).
         n_sc = self.n_scenarios
         if self.adaptive_scenarios and self.use_forecast:
-            rem = deadline - perf_counter()
-            if rem < 0.15 * self.time_limit_seconds:
+            rem = score_deadline - perf_counter()
+            if rem < 0.20 * self.time_limit_seconds:
                 n_sc = 1
             notes.append(f"adaptive_n_scenarios={n_sc}")
         scenario_fcs = self._scenario_forecasts(observation, n=n_sc)
         notes.append(f"n_scenarios_scored={len(scenario_fcs)}")
 
-        scored: list[tuple[float, str, Decision, list[str]]] = []
-        t_score = perf_counter()
-        for name, cand in candidates:
-            if perf_counter() >= deadline:
-                notes.append("cooperative_deadline_hit_during_scoring")
-                break
+        def _rank(item: tuple[float, str, Decision, list[str]]):
+            value, name, cand, _served = item
+            key = FirstActionKey.from_decision(cand)
+            n_service = sum(1 for leg in key.first_legs if leg[2] == "service")
+            n_charge = sum(1 for leg in key.first_legs if leg[2] == "charge")
+            not_wait = 0 if name.startswith("wait") or name == "wait_idle" else 1
+            return (value, n_charge, n_service, len(key.newly_accepted), not_wait, name)
+
+        def _sanitize(name: str, cand: Decision) -> Decision:
             routes = sanitize_routes(observation, cand.routes)
             newly = sanitize_newly_accepted(observation, list(cand.newly_accepted))
-            cand = Decision(
+            return Decision(
                 time=observation.time,
                 routes=routes,
                 accepted=list(observation.accepted) + [c for c in newly if c not in observation.accepted],
@@ -621,9 +652,47 @@ class CommitmentSafeStochasticMpc:
                 optimize_seconds=0.0,
                 trigger=cand.trigger,
                 locked_destinations=dict(cand.locked_destinations),
-                notes=list(cand.notes),
+                notes=list(cand.notes) + [f"src={name}"],
             )
-            # Hard stage-0 commitment.
+
+        # Deduplicate identical first actions (same key) — keep first occurrence.
+        deduped: list[tuple[str, Decision]] = []
+        seen_keys: set[FirstActionKey] = set()
+        for name, cand in candidates:
+            c = _sanitize(name, cand)
+            key = FirstActionKey.from_decision(c)
+            if key in seen_keys:
+                self.profile.dominated_skips += 1
+                continue
+            seen_keys.add(key)
+            deduped.append((name, c))
+        notes.append(f"n_unique_first_actions={len(deduped)}")
+
+        # Prefer incumbent / ALNS before wait/charge for early checkpoint value.
+        def _priority(item: tuple[str, Decision]) -> tuple[int, str]:
+            name, _ = item
+            if name == "incumbent_certificate":
+                return (0, name)
+            if name.startswith("alns") or name.startswith("b1") or name.startswith("commit"):
+                return (1, name)
+            if name.startswith("accept") or name.startswith("service"):
+                return (2, name)
+            if name.startswith("reject"):
+                return (3, name)
+            return (4, name)
+
+        deduped.sort(key=_priority)
+
+        terminal_cache: dict[FirstActionKey, tuple[bool, str]] = {}
+        empty_checkpoint: list[tuple[float, str, Decision, list[str]]] = []
+        t_score = perf_counter()
+
+        # Checkpoint A: stage-0 + empty-future terminal + empty causal score.
+        for name, cand in deduped:
+            if perf_counter() >= score_deadline:
+                notes.append("cooperative_score_deadline_hit_checkpoint_a")
+                self.profile.cooperative_budget_hits += 1
+                break
             report = validate_continuation(
                 public,
                 observation,
@@ -635,20 +704,19 @@ class CommitmentSafeStochasticMpc:
             if not report.ok:
                 self.profile.stage0_rejects += 1
                 continue
-
-            # Distinct horizon-end terminal commitment (Gate 2).
-            term_ok, term_detail = self._terminal_filter(observation, cand, scenario_fcs, deadline=deadline)
+            term_ok, term_detail = self._terminal_filter(
+                observation, cand, [[]], deadline=score_deadline, cache=terminal_cache
+            )
             if not term_ok:
                 notes.append(f"reject:{name}:{term_detail}")
                 continue
-
             mean_v, scores = expected_rollout_value(
                 self._full,
                 observation,
                 cand,
-                scenario_fcs,
+                [[]],
                 horizon=self.horizon,
-                max_scenarios=len(scenario_fcs),
+                max_scenarios=1,
                 scoring_mode="causal",
                 max_replan_interval=self.max_replan_interval,
                 max_events=self.rollout_max_events,
@@ -659,7 +727,67 @@ class CommitmentSafeStochasticMpc:
             if mean_v <= -1e8:
                 self.profile.rollout_rejects += 1
                 continue
-            scored.append((mean_v, name, cand, list(report.served)))
+            empty_checkpoint.append((mean_v, name, cand, list(report.served)))
+
+        empty_checkpoint.sort(key=_rank, reverse=True)
+        notes.append(f"n_empty_checkpoint={len(empty_checkpoint)}")
+
+        # Checkpoint B: with forecast, expand top-K with full scenarios (terminal + EV).
+        # Without forecast, empty-checkpoint scores are the final ranking set.
+        scored: list[tuple[float, str, Decision, list[str]]] = []
+        need_expand = bool(self.use_forecast and scenario_fcs and any(len(s) > 0 for s in scenario_fcs))
+        if not need_expand:
+            scored = list(empty_checkpoint)
+            notes.append("no_forecast_expand_skipped")
+        else:
+            expand_n = min(self.max_scenario_expansions, len(empty_checkpoint))
+            to_expand = empty_checkpoint[:expand_n]
+            expanded_names: set[str] = set()
+            for empty_v, name, cand, served in to_expand:
+                if perf_counter() >= score_deadline:
+                    notes.append("cooperative_score_deadline_hit_checkpoint_b")
+                    self.profile.cooperative_budget_hits += 1
+                    break
+                term_ok, term_detail = self._terminal_filter(
+                    observation, cand, scenario_fcs, deadline=score_deadline, cache=terminal_cache
+                )
+                if not term_ok:
+                    notes.append(f"reject_expand:{name}:{term_detail}")
+                    scored.append((empty_v, name, cand, served))
+                    expanded_names.add(name)
+                    continue
+                mean_v, scores = expected_rollout_value(
+                    self._full,
+                    observation,
+                    cand,
+                    scenario_fcs,
+                    horizon=self.horizon,
+                    max_scenarios=len(scenario_fcs),
+                    scoring_mode="causal",
+                    max_replan_interval=self.max_replan_interval,
+                    max_events=self.rollout_max_events,
+                    energy=self.energy,
+                )
+                self.profile.scenarios_evaluated += len(scores)
+                self.profile.causal_rollouts += len(scores)
+                if mean_v <= -1e8:
+                    self.profile.rollout_rejects += 1
+                    scored.append((empty_v, name, cand, served))
+                else:
+                    scored.append((mean_v, name, cand, served))
+                expanded_names.add(name)
+            # Keep remaining empty-checkpoint candidates as feasible backups (dominated skips
+            # of full multi-scenario terminal probes).
+            for empty_v, name, cand, served in empty_checkpoint:
+                if name not in expanded_names:
+                    scored.append((empty_v, name, cand, served))
+                    self.profile.dominated_skips += 1
+            notes.append(f"n_scenario_expanded={len(expanded_names)}")
+
+        if not scored and empty_checkpoint:
+            scored = list(empty_checkpoint)
+            notes.append("used_empty_checkpoint_as_scored_set")
+
         score_dt = perf_counter() - t_score
         self.profile.scoring_seconds += score_dt
         self.profile.phase_scoring.append(score_dt)
@@ -668,62 +796,32 @@ class CommitmentSafeStochasticMpc:
         self.profile.decisions += 1
 
         if scored:
-
-            def _rank(item: tuple[float, str, Decision, list[str]]):
-                value, name, cand, _served = item
-                key = FirstActionKey.from_decision(cand)
-                n_service = sum(1 for leg in key.first_legs if leg[2] == "service")
-                n_charge = sum(1 for leg in key.first_legs if leg[2] == "charge")
-                not_wait = 0 if name.startswith("wait") or name == "wait_idle" else 1
-                return (value, n_charge, n_service, len(key.newly_accepted), not_wait, name)
-
             scored.sort(key=_rank, reverse=True)
             best_v, best_name, best, served = scored[0]
-            # Focused forecast-robustness rule (Phase 3): keep empty-future winner unless
-            # forecast advantage over that action exceeds forecast_override_margin.
-            if self.forecast_override_margin is not None and self.use_forecast and perf_counter() < deadline:
-                empty_scores: list[tuple[float, str, Decision, list[str]]] = []
-                for _mean_v, name, cand, served_i in scored:
-                    ev, _ = expected_rollout_value(
-                        self._full,
-                        observation,
-                        cand,
-                        [[]],
-                        horizon=self.horizon,
-                        max_scenarios=1,
-                        scoring_mode="causal",
-                        max_replan_interval=self.max_replan_interval,
-                        max_events=self.rollout_max_events,
-                        energy=self.energy,
-                    )
-                    if ev > -1e8:
-                        empty_scores.append((ev, name, cand, served_i))
-                if empty_scores:
-                    empty_scores.sort(key=_rank, reverse=True)
-                    e_v, e_name, e_cand, e_served = empty_scores[0]
-                    # Forecast value of empty winner:
-                    f_of_empty = next((v for v, n, c, s in scored if n == e_name), None)
-                    if f_of_empty is None:
-                        f_of_empty = next(
-                            (
-                                v
-                                for v, n, c, s in scored
-                                if FirstActionKey.from_decision(c) == FirstActionKey.from_decision(e_cand)
-                            ),
-                            best_v,
-                        )
-                    advantage = best_v - float(f_of_empty)
-                    notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
-                    if advantage < self.forecast_override_margin:
-                        best_v, best_name, best, served = e_v, e_name, e_cand, e_served
-                        notes.append("selected_empty_future_due_to_forecast_margin")
-                    else:
-                        notes.append("selected_forecast_override_margin_cleared")
+            # Focused forecast-robustness rule: reuse empty-checkpoint scores (no duplicate B1).
+            if (
+                self.forecast_override_margin is not None
+                and self.use_forecast
+                and empty_checkpoint
+                and perf_counter() < deadline
+            ):
+                empty_by_name = {n: (v, c, s) for v, n, c, s in empty_checkpoint}
+                e_v, e_name, e_cand, e_served = max(empty_checkpoint, key=_rank)
+                f_of_empty = next((v for v, n, c, s in scored if n == e_name), None)
+                if f_of_empty is None and e_name in empty_by_name:
+                    f_of_empty = empty_by_name[e_name][0]
+                if f_of_empty is None:
+                    f_of_empty = best_v
+                advantage = best_v - float(f_of_empty)
+                notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
+                if advantage < self.forecast_override_margin:
+                    best_v, best_name, best, served = e_v, e_name, e_cand, e_served
+                    notes.append("selected_empty_future_due_to_forecast_margin")
+                else:
+                    notes.append("selected_forecast_override_margin_cleared")
             notes.append(f"selected={best_name}")
             notes.append(f"expected_value={best_v:.6f}")
             diag.selected_key = FirstActionKey.from_decision(best)
-            # Transactional commit: only keep new accepts that appear in validated served set
-            # AND pass independent re-validation inside _try_commit.
             newly = sanitize_newly_accepted(observation, [c for c in best.newly_accepted if c in served])
             committed = self._try_commit(
                 observation,
@@ -739,7 +837,6 @@ class CommitmentSafeStochasticMpc:
             )
             if committed is not None:
                 return committed
-            # Speculative winner failed final commit — discard new accepts, use backup.
             notes.append("winner_commit_failed_discard_new_accepts")
 
         return self._emit_fallback(
