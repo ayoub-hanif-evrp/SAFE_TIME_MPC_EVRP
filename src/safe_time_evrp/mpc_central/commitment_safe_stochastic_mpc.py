@@ -82,8 +82,14 @@ class CssMpcProfile:
     stage0_rejects: int = 0
     transactional_demotions: int = 0
     decide_seconds: list[float] = field(default_factory=list)
+    # Decision-level phase samples (one entry per decide call) for true p50/p99.
+    phase_candidate_gen: list[float] = field(default_factory=list)
+    phase_terminal: list[float] = field(default_factory=list)
+    phase_scoring: list[float] = field(default_factory=list)
+    phase_validation: list[float] = field(default_factory=list)
     last_diagnostics: CounterfactualDiagnostics | None = None
     notes: list[str] = field(default_factory=list)
+    loss_events: list[dict] = field(default_factory=list)
 
 
 class CommitmentSafeStochasticMpc:
@@ -108,7 +114,10 @@ class CommitmentSafeStochasticMpc:
         require_terminal_commitment: bool = True,
         adaptive_scenarios: bool = True,
         allow_charge_candidates: bool = True,
+        allow_predictive_charge: bool = True,
         use_warm_start: bool = True,
+        keep_safety_backup_without_warmstart: bool = True,
+        forecast_override_margin: float | None = None,
         scenario_override: list[list[ForecastCustomer]] | None = None,
     ) -> None:
         self._full = instance
@@ -127,7 +136,14 @@ class CommitmentSafeStochasticMpc:
         self.require_terminal_commitment = require_terminal_commitment
         self.adaptive_scenarios = adaptive_scenarios
         self.allow_charge_candidates = allow_charge_candidates
+        # If False: drop charge-first candidates unless the verified incumbent itself charges
+        # (commitment-preserving charge retained; anticipatory charge removed).
+        self.allow_predictive_charge = allow_predictive_charge
         self.use_warm_start = use_warm_start
+        # If warm-start init is off but this is True, still retain last certified routes as safety backup.
+        self.keep_safety_backup_without_warmstart = keep_safety_backup_without_warmstart
+        # If set: only override the empty-future winner when forecast EV advantage ≥ margin.
+        self.forecast_override_margin = forecast_override_margin
         self.scenario_override = scenario_override
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
@@ -341,6 +357,15 @@ class CommitmentSafeStochasticMpc:
         if existing:
             notes.append("status=CERTIFIED_FEASIBILITY_LOST")
             notes.append("existing_obligations_uncovered_by_fallback")
+            self.profile.loss_events.append(
+                {
+                    "time": float(observation.time),
+                    "trigger": trigger,
+                    "outstanding": sorted(existing),
+                    "had_fallback_routes": fallback_routes is not None,
+                    "notes": list(notes)[-8:],
+                }
+            )
             return self._finalize_decision(
                 observation,
                 routes={v.id: [] for v in observation.vehicles},
@@ -468,9 +493,18 @@ class CommitmentSafeStochasticMpc:
         else:
             notes.append("warm_start=0")
             self.store.current = None
+            if self.keep_safety_backup_without_warmstart and self._last_certified_routes is not None:
+                rep2 = validate_continuation(public, observation, self._last_certified_routes, energy=self.energy)
+                self.profile.validation_seconds += rep2.seconds
+                if rep2.ok:
+                    prev_ok = True
+                    fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
+                    notes.append("safety_backup_retained_without_warmstart_init")
 
         # --- Candidate generation (ALNS as internal subroutine) ---
         t_gen = perf_counter()
+        val_before = self.profile.validation_seconds
+        term_before = self.profile.terminal_seconds
         remaining = max(0.05, deadline - perf_counter())
         alns_time = max(0.05, min(remaining * 0.35, self.time_limit_seconds * 0.3))
         candidates, diag = generate_counterfactual_actions(
@@ -484,16 +518,49 @@ class CommitmentSafeStochasticMpc:
             include_solver_baselines=True,
             include_b1=True,
         )
+        incumb_charges = False
+        if prev_ok and fallback_routes is not None:
+            inc_key = FirstActionKey.from_decision(
+                Decision(
+                    observation.time,
+                    fallback_routes,
+                    list(observation.accepted),
+                    [],
+                    [],
+                    [],
+                    False,
+                    False,
+                    False,
+                    [],
+                    0.0,
+                    0.0,
+                    0.0,
+                    trigger,
+                    {},
+                    [],
+                )
+            )
+            incumb_charges = any(leg[2] == "charge" for leg in inc_key.first_legs)
         if not self.allow_charge_candidates:
+            candidates = [
+                (name, cand)
+                for name, cand in candidates
+                if not any(leg[2] == "charge" for leg in FirstActionKey.from_decision(cand).first_legs)
+            ]
+            notes.append("allow_charge_candidates=0")
+        elif not self.allow_predictive_charge:
             filtered = []
             for name, cand in candidates:
                 key = FirstActionKey.from_decision(cand)
-                if any(leg[2] == "charge" for leg in key.first_legs):
-                    continue
+                charges = any(leg[2] == "charge" for leg in key.first_legs)
+                if charges and not incumb_charges:
+                    continue  # drop anticipatory charge; keep if incumbent itself charges
                 filtered.append((name, cand))
             candidates = filtered
-            notes.append("allow_charge_candidates=0")
-        self.profile.candidate_gen_seconds += perf_counter() - t_gen
+            notes.append("allow_predictive_charge=0")
+        gen_dt = perf_counter() - t_gen
+        self.profile.candidate_gen_seconds += gen_dt
+        self.profile.phase_candidate_gen.append(gen_dt)
         self.profile.last_diagnostics = diag
         notes.append(f"n_valid_actions={len(candidates)}")
 
@@ -593,7 +660,11 @@ class CommitmentSafeStochasticMpc:
                 self.profile.rollout_rejects += 1
                 continue
             scored.append((mean_v, name, cand, list(report.served)))
-        self.profile.scoring_seconds += perf_counter() - t_score
+        score_dt = perf_counter() - t_score
+        self.profile.scoring_seconds += score_dt
+        self.profile.phase_scoring.append(score_dt)
+        self.profile.phase_terminal.append(self.profile.terminal_seconds - term_before)
+        self.profile.phase_validation.append(self.profile.validation_seconds - val_before)
         self.profile.decisions += 1
 
         if scored:
@@ -608,6 +679,46 @@ class CommitmentSafeStochasticMpc:
 
             scored.sort(key=_rank, reverse=True)
             best_v, best_name, best, served = scored[0]
+            # Focused forecast-robustness rule (Phase 3): keep empty-future winner unless
+            # forecast advantage over that action exceeds forecast_override_margin.
+            if self.forecast_override_margin is not None and self.use_forecast and perf_counter() < deadline:
+                empty_scores: list[tuple[float, str, Decision, list[str]]] = []
+                for _mean_v, name, cand, served_i in scored:
+                    ev, _ = expected_rollout_value(
+                        self._full,
+                        observation,
+                        cand,
+                        [[]],
+                        horizon=self.horizon,
+                        max_scenarios=1,
+                        scoring_mode="causal",
+                        max_replan_interval=self.max_replan_interval,
+                        max_events=self.rollout_max_events,
+                        energy=self.energy,
+                    )
+                    if ev > -1e8:
+                        empty_scores.append((ev, name, cand, served_i))
+                if empty_scores:
+                    empty_scores.sort(key=_rank, reverse=True)
+                    e_v, e_name, e_cand, e_served = empty_scores[0]
+                    # Forecast value of empty winner:
+                    f_of_empty = next((v for v, n, c, s in scored if n == e_name), None)
+                    if f_of_empty is None:
+                        f_of_empty = next(
+                            (
+                                v
+                                for v, n, c, s in scored
+                                if FirstActionKey.from_decision(c) == FirstActionKey.from_decision(e_cand)
+                            ),
+                            best_v,
+                        )
+                    advantage = best_v - float(f_of_empty)
+                    notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
+                    if advantage < self.forecast_override_margin:
+                        best_v, best_name, best, served = e_v, e_name, e_cand, e_served
+                        notes.append("selected_empty_future_due_to_forecast_margin")
+                    else:
+                        notes.append("selected_forecast_override_margin_cleared")
             notes.append(f"selected={best_name}")
             notes.append(f"expected_value={best_v:.6f}")
             diag.selected_key = FirstActionKey.from_decision(best)

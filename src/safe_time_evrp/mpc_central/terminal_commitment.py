@@ -1,10 +1,32 @@
 """Horizon-end terminal commitment constraint for Commitment-Safe Stochastic MPC.
 
-This module is intentionally separate from stage-0 ``validate_continuation``.
-Stage-0 checks whether a full open-loop plan covers obligations *now*.
-Terminal commitment checks whether, after simulating the candidate through the
-MPC prediction horizon under a scenario, the *terminal state* still admits a
-feasible continuation (or certified backup suffix) for residual obligations.
+Stage-0 ``validate_continuation`` checks open-loop coverage *now*.
+Terminal commitment checks coverage after simulating to the MPC horizon boundary.
+
+Horizon freeze (Problem A)
+--------------------------
+When the next plant event is after ``t+H``, we do **not** leave the clock at an
+earlier event time. ``freeze_simulator_at_horizon`` advances time to ``t+H`` and
+applies a **conservative partial-transition** for noninterruptible actions that
+straddle the boundary:
+
+* Travel: deduct energy proportional to elapsed travel time; remain TRAVELING at
+  the origin node with a reduced remaining arrive event / anchor.
+* Charge: accumulate SoC proportionally; remain CHARGING with updated target
+  residual and anchor.
+* Service: remain SERVING; completion is guaranteed only at the locked
+  ``service_end`` (in_service stays an obligation until then, covered by the lock).
+
+Approximation note: in-transit location is represented as still-at-origin with
+proportional SoC drain (Schneider Euclidean model has no continuous path state).
+This is conservative for energy (energy is spent) and for reachability of the
+destination (still locked). Documented in MPC_TERMINAL_CORRECTNESS_AUDIT.md.
+
+Residual obligations (Problem B)
+--------------------------------
+Taken from the **simulated terminal observation**, not ``candidate.accepted``:
+accepted ∪ in_service − completed, with in_service treated as locked-covered for
+Validate's pending set (same semantics as ``validate_continuation``).
 """
 
 from __future__ import annotations
@@ -17,9 +39,9 @@ from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_co
 from safe_time_evrp.commitment_safe_mpc.public_snapshot import make_public_snapshot
 from safe_time_evrp.controllers.mpc import EventTriggeredMPC
 from safe_time_evrp.environment.energy import EPS, NominalLinearEnergy
-from safe_time_evrp.environment.simulator import SimulatorError
+from safe_time_evrp.environment.simulator import FleetSimulator, SimulatorError
 from safe_time_evrp.models.instance import Instance
-from safe_time_evrp.models.state import Decision, Observation, RequestStatus, Visit
+from safe_time_evrp.models.state import Anchor, Decision, Observation, RequestStatus, Visit
 from safe_time_evrp.mpc3c.forecast import ForecastCustomer, augment_instance_for_planning
 from safe_time_evrp.mpc_central.causal_plant import B1ValidatedRecourse
 from safe_time_evrp.mpc_central.scenario_rollout import (
@@ -62,6 +84,7 @@ class TerminalState:
     completed: frozenset[str]
     accepted: frozenset[str]
     observation: Observation
+    freeze_notes: tuple[str, ...] = ()
 
 
 @dataclass
@@ -75,7 +98,16 @@ class TerminalCommitmentReport:
     seconds: float = 0.0
 
 
-def terminal_state_from_observation(observation: Observation) -> TerminalState:
+def residual_obligations_from_observation(observation: Observation) -> frozenset[str]:
+    """Actual terminal obligations: accepted and in-service, not yet completed."""
+    return frozenset((set(observation.accepted) | set(observation.in_service)) - set(observation.completed))
+
+
+def terminal_state_from_observation(
+    observation: Observation,
+    *,
+    freeze_notes: tuple[str, ...] = (),
+) -> TerminalState:
     vehicles = tuple(
         VehicleTerminalView(
             vehicle_id=v.id,
@@ -87,16 +119,183 @@ def terminal_state_from_observation(observation: Observation) -> TerminalState:
         )
         for v in observation.vehicles
     )
+    residual = residual_obligations_from_observation(observation)
     return TerminalState(
         time=float(observation.time),
         vehicles=vehicles,
-        residual_obligations=frozenset(
-            set(observation.accepted) - set(observation.completed) - set(observation.in_service)
-        ),
+        residual_obligations=residual,
         completed=frozenset(observation.completed),
-        accepted=frozenset(observation.accepted),
+        accepted=frozenset(set(observation.accepted) | set(observation.in_service)),
         observation=observation,
+        freeze_notes=freeze_notes,
     )
+
+
+def freeze_simulator_at_horizon(sim: FleetSimulator, horizon_end: float) -> list[str]:
+    """Advance simulator clock to ``horizon_end`` with conservative partial locks.
+
+    Returns freeze notes describing applied approximations.
+    """
+    notes: list[str] = []
+    if sim.time >= horizon_end - EPS:
+        return notes
+
+    # Cancel / rewrite vehicle events that end after the horizon.
+    for vehicle in list(sim.vehicles.values()):
+        action = vehicle.action
+        if not action:
+            continue
+        kind = action.get("kind")
+        event_id = action.get("event_id")
+        if event_id is None:
+            continue
+        # Find scheduled end time from heap
+        end_time = None
+        for ev in sim._heap:
+            if ev.event_id == event_id and not ev.cancelled:
+                end_time = float(ev.time)
+                break
+        if end_time is None:
+            continue
+        if end_time <= horizon_end + EPS:
+            continue  # will complete at/before H if we were to pop it; freeze only straddlers
+
+        if kind == "travel":
+            payload = None
+            for ev in sim._heap:
+                if ev.event_id == event_id:
+                    payload = ev.payload
+                    break
+            if payload is None:
+                continue
+            travel_time = float(payload.get("travel_time", 0.0))
+            energy = float(payload.get("energy", 0.0))
+            soc_before = float(payload.get("soc_before", vehicle.soc))
+            destination = payload.get("destination", vehicle.locked_destination)
+            origin = payload.get("origin", vehicle.node)
+            depart_time = end_time - travel_time
+            elapsed = max(0.0, min(travel_time, horizon_end - depart_time))
+            frac = 0.0 if travel_time <= EPS else elapsed / travel_time
+            spent = frac * energy
+            vehicle.soc = max(0.0, soc_before - spent)
+            remaining_time = max(0.0, end_time - horizon_end)
+            remaining_energy = max(0.0, energy - spent)
+            sim.cancel(event_id)
+            new_id = sim._push(
+                horizon_end + remaining_time,
+                0,
+                "arrive",
+                vehicle_id=vehicle.id,
+                payload={
+                    "origin": origin,
+                    "destination": destination,
+                    "energy": remaining_energy,
+                    "travel_time": remaining_time,
+                    "soc_before": vehicle.soc,
+                    "horizon_freeze_partial": True,
+                },
+            )
+            vehicle.action = {"kind": "travel", "event_id": new_id, "destination": destination}
+            vehicle.locked_destination = destination
+            vehicle.anchor_after = Anchor(
+                node=destination,
+                time=horizon_end + remaining_time,
+                soc=max(0.0, vehicle.soc - remaining_energy),
+                load=vehicle.load,
+                onboard=frozenset(vehicle.onboard),
+            )
+            notes.append(f"partial_travel:{vehicle.id}:{origin}->{destination}:frac={frac:.4f}")
+            sim._record(
+                "horizon_freeze_partial_travel",
+                vehicle.id,
+                {
+                    "origin": origin,
+                    "destination": destination,
+                    "frac": frac,
+                    "soc": vehicle.soc,
+                    "remaining_energy": remaining_energy,
+                    "remaining_time": remaining_time,
+                    "horizon_end": horizon_end,
+                },
+            )
+        elif kind == "charge":
+            payload = None
+            for ev in sim._heap:
+                if ev.event_id == event_id:
+                    payload = ev.payload
+                    break
+            if payload is None or vehicle.anchor_after is None:
+                continue
+            target = float(payload["target"])
+            soc_before = float(payload["soc_before"])
+            station = payload.get("station", vehicle.node)
+            inv = sim.instance.vehicle_type.inverse_recharge_rate
+            full_duration = inv * max(0.0, target - soc_before)
+            end_t = float(vehicle.anchor_after.time)
+            start_t = end_t - full_duration
+            elapsed = max(0.0, min(full_duration, horizon_end - start_t))
+            frac = 0.0 if full_duration <= EPS else elapsed / full_duration
+            vehicle.soc = soc_before + frac * (target - soc_before)
+            remaining = max(0.0, target - vehicle.soc)
+            rem_dur = inv * remaining
+            sim.cancel(event_id)
+            new_id = sim._push(
+                horizon_end + rem_dur,
+                0,
+                "charge_end",
+                vehicle_id=vehicle.id,
+                payload={
+                    "station": station,
+                    "target": target,
+                    "soc_before": vehicle.soc,
+                    "horizon_freeze_partial": True,
+                },
+            )
+            vehicle.action = {"kind": "charge", "event_id": new_id, "target": target}
+            vehicle.anchor_after = Anchor(
+                node=vehicle.node,
+                time=horizon_end + rem_dur,
+                soc=target,
+                load=vehicle.load,
+                onboard=frozenset(vehicle.onboard),
+            )
+            notes.append(f"partial_charge:{vehicle.id}:frac={frac:.4f}:soc={vehicle.soc:.4f}")
+            sim._record(
+                "horizon_freeze_partial_charge",
+                vehicle.id,
+                {
+                    "station": station,
+                    "frac": frac,
+                    "soc": vehicle.soc,
+                    "target": target,
+                    "horizon_end": horizon_end,
+                },
+            )
+        elif kind == "service":
+            # Noninterruptible service continues; completion guaranteed only at service_end.
+            # Keep SERVING lock; do not mark completed at freeze.
+            notes.append(f"partial_service_lock:{vehicle.id}")
+            sim._record(
+                "horizon_freeze_service_lock",
+                vehicle.id,
+                {
+                    "customer_id": action.get("customer_id"),
+                    "horizon_end": horizon_end,
+                    "anchor_time": float(vehicle.anchor_after.time) if vehicle.anchor_after else None,
+                },
+            )
+        elif kind == "wait":
+            notes.append(f"partial_wait:{vehicle.id}")
+
+    # Drop replan/release events after horizon from consideration by cancelling them
+    for ev in list(sim._heap):
+        if ev.time > horizon_end + EPS and ev.kind in {"replan_interval", "request_release"}:
+            sim.cancel(ev.event_id)
+
+    sim.time = float(horizon_end)
+    sim._record("horizon_freeze", None, {"time": horizon_end, "notes": notes})
+    notes.append(f"clock={horizon_end}")
+    return notes
 
 
 def verify_terminal_commitment(
@@ -118,7 +317,7 @@ def verify_terminal_commitment(
     t0 = perf_counter()
     model = energy or NominalLinearEnergy()
     obs = terminal_state.observation
-    # Obligations that still need a future service visit.
+    # Pending visits: obligations not completed and not already locked in service.
     pending = set(residual_obligations) - set(obs.completed) - set(obs.in_service)
     if not pending:
         return TerminalCommitmentReport(
@@ -127,7 +326,7 @@ def verify_terminal_commitment(
             terminal_state=terminal_state,
             backup_routes=backup_routes or {v.id: [] for v in obs.vehicles},
             served=[],
-            detail="no_residual_pending",
+            detail="no_residual_pending_or_locked_in_service",
             seconds=perf_counter() - t0,
         )
 
@@ -191,10 +390,7 @@ def project_to_horizon(
     energy: NominalLinearEnergy | None = None,
     deadline: float | None = None,
 ) -> tuple[TerminalCommitmentReport, dict[str, list[Visit]] | None]:
-    """Simulate candidate + B1 recourse until the MPC horizon; then verify terminal commitment.
-
-    Returns ``(report, last_routes)``. Rejection reasons distinguish rollout vs terminal.
-    """
+    """Simulate candidate + B1 recourse until the MPC horizon; then verify terminal commitment."""
     t0 = perf_counter()
     model = energy or NominalLinearEnergy()
     notes: list[str] = []
@@ -299,14 +495,16 @@ def project_to_horizon(
                 sim.cancel(replan_id)
             replan_id = sim.schedule_replan(sim.time + max_replan_interval)
 
-    # Freeze clock at horizon for terminal accounting if plant is still earlier.
+    freeze_notes = freeze_simulator_at_horizon(sim, horizon_end)
+    notes.extend(freeze_notes)
     obs_end = sim.observation()
-    if obs_end.time + EPS < horizon_end:
-        # Observation is whatever the plant reached; terminal time is max(plant, H) conceptually,
-        # but we evaluate feasibility from the actual reached public state (cannot invent motion).
-        pass
+    assert abs(float(obs_end.time) - horizon_end) <= 1e-6 or float(obs_end.time) >= horizon_end - EPS
 
-    report = validate_log(planning, fork_log_for_replay(sim))
+    # Replay of fork logs may not understand horizon_freeze markers; filter them for replay.
+    replay_log = [
+        rec for rec in fork_log_for_replay(sim) if not str(getattr(rec, "kind", "")).startswith("horizon_freeze")
+    ]
+    report = validate_log(planning, replay_log)
     if not report.ok:
         return (
             TerminalCommitmentReport(
@@ -318,10 +516,9 @@ def project_to_horizon(
             last_routes,
         )
 
-    term = terminal_state_from_observation(obs_end)
-    # Residual obligations = previously accepted (incl. new accepts in candidate) not completed.
-    residual = frozenset(set(candidate.accepted) - set(obs_end.completed) - set(obs_end.in_service))
-    # Also include accepted still in_service as covered by lock, not residual pending visits.
+    term = terminal_state_from_observation(obs_end, freeze_notes=tuple(freeze_notes))
+    # Problem B: residual from simulated terminal state (includes recourse accepts).
+    residual = residual_obligations_from_observation(obs_end)
     check = verify_terminal_commitment(
         planning if all(cid in planning.nodes for cid in residual) else full_instance,
         term,
@@ -331,8 +528,13 @@ def project_to_horizon(
         energy=model,
     )
     check.seconds = perf_counter() - t0
+    if check.terminal_state is None:
+        check.terminal_state = term
     if not check.ok and check.reason == TerminalRejectReason.TERMINAL_INFEASIBLE:
-        check.detail = f"horizon_end_terminal_infeasible:{check.detail};events={events}"
+        check.detail = (
+            f"horizon_end_terminal_infeasible:{check.detail};events={events};"
+            f"freeze={';'.join(freeze_notes[:4])};residual={sorted(residual)}"
+        )
     return check, last_routes
 
 
@@ -340,11 +542,7 @@ def stage0_ok_but_terminal_counterexample_state(
     *,
     battery: float = 5.0,
 ) -> tuple[Instance, Observation, frozenset[str]]:
-    """Construct a terminal state that fails verify_terminal_commitment.
-
-    Far customer, almost-empty battery, no charger on the only remaining path budget.
-    Used by Gate-2 tests — not a stage-0 plan.
-    """
+    """Construct a stranded terminal state that fails verify_terminal_commitment."""
     from safe_time_evrp.models.instance import Node, NodeKind, TimeWindow, VehicleType, build_euclidean_instance
     from safe_time_evrp.models.state import Anchor, Observation, VehicleView
     from safe_time_evrp.testbed.constructor import make_observation
@@ -364,20 +562,10 @@ def stage0_ok_but_terminal_counterexample_state(
         assumptions=("terminal_counterexample",),
     )
     base = make_observation(inst, 1)
-    # Vehicle stranded with tiny SoC, far from C_far, window closing.
     soc = 2.0
     anchor = Anchor("D0", 70.0, soc, 0.0, frozenset())
     v0 = base.vehicles[0]
-    stranded = VehicleView(
-        v0.id,
-        "idle",
-        "D0",
-        soc,
-        0.0,
-        (),
-        anchor,
-        None,
-    )
+    stranded = VehicleView(v0.id, "idle", "D0", soc, 0.0, (), anchor, None)
     obs = Observation(
         70.0,
         (stranded,),
@@ -390,3 +578,66 @@ def stage0_ok_but_terminal_counterexample_state(
         public_customer_count=1,
     )
     return inst, obs, frozenset({"C_far"})
+
+
+def build_stage0_feasible_terminal_infeasible_case():
+    """Meaningful Gate-2 counterexample: stage-0 Validate OK, projected terminal infeasible.
+
+    Large battery + long feasible open-loop plan from t=0. After dispatching a long
+    first charge+wait waste under a **short** horizon, the freeze leaves insufficient
+    remaining time/SoC budget for C_far under routes_only backup of an empty suffix.
+    """
+    from safe_time_evrp.models.instance import Node, NodeKind, TimeWindow, VehicleType, build_euclidean_instance
+    from safe_time_evrp.testbed.constructor import make_observation
+
+    vehicle = VehicleType(200.0, 10.0, 1.0, 0.2, 1.0, "full")
+    nodes = [
+        Node("D0", NodeKind.DEPOT, 0, 0, 0, TimeWindow(0, 200), 0),
+        Node("S0", NodeKind.CHARGER, 1, 0, 0, TimeWindow(0, 200), 0),
+        Node("C_far", NodeKind.CUSTOMER, 40, 0, 1, TimeWindow(0, 55), 5),
+    ]
+    inst = build_euclidean_instance(
+        "stage0_ok_terminal_bad",
+        nodes,
+        vehicle,
+        source_format="synthetic",
+        source_name="terminal_gate2",
+        assumptions=("stage0_ok_terminal_bad",),
+    )
+    obs = make_observation(inst, 1)
+    obs = Observation(
+        0.0,
+        obs.vehicles,
+        ("C_far",),
+        (),
+        (),
+        (),
+        (),
+        (),
+        public_customer_count=1,
+    )
+    # Stage-0 feasible: charge then serve within window.
+    stage0_routes = {
+        "v0": [Visit("S0", "charge"), Visit("C_far", "service"), Visit("D0", "return")],
+    }
+    # Bad first-stage for short horizon projection: go charge only (no service in suffix yet
+    # after we truncate), accept C_far — stage0 full plan still validates separately.
+    bad_first = Decision(
+        time=0.0,
+        routes={"v0": [Visit("S0", "charge"), Visit("D0", "return")]},
+        accepted=["C_far"],
+        newly_accepted=["C_far"],
+        rejected=[],
+        deferred=[],
+        fallback_used=False,
+        no_feasible_continuation=False,
+        horizon_extended=False,
+        planned_service=["C_far"],
+        total_distance=0.0,
+        total_charge_time=0.0,
+        optimize_seconds=0.0,
+        trigger="counterexample",
+        locked_destinations={},
+        notes=["counterexample_charge_only"],
+    )
+    return inst, obs, stage0_routes, bad_first

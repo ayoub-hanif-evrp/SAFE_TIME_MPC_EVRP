@@ -1,50 +1,71 @@
 # Top-tier readiness — Commitment-Safe Stochastic MPC
 
-**Verdict:** `not_ready_development_gate_failed`
+**Verdict:** `not_ready_corrected_development_gate_failed`
 
-**Protocol:** `mpc_development_v2_full_ablations`
+**Protocol:** `mpc_corrected_development_v1`  
+**Stopping rule:** no confirmatory campaign.
 
 ## Gates
 
 | Gate | Status |
 |---|---|
 | 1 Transactional acceptance safety | **PASS** |
-| 2 Horizon-end terminal commitment | **PASS** |
-| 3 RF theorem ↔ algorithm | **PASS** (nominal) |
+| 2 Horizon-end terminal commitment (freeze + residuals) | **PASS** (pytest) |
+| 3 RF claim ↔ code | **PASS** as **certified-emission soundness** (RF withdrawn) |
 | 4 Formulation honesty | **PASS** |
-| 5 EV energy consistency / infinite-battery replay | **PASS** |
-| 6 Full ablation matrix + charge/energy + paired CIs | **PASS** (reporting complete) |
-| 7 Development advantage vs greedy-nominal | **FAIL** |
+| 5 EV energy / infinite-battery replay | **PASS** (rebuilt arcs; n=3 stems) |
+| 6 Corrected ablations + decision-level latency + clustered CIs | **PASS** (reporting) |
+| 7 Reliable economic advantage vs greedy-nominal | **FAIL** |
 | 8 Confirmatory | **WITHHELD** |
 
-## Development snapshot (n=18, budget 0.35s)
+## Corrected development snapshot
 
-| Controller | Completed | Economic | Charge time | Episode-mean latency |
-|---|---:|---:|---:|---:|
-| B1 | (see JSON) | | | |
-| M1 | | | | |
-| Greedy-nominal | **4.78** | −23 | 147 | 0.048 |
-| Stochastic CCE | (see JSON) | | | |
-| **CSS-MPC** | 4.06 | 133 | 174 | 0.136 |
-| CSS no-charge | 3.22 | −56 | 117 | 0.160 |
-| CSS short H | 4.39 | 220 | 171 | 0.109 |
-| CSS long H | 4.11 | 144 | 187 | 0.162 |
-| CSS no warm-start | 2.11 | −266 | 95 | 0.118 |
+Stems (all `stratified_split_small()["development"]`):  
+`c103C5`, `r105C5`, `rc108C5`, `c104C10`, `r103C10`, `rc108C10`, `c106C15`, `r105C15`, `rc108C15`  
+(n=18 episodes = 9×2; failures included)
 
-Paired CSS vs GN completed: Δ=−0.72, tally 7/8/3, 95% CI **[−2.87, 1.43]** (includes 0).  
-Paired CSS vs GN economic: Δ=+156, tally 11/7/0, 95% CI **[−285, 596]** (includes 0).
+| Controller | Completed | AU | Economic | Decide p50 / p99 | Overruns | Loss events |
+|---|---:|---:|---:|---:|---:|---:|
+| B1 | 3.06 | 3.56 | −727 | 0.002 / 0.385 | 47 | 0 |
+| M1 | 4.72 | 1.56 | −114 | 0.001 / 0.397 | 29 | 0 |
+| Greedy-nominal | **5.11** | 1.00 | 42 | 0.006 / 0.324 | 10 | 0 |
+| Stochastic CCE | 4.39 | 1.83 | −194 | 0.043 / 0.551 | 192 | 0 |
+| **CSS-MPC** | 4.72 | **0.72** | **115** | 0.055 / 0.574 | **233** | **147** |
+| CSS no-forecast | 4.28 | 0.50 | 118 | 0.035 / 0.489 | 163 | 112 |
 
-## Ablation findings
+Primary metric: `100×completed − 250×AU − distance`.
+
+Clustered paired CSS vs GN (stem means):
+
+- Economic Δ mean **+72.6**, median **−30.6**, tally **4/5/0**, 95% CI **[−526, +672]** (includes 0).
+- Completed Δ mean **−0.39**, CI includes 0.
+- AU Δ mean **−0.28**, CI includes 0.
+
+Heavy tails: `c106C15` (+1776 econ) vs `r103C10` (−880). Mean without reliable stem majority.
+
+## Ablation / mechanism (corrected)
 
 | Question | Result |
 |---|---|
-| Forecast on vs off | See `css_vs_no_forecast` in JSON |
-| Terminal on vs off | See `css_vs_no_terminal` |
-| Anticipatory charging | CSS beats no-charge on completed (Δ=+0.83, 7/3/8); CI includes 0 |
-| Short vs long horizon | Inconclusive (Δ=+0.28, CI includes 0) |
-| Warm start | **Clear benefit** vs no warm-start (Δ=+1.94, CI **[0.70, 3.19]**, 9/0/9) |
-| Infinite battery | Replay OK; CSS still not ahead of GN |
+| Forecast margin | CSS ≈ no-forecast economically (Δ≈−3; CI includes 0); forecast no longer clearly harmful after margin rule |
+| Terminal on | Lower AU (0.72 vs 1.56 no-terminal); economic better with terminal |
+| Anticipatory charge off | Charge time 186→91; completed drops to 3.56 — predictive charge still used by CSS |
+| Warm init (backup kept) | Large economic loss without warm init (−474 vs +115) |
+| Warm+backup removed | Separately worse; not an isolated warm-start claim |
+| Infinite battery (n=3) | Replay OK; CSS ≥ GN on these three stems — **too small** for EV-specific claim |
+
+## Runtime
+
+Decision-level (pooled decide seconds, not episode-mean percentiles): CSS frac_over_budget **23.3%**, p99 **0.57s** under cooperative 0.35s. Hard deadlines not enforced; report cooperative-budget compliance separately.
+
+## Novelty / contribution assessment (Phase 9)
+
+Supported engineering advances: transactional commit, horizon freeze with residual obligations, certified-emission soundness, corrected evaluation protocol.
+
+**Not yet a top-tier MPC contribution:** no proved recursive feasibility; no reliable economic or service gain over greedy-nominal under equal budget; forecast value not demonstrated; decision-time overruns remain severe. Warm-start/validation alone is insufficient novelty.
+
+Historical negative evidence retained in `MPC_DEVELOPMENT_COMPARISON.*` and prior archives.
 
 ## Bottom line
 
-Reporting checklist from the prompt is complete. The method remains **not** empirically competitive enough vs greedy-nominal for confirmatory / top-tier claims.
+Corrected science and reporting are in place. Credible superiority is **not** demonstrated. Stop per protocol; do not inspect or tune on test stems.

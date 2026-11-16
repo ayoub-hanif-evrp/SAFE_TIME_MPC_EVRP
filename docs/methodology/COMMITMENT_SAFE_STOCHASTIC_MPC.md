@@ -84,12 +84,19 @@ decide(o):
 
 Implemented in `terminal_commitment.py`:
 
-1. Simulate first action + recourse to horizon boundary.
-2. Read terminal EV positions, SoC, loads, time, residual obligations.
-3. `verify_terminal_commitment(terminal_state, residual, backup_routes)`.
-4. Reject with reason ∈ `{terminal_infeasible, rollout_failed, replay_failed, budget}`.
+1. Simulate first action + B1 recourse toward \(t+H\).
+2. `freeze_simulator_at_horizon`: advance clock to \(t+H\) with partial travel/charge locks.
+3. Residuals from simulated observation: `accepted ∪ in_service − completed`.
+4. `verify_terminal_commitment(terminal_state, residual, backup_routes)`.
+5. Reject with reason ∈ `{terminal_infeasible, rollout_failed, replay_failed, budget}`.
 
-Stage-0 Validate ≠ terminal membership (Gate 2 tests).
+Stage-0 Validate ≠ terminal membership (Gate 2 tests).  
+Approximation: in-transit = origin node + proportional SoC (no continuous path state).
+
+**Online guarantee:** certified-emission soundness only — see
+`docs/proofs/RECURSIVE_FEASIBILITY_STOCHASTIC_MPC.md`. Unconditional RF withdrawn.
+
+Optional `forecast_override_margin`: keep empty-future winner unless forecast advantage clears the margin.
 
 ---
 
@@ -100,6 +107,9 @@ Certificate store publishes **only** the emitted certified decision.
 
 ---
 
-## 6. Ablations (development)
+## 6. Ablations (corrected development)
 
-Nominal vs stochastic scenarios; with/without terminal constraint; charging candidates; short vs long \(H\); warm-start; normal vs rebuilt infinite battery.
+Forecast on/off (margin on forecast path); terminal on/off; anticipatory charging filter
+(`allow_predictive_charge`); warm-init with backup retained vs warm+backup removed;
+rebuilt infinite-battery interaction (small n). Primary metric: economic objective with
+stem-clustered paired CIs (`mpc_corrected_development_v1`).

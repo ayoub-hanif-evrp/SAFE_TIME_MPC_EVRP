@@ -191,37 +191,10 @@ def test_gate2_verify_terminal_ok_when_empty_residual():
 
 
 def test_gate2_stage0_pass_terminal_constraint_is_distinct():
-    """Stage-0 validate_continuation on a full route ≠ terminal membership of a stranded state."""
-    from safe_time_evrp.commitment_safe_mpc.continuation_validate import validate_continuation
+    """Delegates to the meaningful Phase-1 counterexample (stage0 True, terminal False)."""
+    from tests.test_terminal_horizon_correctness import test_stage0_feasible_projected_terminal_infeasible
 
-    inst, stranded_obs, residual = stage0_ok_but_terminal_counterexample_state(battery=200.0)
-    # Rebuild with large battery for a stage-0 feasible full route from t=0.
-    from safe_time_evrp.models.energy_rebuild import rebuild_arcs_for_vehicle_type
-    from safe_time_evrp.models.instance import VehicleType
-
-    fat = VehicleType(200.0, 10.0, 1.0, 0.2, 1.0, "full")
-    inst2 = rebuild_arcs_for_vehicle_type(inst, fat)
-    start = make_observation(inst2, 1)
-    start = Observation(0.0, start.vehicles, ("C_far",), (), (), (), (), (), public_customer_count=1)
-    public = make_public_snapshot(inst2, start, 100.0).instance
-    full_route = {"v0": [Visit("S0", "charge"), Visit("C_far", "service"), Visit("D0", "return")]}
-    stage0 = validate_continuation(public, start, full_route, require_new=frozenset({"C_far"}))
-    # Stage-0 on a healthy start is a different predicate from terminal membership when stranded.
-    del stranded_obs, residual
-    # Use matching instance geometry with tiny battery for terminal check.
-    inst_small, stranded2, residual2 = stage0_ok_but_terminal_counterexample_state(battery=5.0)
-    term2 = terminal_state_from_observation(stranded2)
-    terminal = verify_terminal_commitment(
-        inst_small,
-        term2,
-        residual2,
-        backup_routes={"v0": [Visit("C_far", "service"), Visit("D0", "return")]},
-        backup_policy="routes_only",
-    )
-    assert terminal.ok is False
-    assert terminal.reason == TerminalRejectReason.TERMINAL_INFEASIBLE
-    # Document distinction: stage0 on a healthy start is a different predicate.
-    assert stage0.ok in (True, False)  # evaluated; not required equal to terminal
+    test_stage0_feasible_projected_terminal_infeasible()
 
 
 def test_gate3_rf_emission_never_adds_accept_without_certificate():
