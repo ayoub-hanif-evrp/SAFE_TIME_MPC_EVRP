@@ -184,6 +184,8 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_finite_demand=True,
             require_terminal_commitment=True,
             forecast_override_margin=50.0,
+            energy_gated_charge=True,
+            charge_advantage_margin=25.0,
             **common,
         ),
         "css_mpc_no_forecast": CommitmentSafeStochasticMpc(
@@ -240,6 +242,20 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_warm_start=False,
             keep_safety_backup_without_warmstart=False,
             forecast_override_margin=50.0,
+            energy_gated_charge=True,
+            **common,
+        ),
+        "css_mpc_no_energy_gate": CommitmentSafeStochasticMpc(
+            inst,
+            h,
+            forecast=arrival,
+            finite_demand_model=finite,
+            n_scenarios=N_SCEN,
+            use_forecast=True,
+            use_finite_demand=True,
+            require_terminal_commitment=True,
+            forecast_override_margin=50.0,
+            energy_gated_charge=False,
             **common,
         ),
     }
@@ -439,6 +455,9 @@ def run_corrected(*, n_real: int = N_REAL, budget: float = BUDGET):
         ),
         "css_vs_no_warm_init_economic": _paired_clustered(
             rows, "commitment_safe_stochastic_mpc", "css_mpc_no_warm_init", PRIMARY
+        ),
+        "css_vs_no_energy_gate_economic": _paired_clustered(
+            rows, "commitment_safe_stochastic_mpc", "css_mpc_no_energy_gate", PRIMARY
         ),
     }
 

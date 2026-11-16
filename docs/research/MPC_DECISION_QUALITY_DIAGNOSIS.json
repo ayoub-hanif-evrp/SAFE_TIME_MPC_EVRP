@@ -1,0 +1,1490 @@
+{
+  "protocol": "decision_quality_diagnosis_v1",
+  "stems": [
+    "r103C10",
+    "rc108C10",
+    "rc108C15",
+    "c106C15"
+  ],
+  "mechanism_counts": {
+    "prediction_error": 2,
+    "ranking_error": 2,
+    "action_space_error": 2,
+    "horizon_error": 0,
+    "computation_error": 0,
+    "feasibility_error": 0
+  },
+  "cells": [
+    {
+      "stem": "r103C10",
+      "realization_index": 0,
+      "environment_seed": 951066033,
+      "css": {
+        "completed": 3,
+        "au": 4,
+        "distance": 136.13375594381455,
+        "economic": -836.1337559438145,
+        "replay_ok": true
+      },
+      "gn": {
+        "completed": 8,
+        "au": 0,
+        "distance": 248.6692767108324,
+        "economic": 551.3307232891676,
+        "replay_ok": true
+      },
+      "delta_economic": -1387.4644792329823,
+      "first_divergence": {
+        "index": 0,
+        "reason": "action_divergence",
+        "css": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "",
+              "idle"
+            ],
+            [
+              "v2",
+              "S0",
+              "charge"
+            ]
+          ],
+          "newly": [],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.17136259999824688,
+          "notes": [
+            "commitment_safe_stochastic_mpc",
+            "receding_horizon=1",
+            "first_action_execution=1",
+            "scoring_mode=causal_economic",
+            "transactional_emit=1",
+            "checkpointed_scoring=1",
+            "commit_reserve_s=0.070",
+            "use_forecast=1",
+            "terminal_commitment=1",
+            "quiescent",
+            "approximation=restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse",
+            "service_reward=100.0",
+            "au_penalty=250.0",
+            "distance_penalty=1.0",
+            "n_valid_actions=9",
+            "adaptive_n_scenarios=2",
+            "n_scenarios_scored=2",
+            "n_unique_first_actions=9",
+            "n_empty_checkpoint=9",
+            "n_scenario_expanded=3",
+            "n_stochastic_terminal=3",
+            "n_stochastic_failed=0",
+            "n_nominal_backup_unchecked=6",
+            "forecast_advantage_vs_empty_winner=0.0000",
+            "selected_empty_future_due_to_forecast_margin",
+            "selected=charge:v2->S0",
+            "expected_value=74.315442",
+            "feasibility_class=stochastic_terminal",
+            "selection_mode=stochastic_terminal",
+            "transactional_commit_ok"
+          ]
+        },
+        "gn": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "C16",
+              "service"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [
+            "C16"
+          ],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.0193602999788709,
+          "notes": [
+            "certificate_carrying_economic_mpc",
+            "use_forecast=0",
+            "persistent_certificate=1",
+            "scoring_mode=greedy_nominal",
+            "conditional_forecast=0",
+            "quiescent",
+            "hard_commitment_feasibility=1",
+            "no_scenario_regret_floor=1",
+            "n_valid_actions=9",
+            "selected=alns",
+            "expected_value=41.690481"
+          ]
+        }
+      },
+      "state_diag_t0": {
+        "time": 0.0,
+        "accepted": [],
+        "soc": [
+          60.63,
+          60.63
+        ],
+        "n_raw_candidates": 6,
+        "n_feasible": 6,
+        "stage0_fail": 0,
+        "candidate_gen_seconds": 0.0006632999866269529,
+        "empty_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 61.300123438040984,
+          "hindsight_v": 528.7599647680224,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "forecast_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 61.300123438040984,
+          "hindsight_v": 528.7599647680224,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "hindsight_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 61.300123438040984,
+          "hindsight_v": 528.7599647680224,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "ranking_disagree_empty_forecast": false,
+        "ranking_disagree_forecast_hindsight": false,
+        "action_space_hindsight_gap_vs_empty": 0.0,
+        "mechanisms": [],
+        "top3_hindsight": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ],
+        "top3_forecast": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 61.300123438040984,
+            "hindsight_v": 528.7599647680224,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ]
+      },
+      "css_n_decisions": 54,
+      "gn_n_decisions": 61,
+      "css_over_budget": 1,
+      "css_loss_events": 35
+    },
+    {
+      "stem": "rc108C10",
+      "realization_index": 0,
+      "environment_seed": 837227318,
+      "css": {
+        "completed": 4,
+        "au": 3,
+        "distance": 174.2151295341945,
+        "economic": -524.2151295341945,
+        "replay_ok": true
+      },
+      "gn": {
+        "completed": 7,
+        "au": 0,
+        "distance": 291.4531094302876,
+        "economic": 408.5468905697124,
+        "replay_ok": true
+      },
+      "delta_economic": -932.7620201039069,
+      "first_divergence": {
+        "index": 0,
+        "reason": "action_divergence",
+        "css": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "",
+              "idle"
+            ],
+            [
+              "v2",
+              "S0",
+              "charge"
+            ]
+          ],
+          "newly": [],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.2807345000328496,
+          "notes": [
+            "commitment_safe_stochastic_mpc",
+            "receding_horizon=1",
+            "first_action_execution=1",
+            "scoring_mode=causal_economic",
+            "transactional_emit=1",
+            "checkpointed_scoring=1",
+            "commit_reserve_s=0.070",
+            "use_forecast=1",
+            "terminal_commitment=1",
+            "quiescent",
+            "approximation=restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse",
+            "service_reward=100.0",
+            "au_penalty=250.0",
+            "distance_penalty=1.0",
+            "n_valid_actions=9",
+            "adaptive_n_scenarios=2",
+            "n_scenarios_scored=2",
+            "n_unique_first_actions=9",
+            "n_empty_checkpoint=9",
+            "cooperative_score_deadline_hit_checkpoint_b",
+            "n_scenario_expanded=2",
+            "n_stochastic_terminal=2",
+            "n_stochastic_failed=0",
+            "n_nominal_backup_unchecked=7",
+            "forecast_advantage_vs_empty_winner=0.0000",
+            "selected_empty_future_due_to_forecast_margin",
+            "selected=charge:v2->S0",
+            "expected_value=315.376742",
+            "feasibility_class=stochastic_terminal",
+            "selection_mode=stochastic_terminal",
+            "transactional_commit_ok"
+          ]
+        },
+        "gn": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "C80",
+              "service"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [
+            "C80"
+          ],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.03957540000556037,
+          "notes": [
+            "certificate_carrying_economic_mpc",
+            "use_forecast=0",
+            "persistent_certificate=1",
+            "scoring_mode=greedy_nominal",
+            "conditional_forecast=0",
+            "quiescent",
+            "hard_commitment_feasibility=1",
+            "no_scenario_regret_floor=1",
+            "n_valid_actions=9",
+            "selected=alns",
+            "expected_value=84.768454"
+          ]
+        }
+      },
+      "state_diag_t0": {
+        "time": 0.0,
+        "accepted": [],
+        "soc": [
+          77.75,
+          77.75
+        ],
+        "n_raw_candidates": 6,
+        "n_feasible": 6,
+        "stage0_fail": 0,
+        "candidate_gen_seconds": 0.0003569999826140702,
+        "empty_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 203.20219742639543,
+          "hindsight_v": 242.3856329505976,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "forecast_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 203.20219742639543,
+          "hindsight_v": 242.3856329505976,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "hindsight_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 203.20219742639543,
+          "hindsight_v": 242.3856329505976,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "ranking_disagree_empty_forecast": false,
+        "ranking_disagree_forecast_hindsight": false,
+        "action_space_hindsight_gap_vs_empty": 0.0,
+        "mechanisms": [],
+        "top3_hindsight": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ],
+        "top3_forecast": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 203.20219742639543,
+            "hindsight_v": 242.3856329505976,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ]
+      },
+      "css_n_decisions": 56,
+      "gn_n_decisions": 61,
+      "css_over_budget": 0,
+      "css_loss_events": 20
+    },
+    {
+      "stem": "rc108C15",
+      "realization_index": 0,
+      "environment_seed": 473715763,
+      "css": {
+        "completed": 1,
+        "au": 3,
+        "distance": 116.99755669332913,
+        "economic": -766.9975566933291,
+        "replay_ok": true
+      },
+      "gn": {
+        "completed": 7,
+        "au": 0,
+        "distance": 433.98337160232876,
+        "economic": 266.01662839767124,
+        "replay_ok": true
+      },
+      "delta_economic": -1033.0141850910004,
+      "first_divergence": {
+        "index": 0,
+        "reason": "action_divergence",
+        "css": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "",
+              "idle"
+            ],
+            [
+              "v2",
+              "S0",
+              "charge"
+            ],
+            [
+              "v3",
+              "",
+              "idle"
+            ]
+          ],
+          "newly": [],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.28339860000414774,
+          "notes": [
+            "commitment_safe_stochastic_mpc",
+            "receding_horizon=1",
+            "first_action_execution=1",
+            "scoring_mode=causal_economic",
+            "transactional_emit=1",
+            "checkpointed_scoring=1",
+            "commit_reserve_s=0.070",
+            "use_forecast=1",
+            "terminal_commitment=1",
+            "quiescent",
+            "approximation=restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse",
+            "service_reward=100.0",
+            "au_penalty=250.0",
+            "distance_penalty=1.0",
+            "n_valid_actions=9",
+            "adaptive_n_scenarios=2",
+            "n_scenarios_scored=2",
+            "n_unique_first_actions=9",
+            "n_empty_checkpoint=9",
+            "reject_expand:charge:v3->S0:terminal_infeasible:sc0:horizon_end_terminal_infeasible:no_feasible_terminal_suffix;events=54;freeze=clock=240.0;residual=['syn_fd_s0_4_t0', 'syn_fd_s0_5_t0']",
+            "reject_expand:charge:v2->S0:budget",
+            "cooperative_score_deadline_hit_checkpoint_b",
+            "n_scenario_expanded=2",
+            "n_stochastic_terminal=0",
+            "n_stochastic_failed=2",
+            "n_nominal_backup_unchecked=8",
+            "selected_pool=nominal_backup_weaker_guarantee",
+            "selected=charge:v2->S0",
+            "expected_value=59.950031",
+            "feasibility_class=unchecked_budget",
+            "selection_mode=nominal_backup_unchecked",
+            "transactional_commit_ok"
+          ]
+        },
+        "gn": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "C19",
+              "service"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [
+            "C19"
+          ],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.03367879998404533,
+          "notes": [
+            "certificate_carrying_economic_mpc",
+            "use_forecast=0",
+            "persistent_certificate=1",
+            "scoring_mode=greedy_nominal",
+            "conditional_forecast=0",
+            "quiescent",
+            "hard_commitment_feasibility=1",
+            "no_scenario_regret_floor=1",
+            "n_valid_actions=9",
+            "selected=alns",
+            "expected_value=19.650386"
+          ]
+        }
+      },
+      "state_diag_t0": {
+        "time": 0.0,
+        "accepted": [],
+        "soc": [
+          77.75,
+          77.75,
+          77.75
+        ],
+        "n_raw_candidates": 8,
+        "n_feasible": 8,
+        "stage0_fail": 0,
+        "candidate_gen_seconds": 0.0005180999869480729,
+        "empty_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 205.55155196448138,
+          "hindsight_v": -1496.3668014961327,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "forecast_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 205.55155196448138,
+          "hindsight_v": -1496.3668014961327,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "hindsight_winner": {
+          "name": "charge:v1->S5",
+          "legs": [
+            [
+              "v1",
+              "S5",
+              "charge"
+            ],
+            [
+              "v2",
+              "",
+              "idle"
+            ],
+            [
+              "v3",
+              "",
+              "idle"
+            ]
+          ],
+          "newly": [],
+          "empty_v": -70.3420215802759,
+          "forecast_v": 104.32723206555607,
+          "hindsight_v": -260.18795999729815,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "ranking_disagree_empty_forecast": false,
+        "ranking_disagree_forecast_hindsight": true,
+        "action_space_hindsight_gap_vs_empty": 1236.1788414988346,
+        "mechanisms": [
+          "A_or_B_prediction_or_ranking",
+          "B_or_C_ranking_or_action_space"
+        ],
+        "top3_hindsight": [
+          {
+            "name": "charge:v1->S5",
+            "legs": [
+              [
+                "v1",
+                "S5",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": -70.3420215802759,
+            "forecast_v": 104.32723206555607,
+            "hindsight_v": -260.18795999729815,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S5",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S5",
+                "charge"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": -70.3420215802759,
+            "forecast_v": 104.32723206555607,
+            "hindsight_v": -260.18795999729815,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v3->S5",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "S5",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": -70.3420215802759,
+            "forecast_v": 104.32723206555607,
+            "hindsight_v": -260.18795999729815,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ],
+        "top3_forecast": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ],
+              [
+                "v3",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 205.55155196448138,
+            "hindsight_v": -1496.3668014961327,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 205.55155196448138,
+            "hindsight_v": -1496.3668014961327,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 205.55155196448138,
+            "hindsight_v": -1496.3668014961327,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ]
+      },
+      "css_n_decisions": 56,
+      "gn_n_decisions": 70,
+      "css_over_budget": 17,
+      "css_loss_events": 34
+    },
+    {
+      "stem": "c106C15",
+      "realization_index": 0,
+      "environment_seed": 1861698524,
+      "css": {
+        "completed": 9,
+        "au": 0,
+        "distance": 375.9639140476634,
+        "economic": 524.0360859523366,
+        "replay_ok": true
+      },
+      "gn": {
+        "completed": 1,
+        "au": 5,
+        "distance": 106.8410059281604,
+        "economic": -1256.8410059281605,
+        "replay_ok": true
+      },
+      "delta_economic": 1780.8770918804971,
+      "first_divergence": {
+        "index": 0,
+        "reason": "action_divergence",
+        "css": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "S0",
+              "charge"
+            ],
+            [
+              "v2",
+              "",
+              "idle"
+            ],
+            [
+              "v3",
+              "",
+              "idle"
+            ]
+          ],
+          "newly": [],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.2803144000354223,
+          "notes": [
+            "commitment_safe_stochastic_mpc",
+            "receding_horizon=1",
+            "first_action_execution=1",
+            "scoring_mode=causal_economic",
+            "transactional_emit=1",
+            "checkpointed_scoring=1",
+            "commit_reserve_s=0.070",
+            "use_forecast=1",
+            "terminal_commitment=1",
+            "quiescent",
+            "approximation=restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse",
+            "service_reward=100.0",
+            "au_penalty=250.0",
+            "distance_penalty=1.0",
+            "n_valid_actions=12",
+            "adaptive_n_scenarios=2",
+            "n_scenarios_scored=2",
+            "n_unique_first_actions=12",
+            "n_empty_checkpoint=12",
+            "reject_expand:charge:v3->S0:terminal_infeasible:sc0:horizon_end_terminal_infeasible:no_feasible_terminal_suffix;events=68;freeze=clock=1236.0;residual=['syn_fd_s0_7_t0', 'syn_fd_s0_9_t0']",
+            "reject_expand:charge:v2->S0:terminal_infeasible:sc0:horizon_end_terminal_infeasible:no_feasible_terminal_suffix;events=68;freeze=clock=1236.0;residual=['syn_fd_s0_7_t0', 'syn_fd_s0_9_t0']",
+            "reject_expand:charge:v1->S0:budget",
+            "n_scenario_expanded=3",
+            "n_stochastic_terminal=0",
+            "n_stochastic_failed=3",
+            "n_nominal_backup_unchecked=10",
+            "selected_pool=nominal_backup_weaker_guarantee",
+            "selected=charge:v1->S0",
+            "expected_value=62.636917",
+            "feasibility_class=unchecked_budget",
+            "selection_mode=nominal_backup_unchecked",
+            "transactional_commit_ok"
+          ]
+        },
+        "gn": {
+          "time": 0.0,
+          "trigger": "request_release",
+          "legs": [
+            [
+              "v1",
+              "C1",
+              "service"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [
+            "C1"
+          ],
+          "rejected": [],
+          "fallback": false,
+          "status": "CERTIFIED_FEASIBLE",
+          "optimize_seconds": 0.03834669996285811,
+          "notes": [
+            "certificate_carrying_economic_mpc",
+            "use_forecast=0",
+            "persistent_certificate=1",
+            "scoring_mode=greedy_nominal",
+            "conditional_forecast=0",
+            "quiescent",
+            "hard_commitment_feasibility=1",
+            "no_scenario_regret_floor=1",
+            "n_valid_actions=12",
+            "selected=alns",
+            "expected_value=62.636917"
+          ]
+        }
+      },
+      "state_diag_t0": {
+        "time": 0.0,
+        "accepted": [],
+        "soc": [
+          77.75,
+          77.75,
+          77.75
+        ],
+        "n_raw_candidates": 8,
+        "n_feasible": 8,
+        "stage0_fail": 0,
+        "candidate_gen_seconds": 0.0005193999968469143,
+        "empty_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 162.8988621190281,
+          "hindsight_v": 21.874601216374288,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "forecast_winner": {
+          "name": "alns",
+          "legs": [
+            [
+              "v1",
+              "D0",
+              "return"
+            ],
+            [
+              "v2",
+              "D0",
+              "return"
+            ],
+            [
+              "v3",
+              "D0",
+              "return"
+            ]
+          ],
+          "newly": [],
+          "empty_v": 0.0,
+          "forecast_v": 162.8988621190281,
+          "hindsight_v": 21.874601216374288,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "hindsight_winner": {
+          "name": "charge:v3->S15",
+          "legs": [
+            [
+              "v1",
+              "",
+              "idle"
+            ],
+            [
+              "v2",
+              "",
+              "idle"
+            ],
+            [
+              "v3",
+              "S15",
+              "charge"
+            ]
+          ],
+          "newly": [],
+          "empty_v": -48.041648597857254,
+          "forecast_v": 123.22158557016422,
+          "hindsight_v": 35.57311433153862,
+          "empty_ok": true,
+          "forecast_ok": true,
+          "hindsight_ok": true
+        },
+        "ranking_disagree_empty_forecast": false,
+        "ranking_disagree_forecast_hindsight": true,
+        "action_space_hindsight_gap_vs_empty": 13.698513115164332,
+        "mechanisms": [
+          "A_or_B_prediction_or_ranking",
+          "B_or_C_ranking_or_action_space"
+        ],
+        "top3_hindsight": [
+          {
+            "name": "charge:v3->S15",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "S15",
+                "charge"
+              ]
+            ],
+            "newly": [],
+            "empty_v": -48.041648597857254,
+            "forecast_v": 123.22158557016422,
+            "hindsight_v": 35.57311433153862,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ],
+              [
+                "v3",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 162.8988621190281,
+            "hindsight_v": 21.874601216374288,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 162.8988621190281,
+            "hindsight_v": 21.874601216374288,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ],
+        "top3_forecast": [
+          {
+            "name": "alns",
+            "legs": [
+              [
+                "v1",
+                "D0",
+                "return"
+              ],
+              [
+                "v2",
+                "D0",
+                "return"
+              ],
+              [
+                "v3",
+                "D0",
+                "return"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 162.8988621190281,
+            "hindsight_v": 21.874601216374288,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v1->S0",
+            "legs": [
+              [
+                "v1",
+                "S0",
+                "charge"
+              ],
+              [
+                "v2",
+                "",
+                "idle"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 162.8988621190281,
+            "hindsight_v": 21.874601216374288,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          },
+          {
+            "name": "charge:v2->S0",
+            "legs": [
+              [
+                "v1",
+                "",
+                "idle"
+              ],
+              [
+                "v2",
+                "S0",
+                "charge"
+              ],
+              [
+                "v3",
+                "",
+                "idle"
+              ]
+            ],
+            "newly": [],
+            "empty_v": 0.0,
+            "forecast_v": 162.8988621190281,
+            "hindsight_v": 21.874601216374288,
+            "empty_ok": true,
+            "forecast_ok": true,
+            "hindsight_ok": true
+          }
+        ]
+      },
+      "css_n_decisions": 68,
+      "gn_n_decisions": 58,
+      "css_over_budget": 21,
+      "css_loss_events": 0
+    }
+  ],
+  "interpretation_keys": {
+    "A": "prediction_error",
+    "B": "ranking_error",
+    "C": "action_space_error",
+    "D": "horizon_error",
+    "E": "computation_error",
+    "F": "feasibility_error"
+  }
+}

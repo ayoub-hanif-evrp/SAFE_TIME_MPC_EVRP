@@ -27,6 +27,7 @@ the Decision returned to the plant.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from time import perf_counter
 
 from safe_time_evrp.commitment_safe_mpc.certificate_store import CertificateStore
@@ -50,6 +51,44 @@ from safe_time_evrp.mpc_central.terminal_commitment import (
     TerminalRejectReason,
     project_to_horizon,
 )
+
+
+class FeasibilityClass(str, Enum):
+    """Declared terminal-check status — never claim an unchecked condition as satisfied."""
+
+    STAGE0 = "stage0"
+    NOMINAL_TERMINAL = "nominal_terminal"
+    STOCHASTIC_TERMINAL = "stochastic_terminal"
+    STOCHASTIC_FAILED = "stochastic_failed"
+    UNCHECKED_BUDGET = "unchecked_budget"
+
+
+def scenario_set_signature(scenario_fcs: list[list[ForecastCustomer]]) -> tuple:
+    """Hashable identity of a scenario set for terminal-cache keys."""
+    if not scenario_fcs:
+        return (("empty",),)
+    sig = []
+    for fcs in scenario_fcs:
+        if not fcs:
+            sig.append(("empty",))
+            continue
+        sig.append(
+            tuple(
+                sorted(
+                    (
+                        str(fc.customer_id),
+                        round(
+                            float(fc.announcement_time if fc.announcement_time is not None else fc.ready_time),
+                            6,
+                        ),
+                        round(float(fc.due_time), 6),
+                    )
+                    for fc in fcs
+                )
+            )
+        )
+    return tuple(sig)
+
 
 # Fixed economic weights for controlled comparisons (do not retune on test instances).
 OBJECTIVE_WEIGHTS = {
@@ -126,6 +165,10 @@ class CommitmentSafeStochasticMpc:
         commit_reserve_fraction: float = 0.20,
         # After empty-future checkpoint, expand at most this many with full scenarios.
         max_scenario_expansions: int = 3,
+        # Prefer service/accept over anticipatory charge unless charge EV advantage clears margin
+        # or residual commitments are energy-infeasible without charging (EV-specific gate).
+        energy_gated_charge: bool = True,
+        charge_advantage_margin: float = 25.0,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -154,6 +197,8 @@ class CommitmentSafeStochasticMpc:
         self.scenario_override = scenario_override
         self.commit_reserve_fraction = min(0.4, max(0.05, float(commit_reserve_fraction)))
         self.max_scenario_expansions = max(1, int(max_scenario_expansions))
+        self.energy_gated_charge = bool(energy_gated_charge)
+        self.charge_advantage_margin = float(charge_advantage_margin)
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
         self._last_solution_routes: dict[str, list[Visit]] | None = None
@@ -413,15 +458,21 @@ class CommitmentSafeStochasticMpc:
         scenario_fcs: list[list[ForecastCustomer]],
         *,
         deadline: float,
-        cache: dict[FirstActionKey, tuple[bool, str]] | None = None,
+        cache: dict[tuple[FirstActionKey, tuple], tuple[bool, str]] | None = None,
     ) -> tuple[bool, str]:
-        """Require terminal commitment OK on every scored scenario (or empty-future)."""
+        """Require terminal commitment OK on every scenario in ``scenario_fcs``.
+
+        Cache keys are ``(FirstActionKey, scenario_set_signature)``. An empty-future
+        result must never be reused for a nonempty stochastic scenario set.
+        """
         if not self.require_terminal_commitment:
             return True, "terminal_disabled"
-        key = FirstActionKey.from_decision(cand)
-        if cache is not None and key in cache:
+        action_key = FirstActionKey.from_decision(cand)
+        scen_key = scenario_set_signature(scenario_fcs)
+        cache_key = (action_key, scen_key)
+        if cache is not None and cache_key in cache:
             self.profile.terminal_cache_hits += 1
-            return cache[key]
+            return cache[cache_key]
         scenarios = scenario_fcs if scenario_fcs else [[]]
         result = (True, "terminal_ok")
         for s_idx, fcs in enumerate(scenarios):
@@ -457,7 +508,7 @@ class CommitmentSafeStochasticMpc:
                 result = (False, f"terminal_infeasible:sc{s_idx}:{report.detail}")
                 break
         if cache is not None:
-            cache[key] = result
+            cache[cache_key] = result
         return result
 
     def solve_mpc(self, observation: Observation, trigger: str) -> Decision:
@@ -630,8 +681,11 @@ class CommitmentSafeStochasticMpc:
             key = FirstActionKey.from_decision(cand)
             n_service = sum(1 for leg in key.first_legs if leg[2] == "service")
             n_charge = sum(1 for leg in key.first_legs if leg[2] == "charge")
+            n_accept = len(key.newly_accepted)
+            # Prefer service/accept over charge on near-ties (diagnosis: charge-preferring
+            # tie-break caused anticipatory charge while GN served announced customers).
             not_wait = 0 if name.startswith("wait") or name == "wait_idle" else 1
-            return (value, n_charge, n_service, len(key.newly_accepted), not_wait, name)
+            return (value, n_service, n_accept, -n_charge, not_wait, name)
 
         def _sanitize(name: str, cand: Decision) -> Decision:
             routes = sanitize_routes(observation, cand.routes)
@@ -683,11 +737,18 @@ class CommitmentSafeStochasticMpc:
 
         deduped.sort(key=_priority)
 
-        terminal_cache: dict[FirstActionKey, tuple[bool, str]] = {}
-        empty_checkpoint: list[tuple[float, str, Decision, list[str]]] = []
+        # Cache keyed by (FirstActionKey, scenario_set_signature) — never cross scenario sets.
+        terminal_cache: dict[tuple[FirstActionKey, tuple], tuple[bool, str]] = {}
+        # (value, name, cand, served, feasibility_class)
+        Scored = tuple[float, str, Decision, list[str], FeasibilityClass]
+        empty_checkpoint: list[Scored] = []
         t_score = perf_counter()
 
-        # Checkpoint A: stage-0 + empty-future terminal + empty causal score.
+        def _rank_scored(item: Scored):
+            value, name, cand, _served, _cls = item
+            return _rank((value, name, cand, _served))
+
+        # Checkpoint A: stage-0 + empty-future terminal + empty causal score → NOMINAL_TERMINAL.
         for name, cand in deduped:
             if perf_counter() >= score_deadline:
                 notes.append("cooperative_score_deadline_hit_checkpoint_a")
@@ -727,23 +788,26 @@ class CommitmentSafeStochasticMpc:
             if mean_v <= -1e8:
                 self.profile.rollout_rejects += 1
                 continue
-            empty_checkpoint.append((mean_v, name, cand, list(report.served)))
+            empty_checkpoint.append((mean_v, name, cand, list(report.served), FeasibilityClass.NOMINAL_TERMINAL))
 
-        empty_checkpoint.sort(key=_rank, reverse=True)
+        empty_checkpoint.sort(key=_rank_scored, reverse=True)
         notes.append(f"n_empty_checkpoint={len(empty_checkpoint)}")
 
-        # Checkpoint B: with forecast, expand top-K with full scenarios (terminal + EV).
-        # Without forecast, empty-checkpoint scores are the final ranking set.
-        scored: list[tuple[float, str, Decision, list[str]]] = []
+        stochastic_scored: list[Scored] = []
+        nominal_backup: list[Scored] = []
+        stochastic_failed_names: set[str] = set()
         need_expand = bool(self.use_forecast and scenario_fcs and any(len(s) > 0 for s in scenario_fcs))
+
         if not need_expand:
-            scored = list(empty_checkpoint)
+            # No stochastic claim: nominal terminal class is the declared guarantee.
+            stochastic_scored = [(v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint]
             notes.append("no_forecast_expand_skipped")
+            notes.append("declared_guarantee=nominal_terminal")
         else:
             expand_n = min(self.max_scenario_expansions, len(empty_checkpoint))
             to_expand = empty_checkpoint[:expand_n]
-            expanded_names: set[str] = set()
-            for empty_v, name, cand, served in to_expand:
+            checked_names: set[str] = set()
+            for empty_v, name, cand, served, _cls in to_expand:
                 if perf_counter() >= score_deadline:
                     notes.append("cooperative_score_deadline_hit_checkpoint_b")
                     self.profile.cooperative_budget_hits += 1
@@ -751,10 +815,14 @@ class CommitmentSafeStochasticMpc:
                 term_ok, term_detail = self._terminal_filter(
                     observation, cand, scenario_fcs, deadline=score_deadline, cache=terminal_cache
                 )
+                checked_names.add(name)
                 if not term_ok:
+                    # Failed scenario-terminal: NOT selectable as scenario-feasible.
                     notes.append(f"reject_expand:{name}:{term_detail}")
-                    scored.append((empty_v, name, cand, served))
-                    expanded_names.add(name)
+                    stochastic_failed_names.add(name)
+                    if term_detail == "budget":
+                        nominal_backup.append((empty_v, name, cand, served, FeasibilityClass.UNCHECKED_BUDGET))
+                    # else STOCHASTIC_FAILED — excluded from both stochastic and nominal pools
                     continue
                 mean_v, scores = expected_rollout_value(
                     self._full,
@@ -772,21 +840,20 @@ class CommitmentSafeStochasticMpc:
                 self.profile.causal_rollouts += len(scores)
                 if mean_v <= -1e8:
                     self.profile.rollout_rejects += 1
-                    scored.append((empty_v, name, cand, served))
-                else:
-                    scored.append((mean_v, name, cand, served))
-                expanded_names.add(name)
-            # Keep remaining empty-checkpoint candidates as feasible backups (dominated skips
-            # of full multi-scenario terminal probes).
-            for empty_v, name, cand, served in empty_checkpoint:
-                if name not in expanded_names:
-                    scored.append((empty_v, name, cand, served))
-                    self.profile.dominated_skips += 1
-            notes.append(f"n_scenario_expanded={len(expanded_names)}")
-
-        if not scored and empty_checkpoint:
-            scored = list(empty_checkpoint)
-            notes.append("used_empty_checkpoint_as_scored_set")
+                    stochastic_failed_names.add(name)
+                    notes.append(f"reject_expand_score:{name}:rollout_invalid")
+                    continue
+                stochastic_scored.append((mean_v, name, cand, served, FeasibilityClass.STOCHASTIC_TERMINAL))
+            # Untested (not expanded / budget) → nominal backup only; never claim stochastic OK.
+            for empty_v, name, cand, served, _cls in empty_checkpoint:
+                if name in checked_names or name in stochastic_failed_names:
+                    continue
+                self.profile.dominated_skips += 1
+                nominal_backup.append((empty_v, name, cand, served, FeasibilityClass.UNCHECKED_BUDGET))
+            notes.append(f"n_scenario_expanded={len(checked_names)}")
+            notes.append(f"n_stochastic_terminal={len(stochastic_scored)}")
+            notes.append(f"n_stochastic_failed={len(stochastic_failed_names)}")
+            notes.append(f"n_nominal_backup_unchecked={len(nominal_backup)}")
 
         score_dt = perf_counter() - t_score
         self.profile.scoring_seconds += score_dt
@@ -795,32 +862,82 @@ class CommitmentSafeStochasticMpc:
         self.profile.phase_validation.append(self.profile.validation_seconds - val_before)
         self.profile.decisions += 1
 
-        if scored:
-            scored.sort(key=_rank, reverse=True)
-            best_v, best_name, best, served = scored[0]
-            # Focused forecast-robustness rule: reuse empty-checkpoint scores (no duplicate B1).
+        # Selection: stochastic-feasible first; else explicit nominal backup (weaker guarantee).
+        # Never select STOCHASTIC_FAILED as if scenario-feasible.
+        selected_pool: list[Scored] = []
+        selection_mode = "none"
+        if stochastic_scored:
+            selected_pool = list(stochastic_scored)
+            selection_mode = "stochastic_terminal" if need_expand else "nominal_terminal"
+        elif need_expand and nominal_backup:
+            # Only unchecked nominal-terminal candidates — weaker declared guarantee.
+            selected_pool = list(nominal_backup)
+            selection_mode = "nominal_backup_unchecked"
+            notes.append("selected_pool=nominal_backup_weaker_guarantee")
+        elif not need_expand and empty_checkpoint:
+            selected_pool = [(v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint]
+            selection_mode = "nominal_terminal"
+
+        if selected_pool:
+            selected_pool.sort(key=_rank_scored, reverse=True)
+            best_v, best_name, best, served, best_cls = selected_pool[0]
+            # Margin rule only among STOCHASTIC_TERMINAL vs NOMINAL_TERMINAL winners already scored.
             if (
                 self.forecast_override_margin is not None
-                and self.use_forecast
+                and need_expand
+                and best_cls == FeasibilityClass.STOCHASTIC_TERMINAL
                 and empty_checkpoint
                 and perf_counter() < deadline
             ):
-                empty_by_name = {n: (v, c, s) for v, n, c, s in empty_checkpoint}
-                e_v, e_name, e_cand, e_served = max(empty_checkpoint, key=_rank)
-                f_of_empty = next((v for v, n, c, s in scored if n == e_name), None)
-                if f_of_empty is None and e_name in empty_by_name:
-                    f_of_empty = empty_by_name[e_name][0]
-                if f_of_empty is None:
-                    f_of_empty = best_v
-                advantage = best_v - float(f_of_empty)
-                notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
-                if advantage < self.forecast_override_margin:
-                    best_v, best_name, best, served = e_v, e_name, e_cand, e_served
-                    notes.append("selected_empty_future_due_to_forecast_margin")
-                else:
-                    notes.append("selected_forecast_override_margin_cleared")
+                # Prefer a stochastic-feasible candidate that matches empty-future winner if
+                # forecast advantage is below margin; never promote a stochastic_failed candidate.
+                e_v, e_name, e_cand, e_served, _ = max(empty_checkpoint, key=_rank_scored)
+                if e_name not in stochastic_failed_names:
+                    stoch_of_empty = next((x for x in stochastic_scored if x[1] == e_name), None)
+                    if stoch_of_empty is not None:
+                        f_of_empty = stoch_of_empty[0]
+                        advantage = best_v - float(f_of_empty)
+                        notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
+                        if advantage < self.forecast_override_margin:
+                            best_v, best_name, best, served, best_cls = stoch_of_empty
+                            notes.append("selected_empty_future_due_to_forecast_margin")
+                        else:
+                            notes.append("selected_forecast_override_margin_cleared")
+            # Energy-gated anticipatory charge (EV mechanism from diagnosis):
+            # if the ranked winner is charge-first, prefer a service/accept alternative in the
+            # same feasibility class unless (i) charge EV advantage clears margin, or
+            # (ii) no non-charge alternative exists in the pool (commitments force charge path).
+            if self.energy_gated_charge:
+                best_key = FirstActionKey.from_decision(best)
+                best_charges = any(leg[2] == "charge" for leg in best_key.first_legs)
+                if best_charges and not incumb_charges:
+                    alts = [
+                        x
+                        for x in selected_pool
+                        if x[4] == best_cls
+                        and not any(leg[2] == "charge" for leg in FirstActionKey.from_decision(x[2]).first_legs)
+                    ]
+                    if alts:
+                        alt_v, alt_name, alt_cand, alt_served, alt_cls = max(alts, key=_rank_scored)
+                        advantage = best_v - alt_v
+                        notes.append(f"charge_advantage_vs_best_noncharge={advantage:.4f}")
+                        if advantage < self.charge_advantage_margin:
+                            best_v, best_name, best, served, best_cls = (
+                                alt_v,
+                                alt_name,
+                                alt_cand,
+                                alt_served,
+                                alt_cls,
+                            )
+                            notes.append("energy_gated_charge_deferred_to_service")
+                        else:
+                            notes.append("energy_gated_charge_cleared_margin")
+                    else:
+                        notes.append("energy_gated_charge_no_noncharge_alternative")
             notes.append(f"selected={best_name}")
             notes.append(f"expected_value={best_v:.6f}")
+            notes.append(f"feasibility_class={best_cls.value}")
+            notes.append(f"selection_mode={selection_mode}")
             diag.selected_key = FirstActionKey.from_decision(best)
             newly = sanitize_newly_accepted(observation, [c for c in best.newly_accepted if c in served])
             committed = self._try_commit(

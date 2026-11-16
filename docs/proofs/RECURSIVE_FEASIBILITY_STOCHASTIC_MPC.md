@@ -19,7 +19,9 @@ A theorem that allows feasibility loss and then restricts attention to epochs th
 
 ---
 
-## 2. Verified property: Certified-emission soundness
+## 2. Verified properties
+
+### 2.1 Certified-emission soundness
 
 **Definition.** An emission is **certified** if status = `CERTIFIED_FEASIBLE`.
 
@@ -34,6 +36,18 @@ Assume nominal energy/travel (N1)–(N2) and independent `validate_continuation`
 **Proof.** Immediate from transactional `_try_commit` / `_emit_fallback` (Gate 1 tests). □
 
 This is **epoch-wise soundness of certified claims**, not recursive feasibility of the viable set.
+
+### 2.2 Scenario-terminal honesty
+
+**Proposition.** A candidate is labeled `STOCHASTIC_TERMINAL` only after
+`verify_terminal_commitment` succeeds on the **declared** scenario set. Cache keys are
+`(FirstActionKey, scenario_set_signature)`. Empty-future success is not reused for
+nonempty scenarios. Scenario-failed candidates are excluded from the stochastic
+selection pool; unchecked candidates may enter only an explicit nominal-backup pool
+with a weaker declared guarantee.
+
+**Proof.** Direct from `_terminal_filter` cache keying and selection policy tests in
+`tests/test_scenario_terminal_validity.py`. □
 
 ---
 
