@@ -386,63 +386,57 @@ def run_large_instance_probe(*, arrival=None, finite=None) -> list[dict]:
             )
             case = episode.case
             # Credibility probe: 0.70s cooperative budget; plant unchanged.
-            # Fewer ALNS iterations only inside controllers via shared helper override.
             t0 = perf_counter()
-
-            def _pair_large():
-                inst, h = case.instance, case.horizon
-                common = dict(
-                    alns_iterations=4,
-                    time_limit_seconds=0.70,
-                    seed=pol,
-                    max_replan_interval=case.max_replan_interval,
-                    rollout_max_events=40,
-                )
-                css_inner = CommitmentSafeStochasticMpc(
-                    inst,
-                    h,
-                    forecast=arrival,
-                    finite_demand_model=finite,
-                    n_scenarios=1,
-                    use_forecast=True,
-                    use_finite_demand=True,
-                    require_terminal_commitment=True,
-                    forecast_override_margin=50.0,
-                    energy_gated_charge=True,
-                    **common,
-                )
-                gn_inner = CertificateCarryingEconomicMpc(
-                    inst,
-                    h,
-                    forecast=arrival,
-                    n_scenarios=1,
-                    use_forecast=False,
-                    scoring_mode="greedy_nominal",
-                    use_persistent_certificate=True,
-                    **common,
-                )
-                css, gn = SnapshotProbe(css_inner), SnapshotProbe(gn_inner)
-                css_res = run_episode(
-                    case.instance,
-                    case.releases,
-                    fleet_size=case.fleet_size,
-                    horizon=case.horizon,
-                    max_replan_interval=case.max_replan_interval,
-                    t_max=case.t_max,
-                    controller=css,
-                )
-                gn_res = run_episode(
-                    case.instance,
-                    case.releases,
-                    fleet_size=case.fleet_size,
-                    horizon=case.horizon,
-                    max_replan_interval=case.max_replan_interval,
-                    t_max=case.t_max,
-                    controller=gn,
-                )
-                return css, gn, css_res, gn_res, css_inner
-
-            css, gn, css_res, gn_res, css_inner = _pair_large()
+            inst, h = case.instance, case.horizon
+            common = dict(
+                alns_iterations=4,
+                time_limit_seconds=0.70,
+                seed=pol,
+                max_replan_interval=case.max_replan_interval,
+                rollout_max_events=40,
+            )
+            css_inner = CommitmentSafeStochasticMpc(
+                inst,
+                h,
+                forecast=arrival,
+                finite_demand_model=finite,
+                n_scenarios=1,
+                use_forecast=True,
+                use_finite_demand=True,
+                require_terminal_commitment=True,
+                forecast_override_margin=50.0,
+                energy_gated_charge=True,
+                **common,
+            )
+            gn_inner = CertificateCarryingEconomicMpc(
+                inst,
+                h,
+                forecast=arrival,
+                n_scenarios=1,
+                use_forecast=False,
+                scoring_mode="greedy_nominal",
+                use_persistent_certificate=True,
+                **common,
+            )
+            css, gn = SnapshotProbe(css_inner), SnapshotProbe(gn_inner)
+            css_res = run_episode(
+                case.instance,
+                case.releases,
+                fleet_size=case.fleet_size,
+                horizon=case.horizon,
+                max_replan_interval=case.max_replan_interval,
+                t_max=case.t_max,
+                controller=css,
+            )
+            gn_res = run_episode(
+                case.instance,
+                case.releases,
+                fleet_size=case.fleet_size,
+                horizon=case.horizon,
+                max_replan_interval=case.max_replan_interval,
+                t_max=case.t_max,
+                controller=gn,
+            )
             wall = perf_counter() - t0
             css_m, gn_m = _econ(case, css_res), _econ(case, gn_res)
             lat = _latency(css_m["decide_seconds"])
