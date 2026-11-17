@@ -110,7 +110,14 @@ def primitive_check_route(
                 return PrimitiveCheckResult(False, "partial_charge_missing_target", end_time=time, end_soc=soc)
             if target > vehicle.battery_capacity + EPS or target < soc - EPS:
                 return PrimitiveCheckResult(False, "impossible_charge", end_time=time, end_soc=soc)
-            duration = (target - soc) * vehicle.inverse_recharge_rate
+            from safe_time_evrp.environment.energy import NonlinearPiecewiseChargeEnergy
+
+            duration = NonlinearPiecewiseChargeEnergy().charge_duration(
+                soc,
+                float(target),
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             time += duration
             charge_time += duration
             soc = float(target)

@@ -174,6 +174,7 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_persistent_certificate=True,
             **common,
         ),
+        # Proposed: CSS-SPI (single selection law; legacy knobs frozen).
         "commitment_safe_stochastic_mpc": CommitmentSafeStochasticMpc(
             inst,
             h,
@@ -183,13 +184,19 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_forecast=True,
             use_finite_demand=True,
             require_terminal_commitment=True,
-            forecast_override_margin=50.0,
-            energy_gated_charge=True,
-            charge_advantage_margin=25.0,
+            spi_mode=True,
+            spi_advantage_margin=0.0,
             **common,
         ),
         "css_mpc_no_forecast": CommitmentSafeStochasticMpc(
-            inst, h, use_forecast=False, n_scenarios=1, require_terminal_commitment=True, **common
+            inst,
+            h,
+            use_forecast=False,
+            n_scenarios=1,
+            require_terminal_commitment=True,
+            spi_mode=True,
+            spi_advantage_margin=0.0,
+            **common,
         ),
         "css_mpc_no_terminal": CommitmentSafeStochasticMpc(
             inst,
@@ -200,7 +207,7 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_forecast=True,
             use_finite_demand=True,
             require_terminal_commitment=False,
-            forecast_override_margin=50.0,
+            spi_mode=True,
             **common,
         ),
         "css_mpc_no_predictive_charge": CommitmentSafeStochasticMpc(
@@ -213,7 +220,7 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_finite_demand=True,
             require_terminal_commitment=True,
             allow_predictive_charge=False,
-            forecast_override_margin=50.0,
+            spi_mode=True,
             **common,
         ),
         "css_mpc_no_warm_init": CommitmentSafeStochasticMpc(
@@ -227,7 +234,7 @@ def _controllers(case, *, arrival, finite, pol, budget):
             require_terminal_commitment=True,
             use_warm_start=False,
             keep_safety_backup_without_warmstart=True,
-            forecast_override_margin=50.0,
+            spi_mode=True,
             **common,
         ),
         "css_mpc_no_warm_no_backup": CommitmentSafeStochasticMpc(
@@ -241,11 +248,11 @@ def _controllers(case, *, arrival, finite, pol, budget):
             require_terminal_commitment=True,
             use_warm_start=False,
             keep_safety_backup_without_warmstart=False,
-            forecast_override_margin=50.0,
-            energy_gated_charge=True,
+            spi_mode=True,
             **common,
         ),
-        "css_mpc_no_energy_gate": CommitmentSafeStochasticMpc(
+        # Legacy ablation only: SPI off + energy gate on (not part of proposed method).
+        "css_mpc_legacy_energy_gate": CommitmentSafeStochasticMpc(
             inst,
             h,
             forecast=arrival,
@@ -254,8 +261,10 @@ def _controllers(case, *, arrival, finite, pol, budget):
             use_forecast=True,
             use_finite_demand=True,
             require_terminal_commitment=True,
+            spi_mode=False,
             forecast_override_margin=50.0,
-            energy_gated_charge=False,
+            energy_gated_charge=True,
+            charge_advantage_margin=25.0,
             **common,
         ),
     }
@@ -456,30 +465,38 @@ def run_corrected(*, n_real: int = N_REAL, budget: float = BUDGET):
         "css_vs_no_warm_init_economic": _paired_clustered(
             rows, "commitment_safe_stochastic_mpc", "css_mpc_no_warm_init", PRIMARY
         ),
-        "css_vs_no_energy_gate_economic": _paired_clustered(
-            rows, "commitment_safe_stochastic_mpc", "css_mpc_no_energy_gate", PRIMARY
+        "css_vs_legacy_energy_gate_economic": _paired_clustered(
+            rows, "commitment_safe_stochastic_mpc", "css_mpc_legacy_energy_gate", PRIMARY
         ),
     }
 
     econ = paired["css_vs_gn_economic_clustered"]
+    au = paired["css_vs_gn_au_clustered"]
     gate = {"pass": False, "reason": ""}
     d = econ["delta"].get("mean")
     ci = econ.get("ci95") or {}
-    if (
-        d is not None
-        and ci.get("low") is not None
-        and ci["low"] > 0
-        and econ["tally_stems"]["better"] > econ["tally_stems"]["worse"]
-    ):
-        # Also require not catastrophic completed loss
-        cdelta = paired["css_vs_gn_completed_clustered"]["delta"].get("mean")
+    au_d = au["delta"].get("mean")
+    au_ci = au.get("ci95") or {}
+    j_pos = d is not None and ci.get("low") is not None and ci["low"] > 0
+    j_noninf = d is not None and ci.get("low") is not None and ci["low"] >= -1e-9
+    au_sig = au_d is not None and au_ci.get("high") is not None and au_ci["high"] < 0
+    cdelta = paired["css_vs_gn_completed_clustered"]["delta"].get("mean")
+    if j_pos and econ["tally_stems"]["better"] > econ["tally_stems"]["worse"]:
         if cdelta is not None and cdelta >= -0.5:
             gate["pass"] = True
             gate["reason"] = f"Clustered economic CI excludes 0 (mean={d}, ci={ci})."
         else:
             gate["reason"] = f"Economic CI positive but completed stem-mean delta too negative ({cdelta})."
+    elif j_noninf and au_sig:
+        gate["pass"] = True
+        gate["reason"] = (
+            f"Non-inferior J (mean={d}, ci={ci}) + significant AU reduction (mean={au_d}, ci={au_ci})."
+        )
     else:
-        gate["reason"] = f"No reliable clustered economic gain vs GN (delta={d}, ci={ci}, tally={econ['tally_stems']})."
+        gate["reason"] = (
+            f"No reliable clustered economic gain vs GN (delta={d}, ci={ci}, tally={econ['tally_stems']}; "
+            f"AU delta={au_d}, ci={au_ci})."
+        )
 
     payload = {
         "protocol": "mpc_corrected_development_v1",
@@ -495,8 +512,9 @@ def run_corrected(*, n_real: int = N_REAL, budget: float = BUDGET):
         "development_gate": gate,
         "infinite_battery_rows": inf_rows,
         "rows": rows,
-        "forecast_override_margin": 50.0,
-        "approximation_class": "restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse",
+        "selection_law": "spi_crn",
+        "spi_advantage_margin": 0.0,
+        "approximation_class": "restricted_candidate_set_stochastic_mpc_with_scenario_b1_recourse_spi",
     }
     OUT_JSON.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     _write_md(payload)

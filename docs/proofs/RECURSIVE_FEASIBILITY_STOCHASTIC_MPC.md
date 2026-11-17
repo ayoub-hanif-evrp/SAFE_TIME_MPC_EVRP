@@ -3,7 +3,8 @@
 **Status:** Weakened to a claim the implementation actually supports.  
 **Closed-loop evidence:** `CERTIFIED_FEASIBILITY_LOST` occurs (e.g. CSS-MPC on `c106C15`, `r103C10`, `r105C15`). A theorem asserting unconditional forward invariance of \(\mathcal{V}\) is **false** for the current plant+controller pair.
 
-Source audit: `docs/experiments/MPC_CERTIFICATE_LOSS_AUDIT.md`.
+Closed-loop certificate-loss events are reported in paper evaluation profiles
+(`docs/experiments/MPC_PAPER_EVAL_RESULTS.json`).
 
 ---
 
@@ -93,4 +94,4 @@ Horizon-end `verify_terminal_commitment` after `freeze_simulator_at_horizon` str
 | Loss status | `STATUS_LOST = CERTIFIED_FEASIBILITY_LOST` |
 | Horizon freeze | `freeze_simulator_at_horizon` |
 | Terminal verify | `verify_terminal_commitment` |
-| Loss audit | `docs/experiments/MPC_CERTIFICATE_LOSS_AUDIT.md` |
+| Loss events in eval | `docs/experiments/MPC_PAPER_EVAL_RESULTS.json` (`loss_events`) |

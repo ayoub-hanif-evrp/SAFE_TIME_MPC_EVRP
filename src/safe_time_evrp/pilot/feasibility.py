@@ -51,8 +51,14 @@ def replay_route(
         if node.kind is NodeKind.CHARGER and charge_to_full_at_chargers:
             target = instance.vehicle_type.battery_capacity
             if soc < target - 1e-9:
-                delta = target - soc
-                time += instance.vehicle_type.inverse_recharge_rate * delta
+                from safe_time_evrp.environment.energy import NonlinearPiecewiseChargeEnergy
+
+                time += NonlinearPiecewiseChargeEnergy().charge_duration(
+                    soc,
+                    target,
+                    instance.vehicle_type.inverse_recharge_rate,
+                    battery_capacity=instance.vehicle_type.battery_capacity,
+                )
                 soc = target
                 charge_events += 1
     return ReplayResult(True, soc, charge_events, min_soc)

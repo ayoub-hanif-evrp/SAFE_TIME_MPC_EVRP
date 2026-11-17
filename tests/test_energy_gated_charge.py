@@ -38,6 +38,7 @@ def test_energy_gated_charge_flag_in_notes_when_charge_deferred():
         alns_iterations=6,
         time_limit_seconds=0.4,
         seed=5,
+        spi_mode=False,  # legacy energy-gate path (frozen under default SPI)
         energy_gated_charge=True,
         charge_advantage_margin=25.0,
         require_terminal_commitment=True,

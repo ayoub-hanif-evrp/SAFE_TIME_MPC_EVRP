@@ -134,7 +134,12 @@ def simulate_prefix(
             if time < station.window.ready:
                 time = station.window.ready
             target = vehicle.battery_capacity
-            duration = model.charge_duration(soc, target, vehicle.inverse_recharge_rate)
+            duration = model.charge_duration(
+                soc,
+                target,
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             time += duration
             charge_time += duration
             soc = target

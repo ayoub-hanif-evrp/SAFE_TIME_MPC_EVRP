@@ -53,11 +53,11 @@ _VALIDITY = (
     "The visit sequence and charge targets stay fixed.",
     "Every realized arc factor stays inside the rectangle.",
     "Exact upper-corner equivalence requires full recharge (or degenerate energy bounds).",
-    "No station closure, queue, or nonlinear charge is present.",
+    "No station closure or queue; charging uses the nonlinear piecewise curve.",
     "Payload and service durations stay at their nominal values.",
 )
 
-PLANT_MODEL_VERSION = "schneider_linear_v1"
+PLANT_MODEL_VERSION = "nonlinear_piecewise_charge_v1"
 
 
 def _unknown(reason: str, uncertainty: RectangularUncertainty, started: float) -> Certificate:
@@ -218,7 +218,14 @@ def propagate(
                 target = visit.charge_target
             if target > vehicle.battery_capacity + EPS or target < soc - EPS:
                 return finish(Verdict.CERTIFIED_INFEASIBLE, "impossible_charge")
-            time += vehicle.inverse_recharge_rate * max(0.0, target - soc)
+            from safe_time_evrp.environment.energy import NonlinearPiecewiseChargeEnergy
+
+            time += NonlinearPiecewiseChargeEnergy().charge_duration(
+                soc,
+                float(target),
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             soc = target
         elif visit.purpose == "reload":
             if node != instance.depot_id:

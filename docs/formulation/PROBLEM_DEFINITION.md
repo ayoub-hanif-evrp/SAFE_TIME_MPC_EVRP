@@ -16,11 +16,12 @@ For the Schneider files, the deposited readme is authoritative:
 - distance is Euclidean
 - travel time is distance divided by `v`
 - energy is `r` times distance and does not depend on payload
-- recharge time is `g` times the energy added
+- recharge uses a **nonlinear piecewise-linear concave** charge curve scaled so that
+  a full 0→`Q` charge takes wall time `g * Q` (instance scale), with slower rate near full SoC
 
 These quantities are benchmark units. They are not claimed to be kilometres or measured kilowatt-hours. Arcs whose energy exceeds `Q` are kept. They are unreachable on a full battery; they are not deleted.
 
-The 2014 operating rule used by the baseline is a full recharge to `Q`. A partial target is a separate policy that uses the same linear rate. Station queues are not simulated.
+The operating rule may charge fully to `Q` or to a partial target; duration always uses the nonlinear curve. Station queues are not simulated. Linear `g*(target-soc)` charging has been removed.
 
 EVRPTW-ARC road attributes (slope, elevation, traffic, temperature, driving style) are part of the arc record when a file actually contains them. No such file was available. See `docs/datasets/DATA_PROVENANCE.md`. The energy model does not invent kilowatt-hours from those fields.
 

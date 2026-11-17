@@ -1,9 +1,8 @@
 """Event-log replay.
 
 Expected travel energy for Euclidean benchmark instances is recomputed as
-``consumption_rate * hypot(dx, dy)``. Charge duration is recomputed as
-``inverse_recharge_rate * (target - soc_before)``. The optimizer's feasibility
-flag is not consulted.
+``consumption_rate * hypot(dx, dy)``. Charge duration uses the nonlinear
+piecewise charge curve (``NonlinearPiecewiseChargeEnergy``).
 """
 
 from __future__ import annotations
@@ -273,9 +272,16 @@ def _replay(instance: Instance, log: list[LogRecord], scale: float) -> ReplayRep
                 raise ReplayRejection("impossible_charge", "charge does not start from the current soc")
             if target > vehicle.battery_capacity + EPS or target < soc_before - EPS:
                 raise ReplayRejection("impossible_charge", "target outside the battery")
-            duration = vehicle.inverse_recharge_rate * max(0.0, target - soc_before)
+            from safe_time_evrp.environment.energy import NonlinearPiecewiseChargeEnergy
+
+            duration = NonlinearPiecewiseChargeEnergy().charge_duration(
+                soc_before,
+                float(target),
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             if abs(record.data["duration"] - duration) > EPS:
-                raise ReplayRejection("impossible_charge", "duration does not match the linear rate")
+                raise ReplayRejection("impossible_charge", "duration does not match the nonlinear charge curve")
             current["busy"] = {
                 "kind": "charge",
                 "end": record.time + duration,

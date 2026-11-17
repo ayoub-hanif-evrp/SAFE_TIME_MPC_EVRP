@@ -503,7 +503,12 @@ class FleetSimulator:
             target = visit.charge_target
         if target > self.instance.vehicle_type.battery_capacity + EPS or target < vehicle.soc - EPS:
             raise SimulatorError("impossible charge target")
-        duration = self.energy.charge_duration(vehicle.soc, target, self.instance.vehicle_type.inverse_recharge_rate)
+        duration = self.energy.charge_duration(
+            vehicle.soc,
+            target,
+            self.instance.vehicle_type.inverse_recharge_rate,
+            battery_capacity=self.instance.vehicle_type.battery_capacity,
+        )
         if duration <= EPS:
             vehicle.soc = target
             self._record(

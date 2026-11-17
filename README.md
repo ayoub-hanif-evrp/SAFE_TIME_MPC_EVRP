@@ -1,22 +1,9 @@
 # SAFE_TIME_MPC_EVRP
 
-Feasibility-preserving, computation-aware **model predictive control** for the dynamic electric vehicle routing problem (EVRP), with irreversible customer acceptances, battery and time-window constraints, and an ALNS route engine used as an internal optimizer.
+Commitment-safe stochastic **MPC** for dynamic electric vehicle routing (EVRPTW): irreversible accepts, battery and time windows, nonlinear charging, certified emission.
 
-**Primary branch:** `main`  
-**Scientific assessment (honest):** incremental certificate-aware economic MPC synthesis — **not** demonstrated top-tier predictive superiority.
-
-## What this repository implements
-
-| Component | Role |
-|-----------|------|
-| **CC-E-MPC** (`CertificateCarryingEconomicMpc`) | Hard nominal commitment feasibility + expected-value ranking of first actions + persistent certificate fallback |
-| **B1** | Reactive full-validation ALNS–MPC baseline |
-| **M1** | Certificate-carrying ALNS (same `CertificateStore` family; no forecast EV ranking) |
-| **Stochastic MPC** | Counterfactual expected-value MPC without the full persistent-store closeout path |
-| Plant + replay | Event-driven multi-vehicle simulator and independent log validation |
-| Forecasts | Train-only anonymous arrival scenarios (holdout frozen until closeout) |
-
-**Limitations.** Certificate persistence is largely shared with M1 and did not improve completed-service counts vs “certificate off” when forecast scoring was on (9/9 ties). Development gains vs B1 are mixed; the frozen holdout tied B1/M1/stochastic MPC. See the manuscript and readiness report.
+**Primary method:** commitment-safe stochastic MPC with SPI-over-greedy selection.  
+**Paper stance:** non-inferiority vs strong economic MPC + nonlinear charging mechanism (not blanket \(J\) dominance / recursive feasibility).
 
 ## Install
 
@@ -28,65 +15,40 @@ python -m safe_time_evrp.data.download   # optional public benchmarks
 python -m safe_time_evrp.data.verify
 ```
 
-Benchmark archives stay under `data/raw/` (gitignored). Provenance: `docs/datasets/DATA_PROVENANCE.md`.
+Benchmark archives stay under `data/raw/` (gitignored). Provenance: [`docs/datasets/DATA_PROVENANCE.md`](docs/datasets/DATA_PROVENANCE.md). Active datasets: [`data/ACTIVE_DATASETS.json`](data/ACTIVE_DATASETS.json).
 
-## Tests and lint
+## Tests
 
 ```bash
 python -m ruff check src tests
 python -m ruff format --check src tests
 python -m pytest -q
-python -m safe_time_evrp.evaluation.smoke_test
 ```
 
-## Reproduce final experiments
-
-Frozen protocol and seeds: [`docs/reproducibility/REPRODUCIBILITY_MANIFEST.json`](docs/reproducibility/REPRODUCIBILITY_MANIFEST.json)
+## Reproduce paper evaluation
 
 ```bash
-python -m safe_time_evrp.mpc_central.publication_closeout
-python -m safe_time_evrp.mpc_central.final_mpc_package
+python -m safe_time_evrp.mpc_central.mpc_paper_eval
 ```
 
-Authoritative numerical artifacts: [`docs/experiments/`](docs/experiments/) (including `FROZEN_HOLDOUT_RESULTS.json`, `final_development_results.json`, and Schneider-derived `SCHNEIDER_DYNAMIC_RESULTS.json`).
+Results:
 
-### Schneider-derived dynamic benchmark
+- [`docs/experiments/MPC_PAPER_EVAL_RESULTS.md`](docs/experiments/MPC_PAPER_EVAL_RESULTS.md)
+- [`docs/experiments/MPC_HOMBERGER_LATENCY.md`](docs/experiments/MPC_HOMBERGER_LATENCY.md)
+- [`docs/experiments/MPC_NONLINEAR_EV_ABLATION.md`](docs/experiments/MPC_NONLINEAR_EV_ABLATION.md)
 
-Requires a verified local Schneider download (`python -m safe_time_evrp.data.download && python -m safe_time_evrp.data.verify`).
-
-```bash
-python -m safe_time_evrp.mpc_central.schneider_dynamic_eval --tier smoke
-python -m safe_time_evrp.mpc_central.schneider_dynamic_eval --tier small
-```
-
-Protocol: [`docs/datasets/DYNAMIC_SCHNEIDER_PROTOCOL.md`](docs/datasets/DYNAMIC_SCHNEIDER_PROTOCOL.md).
-
-## Documentation map
+## Documentation (minimal)
 
 | Path | Contents |
 |------|----------|
-| [`docs/methodology/FINAL_MPC_FORMULATION.md`](docs/methodology/FINAL_MPC_FORMULATION.md) | CC-E-MPC control law |
-| [`docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md`](docs/proofs/CERTIFICATE_FEASIBILITY_PROOF.md) | Conditional certificate proposition |
-| [`docs/experiments/`](docs/experiments/) | Audits, Phase 3E/3F evidence, frozen holdout |
-| [`docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md`](docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md) | Manuscript draft |
-| [`docs/paper/PUBLICATION_READINESS_REPORT.md`](docs/paper/PUBLICATION_READINESS_REPORT.md) | `INCREMENTAL_RESULT` decision |
-| [`docs/reproducibility/`](docs/reproducibility/) | Cleanup report, file manifest, research history |
-| [`docs/formulation/`](docs/formulation/), [`docs/validation/`](docs/validation/), [`docs/datasets/`](docs/datasets/) | Plant, validation, data licences |
-| [`docs/mpc_central/`](docs/mpc_central/) | Compatibility JSON outputs for gate/tests |
-| [`docs/commitment_safe_mpc/`](docs/commitment_safe_mpc/) | Frozen B1/M1 JSON artifacts still read by tests |
-
-## Recovering the pre-cleanup archive
-
-Full historical experiment trees and superseded research-gate docs are preserved on the annotated tag:
-
-```bash
-git fetch origin tag archive/pre-repository-cleanup-2026-11-14
-git checkout archive/pre-repository-cleanup-2026-11-14
-```
-
-SHA: `a0cb460b3bef26a40d22ac53dff2150ef0a5548d`  
-See [`docs/reproducibility/RESEARCH_HISTORY.md`](docs/reproducibility/RESEARCH_HISTORY.md).
+| [`docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md`](docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md) | Method formulation |
+| [`docs/methodology/PUBLIC_INFORMATION_CONTRACT.md`](docs/methodology/PUBLIC_INFORMATION_CONTRACT.md) | Public-info contract |
+| [`docs/formulation/PROBLEM_DEFINITION.md`](docs/formulation/PROBLEM_DEFINITION.md) | Plant / problem |
+| [`docs/research/MPC_RESEARCH_DECISION_MEMO.md`](docs/research/MPC_RESEARCH_DECISION_MEMO.md) | Locked research decision |
+| [`docs/paper/MPC_TOP_TIER_READINESS.md`](docs/paper/MPC_TOP_TIER_READINESS.md) | Readiness / claim scope |
+| [`docs/proofs/RECURSIVE_FEASIBILITY_STOCHASTIC_MPC.md`](docs/proofs/RECURSIVE_FEASIBILITY_STOCHASTIC_MPC.md) | RF withdrawn; emission soundness |
+| [`docs/datasets/DATA_PROVENANCE.md`](docs/datasets/DATA_PROVENANCE.md) | Data provenance |
 
 ## Licence / data
 
-Schneider EVRP instances and other deposits: see `docs/datasets/DATA_PROVENANCE.md`. Do not commit raw benchmark blobs.
+Do not commit raw benchmark blobs. See `docs/datasets/DATA_PROVENANCE.md`.

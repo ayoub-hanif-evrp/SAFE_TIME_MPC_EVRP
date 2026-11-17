@@ -1,7 +1,15 @@
 # Commitment-Safe Stochastic MPC — formulation
 
-**Proposed method (single controller):** `CommitmentSafeStochasticMpc`  
-**Baselines:** B1, M1, greedy-nominal CC-E-MPC, existing causal/stochastic CC-E predictive MPC.
+**Proposed method (single controller):** commitment-safe stochastic MPC with SPI-over-greedy selection (`CommitmentSafeStochasticMpc`).
+
+**Baselines (paper names):**
+
+- Economic MPC — greedy nominal scoring
+- Full-validation ALNS–MPC
+- Certificate-carrying ALNS–MPC
+- Scenario economic MPC (sampled futures)
+
+**Ablations:** proposed + demand forecast; proposed without SPI; linear-charge planning vs nonlinear plant.
 
 Objective weights (fixed):
 
@@ -63,24 +71,55 @@ decide(o):
   C ← advance_or_invalidate(store); incumbent ← revalidate(C)
   U ← generate_candidates(ALNS, heuristics, incumbent)   # first-stage set
   Ξ ← sample_scenarios(o)                                 # shared, nonanticipative
-  scored ← ∅
+  S0 ← ∅; scored ← ∅
   for u in U while budget remains:
       if not Validate(o, u): continue                     # stage-0 hard
+      S0 ← S0 ∪ {u}
       if require_terminal:
           for ξ in Ξ:
-              if not terminal_ok(project(o,u,ξ)): reject  # X_f hard
+              if not terminal_ok(project(o,u,ξ)): reject  # X_f hard (overrides)
       v ← E_ξ[causal_rollout(o,u,ξ)]                      # soft objective
       scored ← scored ∪ {(v,u)}
-  if scored:
-      u* ← argmax scored
-      if try_commit(u*): return u*                        # transactional
-  return emit_fallback(incumbent)                         # no new accepts
+  u⁰ ← argmax_{u∈S0} greedy_nominal(u)   # Ulmer base = stage-0-matched GN
+  û  ← argmax scored                     # CRN challenger (terminal pool)
+  if FirstAction(û)=FirstAction(u⁰): u* ← u⁰
+  else if E[J(û)−J(u⁰)] > δ_SPI and class(û) ⪰ class(u⁰)
+       and (no extra accepts or û has terminal class): u* ← û
+  else: u* ← u⁰                          # keep GN base (may be stage0 class)
+  if try_commit(u*): return u*           # transactional
+  return emit_fallback(incumbent)        # no new accepts
   apply only first action; re-solve at next event
 ```
 
 ---
 
-## 4. Terminal set \(\mathcal{X}_f\)
+## 4. Selection law (single; SPI default)
+
+**One law:** Ulmer-style budgeted SPI over a **stage-0-matched** greedy-nominal first
+action under **common random numbers**. The warm-start certificate is emission
+fallback only — not the economic SPI base.
+
+| Step | Rule |
+|------|------|
+| Stage-0 set | Same Validate survivors as CCE greedy-nominal (matched feasible first-action set) |
+| Base \(u^0\) | \(\arg\max\) `greedy_nominal_value` on stage-0 set (tie-break: more accepts/services; certificate last). May emit with `feasibility_class=stage0` when empty-terminal is absent |
+| Challenger \(\hat u\) | CRN / causal mean maximizer in the terminal / soft-terminal pool |
+| Keep | Same first action+accepts, or CRN advantage \(\le \delta_{\mathrm{SPI}}\), or weaker class |
+| Override | Advantage \(> \delta_{\mathrm{SPI}}\) **and** class ⪰ base; **extra accepts require terminal-class challenger** |
+
+**Frozen under `spi_mode=True`:** `forecast_override_margin`, `energy_gated_charge`
+(legacy paths remain only with `spi_mode=False` for ablation). Do not add competing
+selection knobs. **Forecast demoted** (proposed controller uses empty future).
+
+Feasibility classes (strongest → weakest among selectable): `stochastic_terminal` ≻
+`nominal_terminal` ≻ `unchecked_budget` ≻ `stage0`. Stochastic-failed candidates are never selected.
+
+**Plant:** nonlinear piecewise charging only (`environment.energy`). Linear
+\(g\cdot(target-soc)\) exists solely as a planning ablation (`LinearChargeEnergy`).
+
+---
+
+## 5. Terminal set \(\mathcal{X}_f\)
 
 Implemented in `terminal_commitment.py`:
 
@@ -95,21 +134,34 @@ Approximation: in-transit = origin node + proportional SoC (no continuous path s
 
 **Online guarantee:** certified-emission soundness only — see
 `docs/proofs/RECURSIVE_FEASIBILITY_STOCHASTIC_MPC.md`. Unconditional RF withdrawn.
-
-Optional `forecast_override_margin`: keep empty-future winner unless forecast advantage clears the margin.
+Theory claim stops at emission soundness + scenario-terminal honesty — **not** RF.
 
 ---
 
-## 5. Receding horizon
+## 6. Receding horizon
 
 Mandatory: solve → first action → observe → warm-start → re-solve.  
 Certificate store publishes **only** the emitted certified decision.
 
 ---
 
-## 6. Ablations (corrected development)
+## 7. Campaigns (frozen) — `mpc_paper_multi_dataset_v1`
 
-Forecast on/off (margin on forecast path); terminal on/off; anticipatory charging filter
-(`allow_predictive_charge`); warm-init with backup retained vs warm+backup removed;
-rebuilt infinite-battery interaction (small n). Primary metric: economic objective with
-stem-clustered paired CIs (`mpc_corrected_development_v1`).
+**Architecture:** one method + one nonlinear plant; Schneider / EVRP-TW-D / Homberger
+loaders absorb dataset differences. Results are **role-separated** (not pooled).
+
+**Schneider (primary economic):** proposed vs the four baselines + forecast/SPI ablations
+on full stratified development. Primary \(J=100N_{\mathrm{completed}}-250N_{\mathrm{AU}}-D\).
+**PASS:** mean \(\Delta J\approx +376\) vs greedy-nominal, tally **9/0**, p50≈0.12s.
+CI still includes 0 → claim **non-inferiority**, not dominance. Test split sealed.
+
+**EVRP-TW-D (confirmatory geography):** same controllers on a predeclared Cus_5/Cus_15 freeze.
+
+**Homberger (latency appendix):** timed `decide()` on large instances — not main \(J\).
+
+**Nonlinear EV:** linear planning vs nonlinear plant; mechanism demo **holds**.
+
+See `docs/experiments/MPC_PAPER_EVAL_RESULTS.md`,
+`docs/experiments/MPC_HOMBERGER_LATENCY.md`,
+`docs/experiments/MPC_NONLINEAR_EV_ABLATION.md`, and
+`docs/research/MPC_RESEARCH_DECISION_MEMO.md`.

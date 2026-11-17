@@ -1,0 +1,203 @@
+{
+  "protocol": "mpc_paper_multi_dataset_v1",
+  "role": "scalability_latency_appendix",
+  "dataset": "evrptw_homberger_charging",
+  "frozen_files": [
+    "C1_10_1.txt",
+    "C1_10_10.txt"
+  ],
+  "customer_announce_cap": 25,
+  "n_decides_per_controller": 5,
+  "budget_seconds": 0.35,
+  "display_names": {
+    "css_spi": "Proposed: commitment-safe stochastic MPC (SPI)",
+    "cce_greedy_nominal": "Economic MPC \u2014 greedy nominal scoring"
+  },
+  "summary": {
+    "css_spi": {
+      "display_name": "Proposed: commitment-safe stochastic MPC (SPI)",
+      "decision_latency": {
+        "n": 10,
+        "mean": 1.1665971100097523,
+        "median": 1.1600194000056945,
+        "p50": 1.0492358000483364,
+        "p90": 1.3915438000112772,
+        "p99": 1.3915438000112772,
+        "max": 1.4042082000523806,
+        "frac_over_budget": 1.0
+      },
+      "deadline_overruns_sum": 10,
+      "decide_failures": 0,
+      "n_cells": 2
+    },
+    "cce_greedy_nominal": {
+      "display_name": "Economic MPC \u2014 greedy nominal scoring",
+      "decision_latency": {
+        "n": 10,
+        "mean": 1.2933440599939785,
+        "median": 1.4051617499790154,
+        "p50": 1.3923061999958009,
+        "p90": 1.5126728999894112,
+        "p99": 1.5126728999894112,
+        "max": 1.5631816999521106,
+        "frac_over_budget": 1.0
+      },
+      "deadline_overruns_sum": 10,
+      "decide_failures": 0,
+      "n_cells": 2
+    }
+  },
+  "rows": [
+    {
+      "dataset": "evrptw_homberger_charging",
+      "stem": "C1_10_1",
+      "n_customers_announced": 25,
+      "n_customers_instance": 1000,
+      "bench": "timed_decide_only",
+      "controllers": {
+        "css_spi": {
+          "controller": "css_spi",
+          "display_name": "Proposed: commitment-safe stochastic MPC (SPI)",
+          "failure": null,
+          "replay_ok": true,
+          "n_decisions": 5,
+          "decide_seconds_raw": [
+            1.0492358000483364,
+            1.0228310000384226,
+            0.9942499999888241,
+            0.9670006000669673,
+            0.8898853999562562
+          ],
+          "decide_latency": {
+            "n": 5,
+            "mean": 0.9846405600197613,
+            "median": 0.9942499999888241,
+            "p50": 0.9942499999888241,
+            "p90": 1.0228310000384226,
+            "p99": 1.0228310000384226,
+            "max": 1.0492358000483364,
+            "frac_over_budget": 1.0
+          },
+          "wall_seconds": 4.934220600058325,
+          "economic_objective": null,
+          "completed_count": null,
+          "accepted_unfulfilled_count": null,
+          "executed_distance": null,
+          "deadline_overruns": 5,
+          "loss_events": [],
+          "spi_keeps": 0,
+          "spi_overrides": 0
+        },
+        "cce_greedy_nominal": {
+          "controller": "cce_greedy_nominal",
+          "display_name": "Economic MPC \u2014 greedy nominal scoring",
+          "failure": null,
+          "replay_ok": true,
+          "n_decisions": 5,
+          "decide_seconds_raw": [
+            1.3923061999958009,
+            1.0283648000331596,
+            1.0351442999672145,
+            0.9985479000024498,
+            1.0115385999670252
+          ],
+          "decide_latency": {
+            "n": 5,
+            "mean": 1.09318035999313,
+            "median": 1.0283648000331596,
+            "p50": 1.0283648000331596,
+            "p90": 1.0351442999672145,
+            "p99": 1.0351442999672145,
+            "max": 1.3923061999958009,
+            "frac_over_budget": 1.0
+          },
+          "wall_seconds": 5.492825300083496,
+          "economic_objective": null,
+          "completed_count": null,
+          "accepted_unfulfilled_count": null,
+          "executed_distance": null,
+          "deadline_overruns": 5,
+          "loss_events": [],
+          "spi_keeps": 0,
+          "spi_overrides": 0
+        }
+      }
+    },
+    {
+      "dataset": "evrptw_homberger_charging",
+      "stem": "C1_10_10",
+      "n_customers_announced": 25,
+      "n_customers_instance": 1000,
+      "bench": "timed_decide_only",
+      "controllers": {
+        "css_spi": {
+          "controller": "css_spi",
+          "display_name": "Proposed: commitment-safe stochastic MPC (SPI)",
+          "failure": null,
+          "replay_ok": true,
+          "n_decisions": 5,
+          "decide_seconds_raw": [
+            1.4042082000523806,
+            1.389546100050211,
+            1.2866671999217942,
+            1.3915438000112772,
+            1.2708029999630526
+          ],
+          "decide_latency": {
+            "n": 5,
+            "mean": 1.3485536599997432,
+            "median": 1.389546100050211,
+            "p50": 1.389546100050211,
+            "p90": 1.3915438000112772,
+            "p99": 1.3915438000112772,
+            "max": 1.4042082000523806,
+            "frac_over_budget": 1.0
+          },
+          "wall_seconds": 6.752608900074847,
+          "economic_objective": null,
+          "completed_count": null,
+          "accepted_unfulfilled_count": null,
+          "executed_distance": null,
+          "deadline_overruns": 5,
+          "loss_events": [],
+          "spi_keeps": 0,
+          "spi_overrides": 0
+        },
+        "cce_greedy_nominal": {
+          "controller": "cce_greedy_nominal",
+          "display_name": "Economic MPC \u2014 greedy nominal scoring",
+          "failure": null,
+          "replay_ok": true,
+          "n_decisions": 5,
+          "decide_seconds_raw": [
+            1.5126728999894112,
+            1.4687487001065165,
+            1.41801729996223,
+            1.5049181999638677,
+            1.5631816999521106
+          ],
+          "decide_latency": {
+            "n": 5,
+            "mean": 1.4935077599948272,
+            "median": 1.5049181999638677,
+            "p50": 1.5049181999638677,
+            "p90": 1.5126728999894112,
+            "p99": 1.5126728999894112,
+            "max": 1.5631816999521106,
+            "frac_over_budget": 1.0
+          },
+          "wall_seconds": 7.490986500051804,
+          "economic_objective": null,
+          "completed_count": null,
+          "accepted_unfulfilled_count": null,
+          "executed_distance": null,
+          "deadline_overruns": 5,
+          "loss_events": [],
+          "spi_keeps": 0,
+          "spi_overrides": 0
+        }
+      }
+    }
+  ],
+  "claim_scope": "Decision latency only (timed decide on large instances). Not a main economic ranking claim."
+}

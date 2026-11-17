@@ -1,52 +1,31 @@
 {
-  "frozen_parent_sha_requested": "954ce92099733b2c6beeac9d904615de94a3179a",
-  "closeout_worktree_sha_at_run": "954ce92099733b2c6beeac9d904615de94a3179a",
-  "controller": "CertificateCarryingEconomicMpc",
-  "alns_iterations": 10,
-  "alns_time_limit_seconds": 0.35,
-  "n_scenarios": 2,
-  "seed_manifest": [
-    3,
-    7,
-    11
-  ],
-  "development_cases": [
-    "A_dense_arrivals",
-    "A_low_soc_charge",
-    "B_easy_dynamic"
-  ],
-  "holdout_cases": [
-    "B_adversarial_overaccept"
-  ],
+  "protocol": "mpc_paper_multi_dataset_v1",
+  "proposed_controller": "CommitmentSafeStochasticMpc",
+  "selection_law": "spi_over_greedy_stage0_matched",
+  "plant": "nonlinear_piecewise_charge",
   "objective": {
     "SERVICE_REWARD": 100.0,
     "UNFULFILLED_PENALTY": 250.0,
-    "DISTANCE_PENALTY": 1.0,
-    "tuned_on_wins": false
+    "DISTANCE_PENALTY": 1.0
   },
-  "splits": {
-    "train": [
-      "B_tight_battery",
-      "B_competing"
-    ],
-    "development": [
-      "B_phase_b",
-      "B_easy_dynamic"
-    ],
-    "holdout": [
-      "B_adversarial_overaccept"
-    ],
-    "holdout_status": "untouched",
-    "forecast_rule": "fit_empirical_arrivals on train instances only; anonymous scenarios only"
+  "budget_seconds": 0.35,
+  "datasets": {
+    "primary": "schneider_evrptw_development_stratified",
+    "confirmatory": "evrp_tw_d_cus5_cus15_freeze",
+    "latency_appendix": "evrptw_homberger_charging"
   },
   "commands": [
-    "python -m safe_time_evrp.mpc_central.publication_closeout",
+    "python -m safe_time_evrp.mpc_central.mpc_paper_eval",
     "python -m pytest -q"
   ],
   "artifacts": [
-    "docs/experiments/FINAL_CERTIFICATE_AUDIT.md",
-    "docs/experiments/FROZEN_HOLDOUT_RESULTS.json",
-    "docs/paper/MPC_MANUSCRIPT_FINAL_DRAFT.md",
-    "docs/paper/PUBLICATION_READINESS_REPORT.md"
+    "docs/experiments/MPC_PAPER_EVAL_RESULTS.md",
+    "docs/experiments/MPC_PAPER_EVAL_RESULTS.json",
+    "docs/experiments/MPC_HOMBERGER_LATENCY.md",
+    "docs/experiments/MPC_HOMBERGER_LATENCY.json",
+    "docs/experiments/MPC_NONLINEAR_EV_ABLATION.md",
+    "docs/experiments/MPC_NONLINEAR_EV_ABLATION.json",
+    "docs/research/MPC_RESEARCH_DECISION_MEMO.md",
+    "docs/paper/MPC_TOP_TIER_READINESS.md"
   ]
 }

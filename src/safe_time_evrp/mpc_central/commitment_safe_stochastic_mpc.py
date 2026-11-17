@@ -19,6 +19,13 @@ locks; public-information only.
 
 Soft objective: fixed economic weights (service − AU − distance).
 
+Selection law (default): Ulmer-style budgeted SPI over a **stage-0-matched**
+greedy-nominal first action (same Validate survivors as CCE GN) under
+common-random-number scores. Terminal / soft-terminal gates risky overrides
+that add accepts; the GN base may emit as ``feasibility_class=stage0``.
+The certified warm-start is emission fallback only. Legacy forecast-margin /
+energy-gate knobs are frozen off when ``spi_mode=True``.
+
 Transactional emission: certificates and new accepts commit only after
 independent validation; failed candidates never leave speculative accepts in
 the Decision returned to the plant.
@@ -46,7 +53,11 @@ from safe_time_evrp.mpc_central.counterfactual_actions import (
     sanitize_rejects,
     sanitize_routes,
 )
-from safe_time_evrp.mpc_central.scenario_rollout import expected_rollout_value, is_quiescent
+from safe_time_evrp.mpc_central.scenario_rollout import (
+    expected_rollout_value,
+    greedy_nominal_value,
+    is_quiescent,
+)
 from safe_time_evrp.mpc_central.terminal_commitment import (
     TerminalRejectReason,
     project_to_horizon,
@@ -123,6 +134,8 @@ class CssMpcProfile:
     transactional_demotions: int = 0
     terminal_cache_hits: int = 0
     dominated_skips: int = 0
+    spi_keeps: int = 0
+    spi_overrides: int = 0
     decide_seconds: list[float] = field(default_factory=list)
     # Decision-level phase samples (one entry per decide call) for true p50/p99.
     phase_candidate_gen: list[float] = field(default_factory=list)
@@ -167,8 +180,13 @@ class CommitmentSafeStochasticMpc:
         max_scenario_expansions: int = 3,
         # Prefer service/accept over anticipatory charge unless charge EV advantage clears margin
         # or residual commitments are energy-infeasible without charging (EV-specific gate).
-        energy_gated_charge: bool = True,
+        # When spi_mode=True (default), energy gate and forecast margin are frozen off — SPI is
+        # the single selection law (Ulmer/SPIBB-style improvement over GN/incumbent).
+        energy_gated_charge: bool = False,
         charge_advantage_margin: float = 25.0,
+        spi_mode: bool = True,
+        # Override incumbent only if CRN mean advantage exceeds this margin (same units as J).
+        spi_advantage_margin: float = 0.0,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -197,8 +215,16 @@ class CommitmentSafeStochasticMpc:
         self.scenario_override = scenario_override
         self.commit_reserve_fraction = min(0.4, max(0.05, float(commit_reserve_fraction)))
         self.max_scenario_expansions = max(1, int(max_scenario_expansions))
-        self.energy_gated_charge = bool(energy_gated_charge)
-        self.charge_advantage_margin = float(charge_advantage_margin)
+        self.spi_mode = bool(spi_mode)
+        self.spi_advantage_margin = float(spi_advantage_margin)
+        # Freeze conflicting knobs when SPI is the selection law.
+        if self.spi_mode:
+            self.energy_gated_charge = False
+            self.charge_advantage_margin = float(charge_advantage_margin)
+            self.forecast_override_margin = None
+        else:
+            self.energy_gated_charge = bool(energy_gated_charge)
+            self.charge_advantage_margin = float(charge_advantage_margin)
         self.store = CertificateStore()
         self._last_certified_routes: dict[str, list[Visit]] | None = None
         self._last_solution_routes: dict[str, list[Visit]] | None = None
@@ -748,7 +774,10 @@ class CommitmentSafeStochasticMpc:
             value, name, cand, _served, _cls = item
             return _rank((value, name, cand, _served))
 
-        # Checkpoint A: stage-0 + empty-future terminal + empty causal score → NOMINAL_TERMINAL.
+        # Checkpoint A: stage-0 Validate first (matches CCE filter). Empty terminal next.
+        # SPI keeps stage-0 survivors eligible as Ulmer GN base even when terminal fails —
+        # CCE greedy-nominal has no terminal filter; dropping them caused C15 under-accepts.
+        stage0_passed: list[tuple[str, Decision, list[str]]] = []
         for name, cand in deduped:
             if perf_counter() >= score_deadline:
                 notes.append("cooperative_score_deadline_hit_checkpoint_a")
@@ -765,12 +794,25 @@ class CommitmentSafeStochasticMpc:
             if not report.ok:
                 self.profile.stage0_rejects += 1
                 continue
+            served0 = list(report.served)
+            stage0_passed.append((name, cand, served0))
             term_ok, term_detail = self._terminal_filter(
                 observation, cand, [[]], deadline=score_deadline, cache=terminal_cache
             )
             if not term_ok:
-                notes.append(f"reject:{name}:{term_detail}")
-                continue
+                # Plant/replay approximation glitches are not commitment infeasibility.
+                # Hard-rejecting them emptied the pool → fallback under-accept or unsafe rescue.
+                soft = (
+                    "travel_timing" in term_detail
+                    or "impossible_charge" in term_detail
+                    or term_detail.startswith("rollout:replay_failed")
+                    or term_detail.startswith("rollout:rollout_failed")
+                )
+                if soft and self.spi_mode:
+                    notes.append(f"soft_terminal_pass:{name}:{term_detail}")
+                else:
+                    notes.append(f"reject:{name}:{term_detail}")
+                    continue
             mean_v, scores = expected_rollout_value(
                 self._full,
                 observation,
@@ -788,10 +830,11 @@ class CommitmentSafeStochasticMpc:
             if mean_v <= -1e8:
                 self.profile.rollout_rejects += 1
                 continue
-            empty_checkpoint.append((mean_v, name, cand, list(report.served), FeasibilityClass.NOMINAL_TERMINAL))
+            empty_checkpoint.append((mean_v, name, cand, served0, FeasibilityClass.NOMINAL_TERMINAL))
 
         empty_checkpoint.sort(key=_rank_scored, reverse=True)
         notes.append(f"n_empty_checkpoint={len(empty_checkpoint)}")
+        notes.append(f"n_stage0_passed={len(stage0_passed)}")
 
         stochastic_scored: list[Scored] = []
         nominal_backup: list[Scored] = []
@@ -862,99 +905,251 @@ class CommitmentSafeStochasticMpc:
         self.profile.phase_validation.append(self.profile.validation_seconds - val_before)
         self.profile.decisions += 1
 
-        # Selection: stochastic-feasible first; else explicit nominal backup (weaker guarantee).
-        # Never select STOCHASTIC_FAILED as if scenario-feasible.
+        # Selection: stochastic-feasible first; else empty-checkpoint nominal-terminal
+        # (SPI must still see GN/serve candidates that failed only scenario-terminal expand —
+        # never claim them as stochastic_terminal). Unchecked backup is last resort.
         selected_pool: list[Scored] = []
         selection_mode = "none"
         if stochastic_scored:
             selected_pool = list(stochastic_scored)
             selection_mode = "stochastic_terminal" if need_expand else "nominal_terminal"
+        elif empty_checkpoint:
+            selected_pool = [
+                (v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint
+            ]
+            selection_mode = "nominal_terminal" if not need_expand else "nominal_terminal_after_stochastic_empty"
+            if need_expand:
+                notes.append("selected_pool=nominal_terminal_after_stochastic_empty")
         elif need_expand and nominal_backup:
-            # Only unchecked nominal-terminal candidates — weaker declared guarantee.
             selected_pool = list(nominal_backup)
             selection_mode = "nominal_backup_unchecked"
             notes.append("selected_pool=nominal_backup_weaker_guarantee")
-        elif not need_expand and empty_checkpoint:
-            selected_pool = [(v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint]
-            selection_mode = "nominal_terminal"
 
-        if selected_pool:
-            selected_pool.sort(key=_rank_scored, reverse=True)
-            best_v, best_name, best, served, best_cls = selected_pool[0]
-            # Margin rule only among STOCHASTIC_TERMINAL vs NOMINAL_TERMINAL winners already scored.
-            if (
-                self.forecast_override_margin is not None
-                and need_expand
-                and best_cls == FeasibilityClass.STOCHASTIC_TERMINAL
-                and empty_checkpoint
-                and perf_counter() < deadline
-            ):
-                # Prefer a stochastic-feasible candidate that matches empty-future winner if
-                # forecast advantage is below margin; never promote a stochastic_failed candidate.
-                e_v, e_name, e_cand, e_served, _ = max(empty_checkpoint, key=_rank_scored)
-                if e_name not in stochastic_failed_names:
-                    stoch_of_empty = next((x for x in stochastic_scored if x[1] == e_name), None)
-                    if stoch_of_empty is not None:
-                        f_of_empty = stoch_of_empty[0]
-                        advantage = best_v - float(f_of_empty)
-                        notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
-                        if advantage < self.forecast_override_margin:
-                            best_v, best_name, best, served, best_cls = stoch_of_empty
-                            notes.append("selected_empty_future_due_to_forecast_margin")
-                        else:
-                            notes.append("selected_forecast_override_margin_cleared")
-            # Energy-gated anticipatory charge (EV mechanism from diagnosis):
-            # if the ranked winner is charge-first, prefer a service/accept alternative in the
-            # same feasibility class unless (i) charge EV advantage clears margin, or
-            # (ii) no non-charge alternative exists in the pool (commitments force charge path).
-            if self.energy_gated_charge:
-                best_key = FirstActionKey.from_decision(best)
-                best_charges = any(leg[2] == "charge" for leg in best_key.first_legs)
-                if best_charges and not incumb_charges:
-                    alts = [
-                        x
-                        for x in selected_pool
-                        if x[4] == best_cls
-                        and not any(leg[2] == "charge" for leg in FirstActionKey.from_decision(x[2]).first_legs)
-                    ]
-                    if alts:
-                        alt_v, alt_name, alt_cand, alt_served, alt_cls = max(alts, key=_rank_scored)
-                        advantage = best_v - alt_v
-                        notes.append(f"charge_advantage_vs_best_noncharge={advantage:.4f}")
-                        if advantage < self.charge_advantage_margin:
-                            best_v, best_name, best, served, best_cls = (
-                                alt_v,
-                                alt_name,
-                                alt_cand,
-                                alt_served,
-                                alt_cls,
-                            )
-                            notes.append("energy_gated_charge_deferred_to_service")
-                        else:
-                            notes.append("energy_gated_charge_cleared_margin")
+        # Ulmer matched base: if terminal emptied the pool, still allow SPI from stage-0
+        # (same hardness as CCE greedy-nominal). Terminal gates risky overrides only.
+        if self.spi_mode and not selected_pool and stage0_passed:
+            selection_mode = "spi_stage0_matched_gn_only"
+            notes.append("selected_pool=empty_use_stage0_gn_base")
+
+        if selected_pool or (self.spi_mode and stage0_passed):
+            if selected_pool:
+                selected_pool.sort(key=_rank_scored, reverse=True)
+                best_v, best_name, best, served, best_cls = selected_pool[0]
+            else:
+                best_v, best_name, best, served, best_cls = 0.0, "", None, [], FeasibilityClass.STAGE0  # type: ignore
+
+            if self.spi_mode:
+                # --- Ulmer SPI: GN base = argmax greedy_nominal on stage-0 set (CCE-matched) ---
+                # Terminal / soft-terminal pool is only required to *override* with new accepts.
+                cls_rank = {
+                    FeasibilityClass.STOCHASTIC_TERMINAL: 3,
+                    FeasibilityClass.NOMINAL_TERMINAL: 2,
+                    FeasibilityClass.UNCHECKED_BUDGET: 1,
+                    FeasibilityClass.STAGE0: 0,
+                    FeasibilityClass.STOCHASTIC_FAILED: -1,
+                }
+
+                def _spi_base_key(name: str, cand: Decision, gn_v: float):
+                    n_new = len(cand.newly_accepted or ())
+                    key = FirstActionKey.from_decision(cand)
+                    n_service = sum(1 for leg in key.first_legs if leg[2] == "service")
+                    return (gn_v, n_new, n_service, 1 if name == "incumbent_certificate" else 0, name)
+
+                scored_by_fork: dict[tuple, Scored] = {}
+                for item in selected_pool:
+                    fork = (
+                        FirstActionKey.from_decision(item[2]),
+                        tuple(sorted(item[2].newly_accepted or ())),
+                    )
+                    scored_by_fork[fork] = item
+
+                terminal_names = {n for _v, n, _c, _s, _cls in selected_pool}
+
+                base_item: Scored | None = None
+                gn_best_v = -1e99
+                gn_best_key = None
+                for name, cand, served0 in stage0_passed:
+                    gn_v, _ = greedy_nominal_value(
+                        self._full, observation, cand, horizon=self.horizon
+                    )
+                    key = _spi_base_key(name, cand, float(gn_v))
+                    if gn_best_key is not None and key <= gn_best_key:
+                        continue
+                    fork = (
+                        FirstActionKey.from_decision(cand),
+                        tuple(sorted(cand.newly_accepted or ())),
+                    )
+                    if fork in scored_by_fork:
+                        base_item = scored_by_fork[fork]
                     else:
-                        notes.append("energy_gated_charge_no_noncharge_alternative")
-            notes.append(f"selected={best_name}")
-            notes.append(f"expected_value={best_v:.6f}")
-            notes.append(f"feasibility_class={best_cls.value}")
-            notes.append(f"selection_mode={selection_mode}")
-            diag.selected_key = FirstActionKey.from_decision(best)
-            newly = sanitize_newly_accepted(observation, [c for c in best.newly_accepted if c in served])
-            committed = self._try_commit(
-                observation,
-                public,
-                routes=best.routes,
-                newly=newly,
-                rejected=list(best.rejected),
-                deferred=list(best.deferred),
-                notes=notes,
-                started=started,
-                trigger=trigger,
-                fallback_flag=False,
-            )
-            if committed is not None:
-                return committed
-            notes.append("winner_commit_failed_discard_new_accepts")
+                        # Honest STAGE0: stage-0 OK like GN; may lack empty-terminal proof.
+                        mean_v = float(gn_v)
+                        if perf_counter() < score_deadline:
+                            mv, scores = expected_rollout_value(
+                                self._full,
+                                observation,
+                                cand,
+                                [[]],
+                                horizon=self.horizon,
+                                max_scenarios=1,
+                                scoring_mode="causal",
+                                max_replan_interval=self.max_replan_interval,
+                                max_events=self.rollout_max_events,
+                                energy=self.energy,
+                            )
+                            self.profile.scenarios_evaluated += len(scores)
+                            self.profile.causal_rollouts += len(scores)
+                            if mv > -1e8:
+                                mean_v = float(mv)
+                        base_item = (
+                            mean_v,
+                            name,
+                            cand,
+                            served0,
+                            FeasibilityClass.STAGE0,
+                        )
+                        notes.append(f"spi_base_stage0_matched:{name}")
+                    gn_best_v = float(gn_v)
+                    gn_best_key = key
+
+                if base_item is not None:
+                    notes.append(f"spi_base=greedy_nominal:{base_item[1]}:gn={gn_best_v:.4f}")
+                    notes.append(f"spi_base_class={base_item[4].value}")
+
+                challenger: Scored | None = selected_pool[0] if selected_pool else None
+                if base_item is None and challenger is not None:
+                    best_v, best_name, best, served, best_cls = challenger
+                    notes.append("spi_no_base_use_crn_winner")
+                elif base_item is None:
+                    notes.append("spi_no_base_no_pool")
+                elif challenger is None:
+                    best_v, best_name, best, served, best_cls = base_item
+                    self.profile.spi_keeps += 1
+                    notes.append("spi_keep_gn_base_no_terminal_challenger")
+                else:
+                    base_key = FirstActionKey.from_decision(base_item[2])
+                    chal_key = FirstActionKey.from_decision(challenger[2])
+                    base_new = tuple(sorted(base_item[2].newly_accepted or ()))
+                    chal_new = tuple(sorted(challenger[2].newly_accepted or ()))
+                    crn_adv = float(challenger[0]) - float(base_item[0])
+                    notes.append(f"spi_crn_advantage={crn_adv:.4f}")
+                    notes.append(f"spi_advantage_margin={self.spi_advantage_margin:.4f}")
+                    same_first = base_key == chal_key and base_new == chal_new
+                    class_ok = cls_rank.get(challenger[4], -1) >= cls_rank.get(base_item[4], -1)
+                    # Extra accepts on override require terminal-class challenger.
+                    extra_accepts = set(chal_new) - set(base_new)
+                    override_needs_terminal = bool(extra_accepts)
+                    terminal_ok_for_override = (not override_needs_terminal) or (
+                        challenger[4]
+                        in (
+                            FeasibilityClass.NOMINAL_TERMINAL,
+                            FeasibilityClass.STOCHASTIC_TERMINAL,
+                        )
+                        or challenger[1] in terminal_names
+                    )
+                    if same_first:
+                        best_v, best_name, best, served, best_cls = base_item
+                        self.profile.spi_keeps += 1
+                        notes.append("spi_keep_same_first_action")
+                    elif (
+                        crn_adv > self.spi_advantage_margin
+                        and class_ok
+                        and terminal_ok_for_override
+                    ):
+                        best_v, best_name, best, served, best_cls = challenger
+                        self.profile.spi_overrides += 1
+                        notes.append("spi_override_gn_base")
+                    else:
+                        best_v, best_name, best, served, best_cls = base_item
+                        self.profile.spi_keeps += 1
+                        if not terminal_ok_for_override and crn_adv > self.spi_advantage_margin:
+                            notes.append("spi_keep_gn_base_override_lacks_terminal")
+                        else:
+                            notes.append(
+                                "spi_keep_gn_base"
+                                if class_ok
+                                else "spi_keep_gn_base_weaker_challenger_class"
+                            )
+                notes.append("selection_law=spi_crn")
+                if best is None:
+                    notes.append("spi_selection_failed")
+            else:
+                # Legacy knobs (frozen off under spi_mode): forecast margin + energy gate.
+                if (
+                    self.forecast_override_margin is not None
+                    and need_expand
+                    and best_cls == FeasibilityClass.STOCHASTIC_TERMINAL
+                    and empty_checkpoint
+                    and perf_counter() < deadline
+                ):
+                    e_v, e_name, e_cand, e_served, _ = max(empty_checkpoint, key=_rank_scored)
+                    if e_name not in stochastic_failed_names:
+                        stoch_of_empty = next((x for x in stochastic_scored if x[1] == e_name), None)
+                        if stoch_of_empty is not None:
+                            f_of_empty = stoch_of_empty[0]
+                            advantage = best_v - float(f_of_empty)
+                            notes.append(f"forecast_advantage_vs_empty_winner={advantage:.4f}")
+                            if advantage < self.forecast_override_margin:
+                                best_v, best_name, best, served, best_cls = stoch_of_empty
+                                notes.append("selected_empty_future_due_to_forecast_margin")
+                            else:
+                                notes.append("selected_forecast_override_margin_cleared")
+                if self.energy_gated_charge:
+                    best_key = FirstActionKey.from_decision(best)
+                    best_charges = any(leg[2] == "charge" for leg in best_key.first_legs)
+                    if best_charges and not incumb_charges:
+                        alts = [
+                            x
+                            for x in selected_pool
+                            if x[4] == best_cls
+                            and not any(
+                                leg[2] == "charge"
+                                for leg in FirstActionKey.from_decision(x[2]).first_legs
+                            )
+                        ]
+                        if alts:
+                            alt_v, alt_name, alt_cand, alt_served, alt_cls = max(alts, key=_rank_scored)
+                            advantage = best_v - alt_v
+                            notes.append(f"charge_advantage_vs_best_noncharge={advantage:.4f}")
+                            if advantage < self.charge_advantage_margin:
+                                best_v, best_name, best, served, best_cls = (
+                                    alt_v,
+                                    alt_name,
+                                    alt_cand,
+                                    alt_served,
+                                    alt_cls,
+                                )
+                                notes.append("energy_gated_charge_deferred_to_service")
+                            else:
+                                notes.append("energy_gated_charge_cleared_margin")
+                        else:
+                            notes.append("energy_gated_charge_no_noncharge_alternative")
+                notes.append("selection_law=legacy_ranked")
+
+            if best is not None:
+                notes.append(f"selected={best_name}")
+                notes.append(f"expected_value={best_v:.6f}")
+                notes.append(f"feasibility_class={best_cls.value}")
+                notes.append(f"selection_mode={selection_mode}")
+                diag.selected_key = FirstActionKey.from_decision(best)
+                newly = sanitize_newly_accepted(
+                    observation, [c for c in best.newly_accepted if c in served]
+                )
+                committed = self._try_commit(
+                    observation,
+                    public,
+                    routes=best.routes,
+                    newly=newly,
+                    rejected=list(best.rejected),
+                    deferred=list(best.deferred),
+                    notes=notes,
+                    started=started,
+                    trigger=trigger,
+                    fallback_flag=False,
+                )
+                if committed is not None:
+                    return committed
+                notes.append("winner_commit_failed_discard_new_accepts")
 
         return self._emit_fallback(
             observation,

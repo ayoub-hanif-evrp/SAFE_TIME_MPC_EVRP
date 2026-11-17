@@ -150,7 +150,12 @@ def evaluate_route(
                 target = visit.charge_target
             if target > vehicle.battery_capacity + EPS or target < soc - EPS:
                 return _fail("impossible_charge", anchor)
-            duration = model.charge_duration(soc, target, vehicle.inverse_recharge_rate)
+            duration = model.charge_duration(
+                soc,
+                target,
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             time += duration
             charge_time += duration
             soc = target

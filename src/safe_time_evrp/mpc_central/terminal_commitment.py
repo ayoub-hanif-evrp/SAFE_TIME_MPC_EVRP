@@ -229,15 +229,22 @@ def freeze_simulator_at_horizon(sim: FleetSimulator, horizon_end: float) -> list
             target = float(payload["target"])
             soc_before = float(payload["soc_before"])
             station = payload.get("station", vehicle.node)
-            inv = sim.instance.vehicle_type.inverse_recharge_rate
-            full_duration = inv * max(0.0, target - soc_before)
+            from safe_time_evrp.environment.energy import NonlinearPiecewiseChargeEnergy
+
+            energy = NonlinearPiecewiseChargeEnergy()
+            vt = sim.instance.vehicle_type
+            full_duration = energy.charge_duration(
+                soc_before, target, vt.inverse_recharge_rate, battery_capacity=vt.battery_capacity
+            )
             end_t = float(vehicle.anchor_after.time)
             start_t = end_t - full_duration
             elapsed = max(0.0, min(full_duration, horizon_end - start_t))
             frac = 0.0 if full_duration <= EPS else elapsed / full_duration
             vehicle.soc = soc_before + frac * (target - soc_before)
             remaining = max(0.0, target - vehicle.soc)
-            rem_dur = inv * remaining
+            rem_dur = energy.charge_duration(
+                vehicle.soc, target, vt.inverse_recharge_rate, battery_capacity=vt.battery_capacity
+            ) if remaining > EPS else 0.0
             sim.cancel(event_id)
             new_id = sim._push(
                 horizon_end + rem_dur,

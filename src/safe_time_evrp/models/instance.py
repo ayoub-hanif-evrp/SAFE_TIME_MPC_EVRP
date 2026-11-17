@@ -68,7 +68,8 @@ class VehicleType:
     consumption_rate: float
     inverse_recharge_rate: float
     velocity: float
-    # "full" is the Schneider (2014) scheme. "partial" uses the same linear rate.
+    # "full" = charge to Q; "partial" = charge to visit.charge_target.
+    # Duration always uses nonlinear piecewise charging (see environment.energy).
     recharge_policy: str = "full"
 
     def __post_init__(self) -> None:

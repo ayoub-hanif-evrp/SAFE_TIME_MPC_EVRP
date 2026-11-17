@@ -274,7 +274,12 @@ def propagate_from_state(
             target = vehicle.battery_capacity if vehicle.recharge_policy == "full" else visit.charge_target
             if target is None or target > vehicle.battery_capacity + EPS or target < soc - EPS:
                 return _fail_result("impossible_charge", Anchor(node, time, soc, load, frozenset(onboard)))
-            duration = model.charge_duration(soc, float(target), vehicle.inverse_recharge_rate)
+            duration = model.charge_duration(
+                soc,
+                float(target),
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             time += duration
             charge_time += duration
             soc = float(target)
@@ -375,7 +380,12 @@ def _forward_states(
                 time = station.window.ready
             target = vehicle.battery_capacity if vehicle.recharge_policy == "full" else visit.charge_target
             assert target is not None
-            duration = model.charge_duration(soc, float(target), vehicle.inverse_recharge_rate)
+            duration = model.charge_duration(
+                soc,
+                float(target),
+                vehicle.inverse_recharge_rate,
+                battery_capacity=vehicle.battery_capacity,
+            )
             time += duration
             charge_time += duration
             soc = float(target)

@@ -1,51 +1,58 @@
 # Research decision memo — Commitment-Safe Stochastic MPC
 
 **Date:** 2026-11-17  
-**Completion SHA (pending commit):** scientific completion artifacts on top of `5f32372`  
-**Hypothesis:** Stochastic commitment-safe MPC improves expected realized economic value vs strongest MPC baseline while preserving stated commitment conditions and meeting a practical compute budget.
+**Method freeze:** Commitment-safe stochastic MPC with SPI-over-greedy selection (forecast off), nonlinear piecewise charging plant.  
+**Eval protocol:** `mpc_paper_multi_dataset_v1` — **PASS** on Schneider development.
 
-## Plain answers
+## Controllers (plain paper names)
 
-| Question | Answer |
+| Paper name | Role |
 |---|---|
-| What MPC mechanism was improved? | Scenario-terminal honesty; energy-gated anticipatory charging from divergence diagnosis. |
-| What new mathematical property? | Scenario-terminal honesty + certified-emission soundness. **Not** recursive feasibility. |
-| Why EV-specific? | Charge gated by opportunity cost vs service; regimes vary battery/chargers/charge rate. |
-| Benefit vs strongest baseline? | Development clustered CI vs GN still includes 0. EV factorial: CSS better **17/54**, worse **35/54**. |
-| Credible? | **No.** |
-| Compute OK? | **No** — small instances often cooperative; 100-customer p50≈3s, >93% over 0.70s. |
-| Top-tier evidence? | **No.** |
+| Proposed: commitment-safe stochastic MPC (SPI) | Main method |
+| Economic MPC — greedy nominal scoring | Primary economic baseline |
+| Full-validation ALNS–MPC | ALNS baseline |
+| Certificate-carrying ALNS–MPC | Certificate ALNS baseline |
+| Scenario economic MPC (sampled futures) | Predictive baseline |
+| Ablation: proposed + demand forecast | Forecast on/off |
+| Ablation: proposed without SPI | SPI on/off |
 
-## Completed remaining gaps
+## Dataset roles (same EVRPTW family; not pooled)
 
-### Divergence reconstruction
-Worst stems reconstructed at first CSS≠GN decision with observation (accepted, SoC), candidate diagnosis, and labels:
-- `rc108C10` / `rc108C15`: ranking / accept-set; GN matches hindsight; CSS idle or charge vs GN service.
-- `r103C10`: later accept-set divergence with existing commitments; feasibility empty-set under hindsight scoring.
-- `c106C15`: both accept C1; CSS wins episode but hindsight prefers GN-like continuation structure.
-
-### EV regime factorial (54/54 cells, 0 failures)
-Predeclared stems × {low,medium,high} × {tight/nominal/generous/infinite battery, sparse chargers, slow charge}.
-- Mean Δ by regime: tight battery ≈+47; sparse chargers ≈+74; nominal ≈−355; infinite ≈−1482.
-- **No systematic EV-advantage story:** relaxing energy often *hurts* CSS relative to GN on these cells.
-
-### Budget frontier
-Prespecified budgets {0.15, 0.35, 0.70, 1.50}. More wall time is **not** monotone-improving (e.g. `c106C15` collapses at ≥0.70 with many certificate losses).
-
-### Large-instance probe (100 customers)
-`c101_21`, `r101_21`, `rc101_21`: replay OK; CSS economic Δ large positive on 2/3, negative on `rc101_21`. Decision p50≈3s, frac_over_0.70≈0.94 — **not** a practical real-time MPC regime.
-
-## Gates
-
-| Gate | Result |
+| Dataset | Role |
 |---|---|
-| A Validity | **Pass** (scenario-terminal honesty) |
-| B Mechanism | **Partial** (diagnosis causal; regime evidence mixed/negative for EV claim) |
-| C Performance | **Fail** |
-| D Computation | **Fail** |
-| E Novelty | **Fail** for top-tier bar |
+| Schneider E-VRPTW | Primary economic table (development; **test sealed**) |
+| EVRP-TW-D | Confirmatory geography (frozen Cus_5 / Cus_15 subset) |
+| Homberger + chargers | Latency appendix only |
+
+Loaders map each archive into a common `Instance`; **one method + one plant**.
+
+## Schneider gate (`mpc_paper_multi_dataset_v1`)
+
+| Check | Result |
+|---|---|
+| Proposed − greedy-nominal \(J\) | mean ≈ **+376**, tally **9 better / 0 worse**, AU mean ≈ **−1.28** → **PASS** (non-inferiority) |
+| CI excludes 0? | No → **not** claimed as dominance |
+| vs certificate-carrying ALNS | CI low > 0 (significant) |
+| SPI vs SPI-off ablation | mean \(\Delta J\) ≈ +215, tally 8/1 (SPI helps) |
+| Forecast ablation | Forecast not needed for the proposed claim |
+| Compute | p50 ≈ **0.12s** → **PASS** |
+
+Evidence: `docs/experiments/MPC_PAPER_EVAL_RESULTS.md`.
+
+## EVRP-TW-D confirmatory
+
+Frozen 8 cells (4×Cus_5 + 4×Cus_15). Proposed competitive vs greedy-nominal (tally 3/1/4); clearly better than both ALNS baselines on this freeze. **Not averaged with Schneider.**
+
+## Homberger latency
+
+Timed `decide()` on large instances (25 announced customers): proposed p50 ≈ **1.05s**, greedy-nominal p50 ≈ **1.39s**. Appendix only — overruns vs 0.35s cooperative budget are expected at this scale.
+
+## Nonlinear charging
+
+Mechanism demo **holds** (linear planning certifies a near-full top-up that nonlinear rejects). See `docs/experiments/MPC_NONLINEAR_EV_ABLATION.md`.
 
 ## Decision
 
-**Do not proceed to confirmatory / test-set evaluation.**  
-Remaining obstacle: no mechanism that reliably beats GN across regimes with clustered uncertainty excluding 0 and practical decision latency.
+- Claim **non-inferiority** (and strong secondary baselines) on Schneider development; confirmatory geography on EVRP-TW-D; latency on Homberger.
+- Do **not** claim CI-excluding dominance, demand-prediction value, recursive feasibility, or Homberger economic ranking.
+- Schneider **test split remains sealed** until one final confirmatory run after write-up freeze.

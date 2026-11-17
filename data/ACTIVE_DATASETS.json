@@ -1,0 +1,33 @@
+{
+  "protocol": "active_datasets_v1",
+  "problem": "dynamic_EVRPTW_commitment_MPC",
+  "charging": "nonlinear_piecewise_only",
+  "active": [
+    {
+      "id": "schneider_evrptw",
+      "role": "primary",
+      "path": "data/raw/schneider_evrptw",
+      "notes": "Dynamic releases on Schneider E-VRPTW; main SPI/MPC development gate."
+    },
+    {
+      "id": "evrp_tw_d",
+      "role": "secondary_geography",
+      "path": "data/raw/evrp_tw_d",
+      "notes": "EVRP-TW-D Zenodo release; geography-driven confirmatory MPC cells."
+    },
+    {
+      "id": "evrptw_homberger_charging",
+      "role": "scalability_appendix",
+      "path": "data/raw/evrptw_homberger_charging",
+      "notes": "Homberger 1000-customer + heterogeneous chargers; latency appendix only."
+    }
+  ],
+  "retired_from_active_use": [
+    "amazon_last_mile",
+    "lade",
+    "kuleuven_bev",
+    "esogu_ml5ev",
+    "dvrpsr_florio",
+    "evrptw_arc"
+  ]
+}

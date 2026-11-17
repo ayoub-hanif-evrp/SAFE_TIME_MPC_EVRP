@@ -290,6 +290,26 @@ def first_divergence(css_traces, gn_traces) -> dict | None:
     return None
 
 
+def _leg_kinds(legs) -> set[str]:
+    return {str(leg[2]) for leg in (legs or [])}
+
+
+def classify_serve_vs_passive(div: dict | None) -> str | None:
+    """Label trivial losses: GN serves/accepts while CSS idles/charges/rejects."""
+    if not div or div.get("reason") != "action_divergence":
+        return None
+    css, gn = div["css"], div["gn"]
+    css_kinds, gn_kinds = _leg_kinds(css.get("legs")), _leg_kinds(gn.get("legs"))
+    gn_serves = bool(gn.get("newly")) or ("service" in gn_kinds) or ("travel" in gn_kinds)
+    css_passive = (not css.get("newly")) and css_kinds.issubset({"idle", "wait", "charge", ""})
+    css_rejects = bool(css.get("rejected")) and not css.get("newly")
+    if gn_serves and css_passive:
+        return "css_passive_vs_gn_serve"
+    if gn_serves and css_rejects:
+        return "css_reject_vs_gn_serve"
+    return "other_action_divergence"
+
+
 def run_diagnosis(*, stems=FOCUS, n_real: int = 1) -> dict:
     splits = stratified_split_small()
     arrival = fit_empirical_arrivals([load_instance(s) for s in splits["train"]])
@@ -319,10 +339,12 @@ def run_diagnosis(*, stems=FOCUS, n_real: int = 1) -> dict:
                 forecast=arrival,
                 finite_demand_model=finite,
                 n_scenarios=2,
-                use_forecast=True,
-                use_finite_demand=True,
+                # Proposed SPI-empty + GN-scored base (forecast demoted on development evidence).
+                use_forecast=False,
+                use_finite_demand=False,
                 require_terminal_commitment=True,
-                forecast_override_margin=50.0,
+                spi_mode=True,
+                spi_advantage_margin=0.0,
                 **common,
             )
             gn_inner = CertificateCarryingEconomicMpc(
@@ -358,6 +380,7 @@ def run_diagnosis(*, stems=FOCUS, n_real: int = 1) -> dict:
             css_m = _econ_from(case, css_res)
             gn_m = _econ_from(case, gn_res)
             div = first_divergence(css.traces, gn.traces)
+            serve_label = classify_serve_vs_passive(div)
             from safe_time_evrp.environment.energy import NominalLinearEnergy
             from safe_time_evrp.environment.simulator import FleetSimulator
 
@@ -387,6 +410,9 @@ def run_diagnosis(*, stems=FOCUS, n_real: int = 1) -> dict:
                     "gn": gn_m,
                     "delta_economic": css_m["economic"] - gn_m["economic"],
                     "first_divergence": div,
+                    "serve_vs_passive_label": serve_label,
+                    "spi_keeps": int(getattr(getattr(css_inner, "profile", None), "spi_keeps", 0) or 0),
+                    "spi_overrides": int(getattr(getattr(css_inner, "profile", None), "spi_overrides", 0) or 0),
                     "state_diag_t0": state_diag,
                     "css_n_decisions": len(css.traces),
                     "gn_n_decisions": len(gn.traces),
@@ -395,10 +421,16 @@ def run_diagnosis(*, stems=FOCUS, n_real: int = 1) -> dict:
                 }
             )
 
+    trivial_losses = sum(
+        1 for c in cells if c.get("serve_vs_passive_label") in ("css_passive_vs_gn_serve", "css_reject_vs_gn_serve")
+    )
     payload = {
-        "protocol": "decision_quality_diagnosis_v1",
+        "protocol": "decision_quality_diagnosis_spi_v1",
+        "selection_law": "spi_crn",
         "stems": list(stems),
         "mechanism_counts": asdict(counts),
+        "trivial_css_passive_vs_gn_serve_count": trivial_losses,
+        "n_cells": len(cells),
         "cells": cells,
         "interpretation_keys": {
             "A": "prediction_error",
@@ -429,21 +461,26 @@ def _write_md(payload: dict) -> None:
         "",
         "## Per-stem closed-loop vs first divergence",
         "",
-        "| Stem | Δ econ | First div | Empty≠FC | FC≠HS | HS gap | Mechanisms |",
-        "|---|---:|---|---|---|---:|---|",
+        f"- Selection law: `{payload.get('selection_law')}`",
+        f"- Trivial CSS passive/reject vs GN serve at first divergence: "
+        f"**{payload.get('trivial_css_passive_vs_gn_serve_count', 0)}** / {payload.get('n_cells', len(payload['cells']))}",
+        "",
+        "| Stem | Δ econ | First div | Serve-loss | SPI keep/ov | Empty≠FC | Mechanisms |",
+        "|---|---:|---|---|---|---|---|",
     ]
     for c in payload["cells"]:
         sd = c.get("state_diag_t0") or {}
         div = c.get("first_divergence")
         div_s = "none" if div is None else f"t={div['css']['time']:.2f}"
         lines.append(
-            "| {stem} | {de:.1f} | {div} | {ed} | {fh} | {gap:.1f} | {mech} |".format(
+            "| {stem} | {de:.1f} | {div} | {sl} | {sk}/{so} | {ed} | {mech} |".format(
                 stem=c["stem"],
                 de=c["delta_economic"],
                 div=div_s,
+                sl=c.get("serve_vs_passive_label") or "—",
+                sk=c.get("spi_keeps", 0),
+                so=c.get("spi_overrides", 0),
                 ed=sd.get("ranking_disagree_empty_forecast"),
-                fh=sd.get("ranking_disagree_forecast_hindsight"),
-                gap=float(sd.get("action_space_hindsight_gap_vs_empty") or 0.0),
                 mech=",".join(sd.get("mechanisms") or []) or "—",
             )
         )
