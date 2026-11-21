@@ -12,7 +12,10 @@ import statistics
 import time
 from pathlib import Path
 
-from safe_time_evrp.commitment_safe_mpc.baseline_compare import executed_distance_from_log
+from safe_time_evrp.commitment_safe_mpc.baseline_compare import (
+    charged_energy_and_time,
+    executed_distance_from_log,
+)
 from safe_time_evrp.commitment_safe_mpc.baseline_suite import BaselineCase
 from safe_time_evrp.commitment_safe_mpc.full_validation_mpc import FullValidationAlnsMpc
 from safe_time_evrp.commitment_safe_mpc.m1_mpc import CertificateCarryingAlnsMpc
@@ -40,6 +43,17 @@ N_SCEN = 2
 N_REAL = 2
 PRIMARY = "economic_objective"
 PROTOCOL = "mpc_paper_multi_dataset_v1"
+
+# Family-forecast paper campaign tiers (mpc_paper_family_forecast_v1).
+SMOKE_BUDGET = 0.5
+SMOKE_N_SCEN = 2
+SMOKE_ALNS_ITER = 10
+SMOKE_ROLLOUT_MAX_EVENTS = 100
+PAPER_BUDGET = 2.0
+PAPER_N_SCEN = 8
+PAPER_ALNS_ITER = 40
+PAPER_ROLLOUT_MAX_EVENTS = 250
+FAMILY_FORECAST_PROTOCOL = "mpc_paper_family_forecast_v1"
 ROOT = Path(__file__).resolve().parents[3]
 OUT_JSON = ROOT / "docs" / "experiments" / "MPC_PAPER_EVAL_RESULTS.json"
 OUT_MD = ROOT / "docs" / "experiments" / "MPC_PAPER_EVAL_RESULTS.md"
@@ -47,15 +61,23 @@ OUT_HOM_JSON = ROOT / "docs" / "experiments" / "MPC_HOMBERGER_LATENCY.json"
 OUT_HOM_MD = ROOT / "docs" / "experiments" / "MPC_HOMBERGER_LATENCY.md"
 
 # Paper display names (no cryptic B1/M1 codes in prose tables).
+# Proposed is empty-future commitment-safe RH + SPI (not multi-scenario stochastic).
 DISPLAY_NAMES: dict[str, str] = {
-    "css_spi": "Proposed: commitment-safe stochastic MPC (SPI)",
-    "css_spi_forecast": "Ablation: proposed + demand forecast",
+    "css_spi": (
+        "Proposed: commitment-safe empty-future MPC "
+        "(SPI-over-greedy; not multi-scenario demand)"
+    ),
+    "css_spi_forecast": "Ablation: proposed + multi-scenario demand forecast",
     "css_spi_off": "Ablation: proposed without SPI (legacy ranked selection)",
     "cce_greedy_nominal": "Economic MPC — greedy nominal scoring",
     "full_validation_alns_mpc": "Full-validation ALNS–MPC",
     "certificate_carrying_alns_mpc": "Certificate-carrying ALNS–MPC",
     "stochastic_cce_causal": "Scenario economic MPC (sampled futures)",
 }
+
+# Predeclared non-inferiority margin on stem-mean ΔJ (review Observation B).
+# One AU costs 250 in J; margin=100 is a conservative "small economic" NI band.
+NI_MARGIN_J = 100.0
 
 # Frozen EVRP-TW-D subset (1000 files/scale — wall-time cap, declared before runs).
 EVRP_TW_D_FREEZE: dict[str, list[int]] = {
@@ -121,7 +143,11 @@ def _summarize(case, name, result, ctrl, wall, failure=None):
     completed = sum(1 for st in final.values() if st == "completed")
     au = sum(1 for st in final.values() if st == "accepted_unfulfilled")
     rejected = sum(1 for st in final.values() if st == "rejected")
+    n_cust = len(case.instance.customer_ids())
     dist = executed_distance_from_log(case.instance, result.log)
+    charged_e, charge_t = charged_energy_and_time(result.log)
+    n_charge_starts = sum(1 for r in result.log if r.kind == "charge_start")
+    makespan = max((float(r.time) for r in result.log), default=0.0)
     decide = list(getattr(getattr(ctrl, "profile", None), "decide_seconds", []) or [])
     if not decide and getattr(result, "decisions", None):
         decide = [float(getattr(d, "optimize_seconds", 0.0) or 0.0) for d in result.decisions]
@@ -129,15 +155,24 @@ def _summarize(case, name, result, ctrl, wall, failure=None):
     if overruns is None:
         overruns = sum(1 for x in decide if x > BUDGET)
     econ = 100.0 * completed - 250.0 * au - 1.0 * (dist or 0.0)
+    service_rate = (completed / n_cust) if n_cust else 0.0
     return {
         **base,
         "failure": None if rep.ok else f"replay:{rep.code}",
         "replay_ok": rep.ok,
+        "n_customers": n_cust,
         "completed_count": completed,
+        "service_rate": service_rate,
         "accepted_unfulfilled_count": au,
         "rejected_count": rejected,
         "executed_distance": dist,
+        "executed_charge_time": charge_t,
+        "charged_energy": charged_e,
+        "n_charge_starts": n_charge_starts,
+        "makespan": makespan,
         "economic_objective": econ,
+        "optimize_seconds": float(getattr(result, "optimize_seconds", 0.0) or 0.0),
+        "simulation_seconds": float(getattr(result, "simulation_seconds", 0.0) or 0.0),
         "deadline_overruns": overruns,
         "n_decisions": len(result.decisions),
         "fallback_count": result.fallback_count,
@@ -216,6 +251,10 @@ def _controllers(case, *, arrival, finite, pol, budget, include_ablations: bool 
             require_terminal_commitment=True,
             spi_mode=True,
             spi_advantage_margin=0.0,
+            hard_terminal_accepts=True,
+            accept_slack_gate=True,
+            gamma_time=0.0,
+            gamma_energy=0.0,
             **common,
         ),
     }
@@ -231,6 +270,10 @@ def _controllers(case, *, arrival, finite, pol, budget, include_ablations: bool 
             require_terminal_commitment=True,
             spi_mode=True,
             spi_advantage_margin=0.0,
+            hard_terminal_accepts=True,
+            accept_slack_gate=True,
+            gamma_time=0.0,
+            gamma_energy=0.0,
             **common,
         )
         ctrls["css_spi_off"] = CommitmentSafeStochasticMpc(
@@ -240,6 +283,10 @@ def _controllers(case, *, arrival, finite, pol, budget, include_ablations: bool 
             n_scenarios=1,
             require_terminal_commitment=True,
             spi_mode=False,
+            hard_terminal_accepts=True,
+            accept_slack_gate=True,
+            gamma_time=0.0,
+            gamma_energy=0.0,
             **common,
         )
     return ctrls
@@ -397,7 +444,7 @@ def run_schneider_campaign(*, n_real: int = N_REAL, budget: float = BUDGET) -> d
         "proposed_vs_forecast_ablation_j": _paired_clustered(rows, "css_spi", "css_spi_forecast", PRIMARY),
         "proposed_vs_spi_off_ablation_j": _paired_clustered(rows, "css_spi", "css_spi_off", PRIMARY),
     }
-    # evaluate_gate expects legacy keys
+    # Development gate (tally / mean) — internal criterion, not formal NI.
     gate = evaluate_gate(
         {
             "css_spi_vs_gn_economic": paired["proposed_vs_greedy_nominal_j"],
@@ -412,9 +459,42 @@ def run_schneider_campaign(*, n_real: int = N_REAL, budget: float = BUDGET) -> d
     if gate["pass"] and not gate["compute_ok"]:
         gate["pass"] = False
         gate["reason"] += f" Compute FAIL p50={lat.get('p50')}"
+
+    # Formal-style NI check: CI low ≥ −NI_MARGIN (prespecified margin).
+    econ = paired["proposed_vs_greedy_nominal_j"]
+    ci = econ.get("ci95") or {}
+    formal_ni = {
+        "margin": NI_MARGIN_J,
+        "prespecified": True,
+        "ci_low": ci.get("low"),
+        "pass": ci.get("low") is not None and ci["low"] >= -NI_MARGIN_J,
+        "note": (
+            "Formal NI requires CI_low ≥ −Δ with Δ justified a priori. "
+            "Development gate PASS ≠ formal NI if CI includes large negatives."
+        ),
+    }
+
+    # Certificate-loss concentration (review Observation D).
+    loss_by_cell = []
+    for row in rows:
+        c = row["controllers"].get("css_spi") or {}
+        n_loss = len(c.get("loss_events") or [])
+        if n_loss:
+            loss_by_cell.append(
+                {
+                    "stem": row["stem"],
+                    "realization_index": row["realization_index"],
+                    "n_loss_events": n_loss,
+                }
+            )
+
     return {
         "role": "primary_economic",
         "dataset": "schneider_evrptw",
+        "scientific_identity": (
+            "empty-future commitment-safe receding-horizon MPC with SPI-over-greedy; "
+            "multi-scenario demand is an ablation, not the proposed claim"
+        ),
         "stems": stems,
         "n_realizations": n_real,
         "budget_seconds": budget,
@@ -422,6 +502,10 @@ def run_schneider_campaign(*, n_real: int = N_REAL, budget: float = BUDGET) -> d
         "summary": summary,
         "paired_clustered": paired,
         "development_gate": gate,
+        "formal_noninferiority": formal_ni,
+        "certificate_loss_cells": loss_by_cell,
+        "spi_keeps_sum": summary.get("css_spi", {}).get("spi_keeps_sum"),
+        "spi_overrides_sum": summary.get("css_spi", {}).get("spi_overrides_sum"),
         "rows": rows,
         "test_split_sealed": True,
     }
@@ -581,6 +665,10 @@ def run_homberger_latency(*, budget: float = BUDGET, n_decides: int = 5) -> dict
                 require_terminal_commitment=True,
                 spi_mode=True,
                 spi_advantage_margin=0.0,
+                hard_terminal_accepts=True,
+                accept_slack_gate=True,
+                gamma_time=0.0,
+                gamma_energy=0.0,
                 **common,
             ),
             "cce_greedy_nominal": CertificateCarryingEconomicMpc(
@@ -647,7 +735,7 @@ def run_homberger_latency(*, budget: float = BUDGET, n_decides: int = 5) -> dict
             overruns += int(c.get("deadline_overruns") or 0)
         summary[name] = {
             "display_name": DISPLAY_NAMES[name],
-            "decision_latency": _latency(raw),
+            "decision_latency": _latency(raw, budget=budget),
             "deadline_overruns_sum": overruns,
             "decide_failures": fails,
             "n_cells": len(rows),
@@ -729,11 +817,22 @@ def _write_paper_md(payload: dict) -> None:
             "- **EVRP-TW-D** — confirmatory geography (frozen Cus_5 / Cus_15 subset)",
             "- **Homberger + chargers** — latency appendix only (separate file)",
             "",
-            f"## Schneider gate: {'PASS' if g.get('pass') else 'FAIL'}",
+            f"## Schneider development gate: {'PASS' if g.get('pass') else 'FAIL'}",
             "",
             f"{g.get('reason')}",
             "",
             f"- Compute p50={g.get('compute_p50')}, p99={g.get('compute_p99')}",
+            (
+                f"- Formal NI (prespecified Δ={sch.get('formal_noninferiority', {}).get('margin')}): "
+                f"{'PASS' if sch.get('formal_noninferiority', {}).get('pass') else 'FAIL'} "
+                f"(CI low={sch.get('formal_noninferiority', {}).get('ci_low')})"
+            ),
+            (
+                f"- SPI keeps/overrides (Schneider): "
+                f"{sch.get('spi_keeps_sum')}/{sch.get('spi_overrides_sum')}"
+            ),
+            f"- Certificate-loss cells: {len(sch.get('certificate_loss_cells') or [])}",
+            f"- Identity: {sch.get('scientific_identity')}",
             "",
             "### Paired deltas (proposed − baseline)",
             "",

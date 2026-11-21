@@ -97,6 +97,98 @@ def remaining_announcement_count(instance: Instance, observation: Observation) -
     return max(0, total - seen)
 
 
+@dataclass(frozen=True)
+class FiniteDemandTrainEpisode:
+    """One training release trajectory for finite-demand fitting (family-agnostic)."""
+
+    n_customers: int
+    horizon: float
+    releases: list[tuple[str, float]]
+    dynamic_arrivals: set[str]
+    known_at_start: set[str]
+    instance: Instance
+
+
+def _size_class_stats(n: int, raw: dict) -> SizeClassStats:
+    fracs = sorted(raw["fracs"])
+    leads = tuple(raw["leads"]) or (LeadTimeAtom(0.0, 30.0),)
+
+    def _cdf(q: float) -> float:
+        if not fracs:
+            return 0.0
+        return sum(1 for f in fracs if f <= q) / len(fracs)
+
+    active = fracs[int(0.95 * (len(fracs) - 1))] if fracs else 1.0
+    return SizeClassStats(
+        n_customers=n,
+        n_episodes=raw["n_episodes"],
+        mean_dynamic=sum(raw["dynamic_counts"]) / max(raw["n_episodes"], 1),
+        mean_known=sum(raw["known_counts"]) / max(raw["n_episodes"], 1),
+        announce_fracs=tuple(fracs),
+        cdf_quartiles=(_cdf(0.25), _cdf(0.5), _cdf(0.75), _cdf(1.0)),
+        active_end_frac=float(active),
+        lead_atoms=leads,
+    )
+
+
+def fit_finite_demand_model_from_episodes(
+    episodes: list[FiniteDemandTrainEpisode],
+    *,
+    train_atoms: tuple[TrainDemandAtom, ...],
+    model_id: str,
+    protocol_version: str = PROTOCOL_VERSION_V2,
+) -> FiniteDemandModel:
+    """Fit finite-demand timing/lead stats from explicit train episodes (any family)."""
+    by_size_raw: dict[int, dict] = {}
+    for ep in episodes:
+        n = int(ep.n_customers)
+        h = max(float(ep.horizon), 1e-9)
+        dyn = set(ep.dynamic_arrivals)
+        known = set(ep.known_at_start)
+        fracs: list[float] = []
+        leads: list[LeadTimeAtom] = []
+        inst = ep.instance
+        for cid, t in ep.releases:
+            if cid not in dyn:
+                continue
+            fracs.append(min(1.0, max(0.0, float(t) / h)))
+            node = inst.node(cid)
+            span = max(float(node.window.due) - float(node.window.ready), 1.0)
+            leads.append(LeadTimeAtom(lead_ready=float(node.window.ready) - float(t), span=span))
+        bucket = by_size_raw.setdefault(
+            n,
+            {
+                "n_episodes": 0,
+                "dynamic_counts": [],
+                "known_counts": [],
+                "fracs": [],
+                "leads": [],
+            },
+        )
+        bucket["n_episodes"] += 1
+        bucket["dynamic_counts"].append(len(dyn))
+        bucket["known_counts"].append(len(known))
+        bucket["fracs"].extend(fracs)
+        bucket["leads"].extend(leads)
+
+    by_size = {n: _size_class_stats(n, raw) for n, raw in by_size_raw.items()}
+    pooled_raw = {
+        "n_episodes": sum(r["n_episodes"] for r in by_size_raw.values()) if by_size_raw else 0,
+        "dynamic_counts": [c for r in by_size_raw.values() for c in r["dynamic_counts"]],
+        "known_counts": [c for r in by_size_raw.values() for c in r["known_counts"]],
+        "fracs": [f for r in by_size_raw.values() for f in r["fracs"]],
+        "leads": [x for r in by_size_raw.values() for x in r["leads"]],
+    }
+    pooled = _size_class_stats(0, pooled_raw)
+    return FiniteDemandModel(
+        train_atoms=train_atoms,
+        by_size=by_size,
+        pooled=pooled,
+        protocol_version=protocol_version,
+        model_id=model_id,
+    )
+
+
 def fit_finite_demand_model(
     *,
     dynamicity: str = "medium",
@@ -107,7 +199,7 @@ def fit_finite_demand_model(
     from safe_time_evrp.mpc3c.forecast import fit_empirical_arrivals
 
     spatial = fit_empirical_arrivals([load_instance(s) for s in splits["train"]])
-    by_size_raw: dict[int, dict] = {}
+    episodes: list[FiniteDemandTrainEpisode] = []
     for stem in splits["train"]:
         for ridx in range(n_realizations):
             env = (environment_seed_for(stem, ridx) ^ 0xA5A5A5) & 0x7FFFFFFF
@@ -118,72 +210,20 @@ def fit_finite_demand_model(
                 dynamicity=dynamicity,
                 split="train",
             )
-            n = episode.n_customers
-            h = max(episode.horizon, 1e-9)
-            dyn = set(episode.dynamic_arrivals)
-            known = set(episode.known_at_start)
-            fracs = []
-            leads: list[LeadTimeAtom] = []
-            inst = episode.case.instance
-            for cid, t in episode.releases:
-                if cid not in dyn:
-                    continue
-                fracs.append(min(1.0, max(0.0, float(t) / h)))
-                node = inst.node(cid)
-                span = max(float(node.window.due) - float(node.window.ready), 1.0)
-                leads.append(LeadTimeAtom(lead_ready=float(node.window.ready) - float(t), span=span))
-            bucket = by_size_raw.setdefault(
-                n,
-                {
-                    "n_episodes": 0,
-                    "dynamic_counts": [],
-                    "known_counts": [],
-                    "fracs": [],
-                    "leads": [],
-                },
+            episodes.append(
+                FiniteDemandTrainEpisode(
+                    n_customers=episode.n_customers,
+                    horizon=float(episode.horizon),
+                    releases=list(episode.releases),
+                    dynamic_arrivals=set(episode.dynamic_arrivals),
+                    known_at_start=set(episode.known_at_start),
+                    instance=episode.case.instance,
+                )
             )
-            bucket["n_episodes"] += 1
-            bucket["dynamic_counts"].append(len(dyn))
-            bucket["known_counts"].append(len(known))
-            bucket["fracs"].extend(fracs)
-            bucket["leads"].extend(leads)
-
-    def _stats(n: int, raw: dict) -> SizeClassStats:
-        fracs = sorted(raw["fracs"])
-        leads = tuple(raw["leads"]) or (LeadTimeAtom(0.0, 30.0),)
-
-        def _cdf(q: float) -> float:
-            if not fracs:
-                return 0.0
-            return sum(1 for f in fracs if f <= q) / len(fracs)
-
-        active = fracs[int(0.95 * (len(fracs) - 1))] if fracs else 1.0
-        return SizeClassStats(
-            n_customers=n,
-            n_episodes=raw["n_episodes"],
-            mean_dynamic=sum(raw["dynamic_counts"]) / max(raw["n_episodes"], 1),
-            mean_known=sum(raw["known_counts"]) / max(raw["n_episodes"], 1),
-            announce_fracs=tuple(fracs),
-            cdf_quartiles=(_cdf(0.25), _cdf(0.5), _cdf(0.75), _cdf(1.0)),
-            active_end_frac=float(active),
-            lead_atoms=leads,
-        )
-
-    by_size = {n: _stats(n, raw) for n, raw in by_size_raw.items()}
-    # Pooled
-    pooled_raw = {
-        "n_episodes": sum(r["n_episodes"] for r in by_size_raw.values()),
-        "dynamic_counts": [c for r in by_size_raw.values() for c in r["dynamic_counts"]],
-        "known_counts": [c for r in by_size_raw.values() for c in r["known_counts"]],
-        "fracs": [f for r in by_size_raw.values() for f in r["fracs"]],
-        "leads": [x for r in by_size_raw.values() for x in r["leads"]],
-    }
-    pooled = _stats(0, pooled_raw)
-    return FiniteDemandModel(
+    return fit_finite_demand_model_from_episodes(
+        episodes,
         train_atoms=spatial.train_atoms,
-        by_size=by_size,
-        pooled=pooled,
-        model_id=f"finite_demand_v1;train={len(splits['train'])};dyn={dynamicity}",
+        model_id=f"finite_demand_v1;family=schneider;train={len(splits['train'])};dyn={dynamicity}",
     )
 
 
@@ -228,6 +268,68 @@ def expected_remaining_given_public(
     }
 
 
+def _quartile_bins(values: list[float], n_bins: int = 4) -> list[list[float]]:
+    """Split sorted values into up to ``n_bins`` non-empty quantile bins."""
+    if not values:
+        return [[] for _ in range(n_bins)]
+    xs = sorted(values)
+    bins: list[list[float]] = [[] for _ in range(n_bins)]
+    for i, v in enumerate(xs):
+        bins[min(n_bins - 1, (i * n_bins) // len(xs))].append(v)
+    # Drop empties but keep at least one bin for indexing safety.
+    nonempty = [b for b in bins if b]
+    return nonempty or [[]]
+
+
+def _spatial_quadrant_bins(atoms: tuple[TrainDemandAtom, ...]) -> list[tuple[TrainDemandAtom, ...]]:
+    """Partition train atoms into up to 4 spatial quadrants about median (x, y)."""
+    if not atoms:
+        return [()]
+    xs = sorted(a.x for a in atoms)
+    ys = sorted(a.y for a in atoms)
+    mx = xs[len(xs) // 2]
+    my = ys[len(ys) // 2]
+    buckets: list[list[TrainDemandAtom]] = [[], [], [], []]
+    for a in atoms:
+        qi = (0 if a.x <= mx else 1) + (0 if a.y <= my else 2)
+        buckets[qi].append(a)
+    nonempty = [tuple(b) for b in buckets if b]
+    return nonempty or [atoms]
+
+
+def scenario_set_diversity(scenarios: list[list[ForecastCustomer]]) -> dict[str, float]:
+    """Pairwise diversity of announce times and locations across scenarios."""
+    n = len(scenarios)
+    if n < 2:
+        return {"n_scenarios": float(n), "mean_announce_l1": 0.0, "mean_xy_l1": 0.0, "score": 0.0}
+    ann = []
+    xy = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            ai = sorted(float(c.announcement_time) for c in scenarios[i])
+            aj = sorted(float(c.announcement_time) for c in scenarios[j])
+            m = max(len(ai), len(aj), 1)
+            ai = ai + [ai[-1] if ai else 0.0] * (m - len(ai))
+            aj = aj + [aj[-1] if aj else 0.0] * (m - len(aj))
+            ann.append(sum(abs(a - b) for a, b in zip(ai, aj)) / m)
+            xi = sorted((float(c.x), float(c.y)) for c in scenarios[i])
+            xj = sorted((float(c.x), float(c.y)) for c in scenarios[j])
+            mxy = max(len(xi), len(xj), 1)
+            xi = xi + [xi[-1] if xi else (0.0, 0.0)] * (mxy - len(xi))
+            xj = xj + [xj[-1] if xj else (0.0, 0.0)] * (mxy - len(xj))
+            xy.append(
+                sum(abs(a[0] - b[0]) + abs(a[1] - b[1]) for a, b in zip(xi, xj)) / mxy
+            )
+    mean_ann = sum(ann) / len(ann)
+    mean_xy = sum(xy) / len(xy)
+    return {
+        "n_scenarios": float(n),
+        "mean_announce_l1": mean_ann,
+        "mean_xy_l1": mean_xy,
+        "score": mean_ann + mean_xy,
+    }
+
+
 def sample_finite_demand_scenarios(
     model: FiniteDemandModel,
     observation: Observation,
@@ -237,6 +339,7 @@ def sample_finite_demand_scenarios(
     n_scenarios: int = 2,
     seed: int = 0,
     max_customers: int = 16,
+    sample_mode: str = "stratified",
 ) -> list[list[ForecastCustomer]]:
     """Draw anonymous futures with finite remaining count and realistic windows.
 
@@ -244,63 +347,83 @@ def sample_finite_demand_scenarios(
     on being in ``(now, now+H]`` and before the demand-active end. Service windows
     use train lead-time atoms (ready = announce + lead, due = ready + span), not
     ``ready := announce``.
+
+    ``sample_mode``:
+    - ``stratified`` (default): cover announce-time quartile × spatial quadrant strata
+      (descriptive / low-discrepancy style) so small scenario sets stay diverse.
+    - ``iid``: independent LCG draws (legacy ablation).
     """
     meta = expected_remaining_given_public(model, instance, observation, horizon=horizon)
     expected = float(meta["expected_remaining"])
     now = float(observation.time)
     h = max(float(horizon), 0.0)
+    n_sc = max(1, int(n_scenarios))
     if h <= 1e-12 or expected <= 1e-9 or not model.train_atoms:
-        return [[] for _ in range(max(1, n_scenarios))]
+        return [[] for _ in range(n_sc)]
 
     n = int(meta["n_customers"])
     stats = model.stats_for(n)
     active_end = float(stats.active_end_frac) * max(horizon, 1e-9)
-    # Candidate future announce times from empirical fracs truncated to (now, min(now+H, active_end)].
     hi = min(now + h, active_end)
     future_fracs = [f for f in stats.announce_fracs if now < f * max(horizon, 1e-9) <= hi + 1e-12]
-    if not future_fracs:
-        # Fallback: mild exponential thinning only inside active window.
-        future_fracs = []
-
     known = _announced_ids(observation)
     bucket = int(round(now * 10.0))
+    mode = (sample_mode or "stratified").strip().lower()
+    time_bins = _quartile_bins(future_fracs, n_bins=min(4, max(1, n_sc))) if future_fracs else [[]]
+    space_bins = _spatial_quadrant_bins(model.train_atoms)
+    sorted_fracs = sorted(future_fracs) if future_fracs else []
     out: list[list[ForecastCustomer]] = []
-    for s_idx in range(max(1, n_scenarios)):
+    for s_idx in range(n_sc):
         state = stable_seed(
             "finite_demand_fc",
             str(seed),
             str(s_idx),
             str(bucket),
             f"exp={expected:.4f}",
+            mode,
             model.model_id[:48],
         )
-        # Poisson count around expected, capped by hard remaining and max_customers.
-        state, u_n = _lcg(state)
-        # Skellam-lite: round expected with small noise.
+        state, _u_n = _lcg(state)
         state, u_extra = _lcg(state)
         n_draw = int(round(expected + (u_extra - 0.5)))
         n_draw = max(0, min(n_draw, int(meta["remaining_hard_cap"]), max_customers))
+        # Descriptive strata: scenario s owns time quantile (s+0.5)/n and spatial bin s.
+        t_bin = time_bins[s_idx % len(time_bins)]
+        s_bin = space_bins[s_idx % len(space_bins)]
         items: list[ForecastCustomer] = []
         for k in range(n_draw):
-            if future_fracs:
+            if not future_fracs:
+                break
+            if mode == "iid":
                 state, u_pick_t = _lcg(state)
                 frac = future_fracs[int(u_pick_t * len(future_fracs)) % len(future_fracs)]
-                t_ann = float(frac) * max(horizon, 1e-9)
             else:
-                # No empirical mass in window → empty (avoids phantom late demand).
-                break
+                # First customer: exact descriptive quantile; later: jitter inside owned bin.
+                if k == 0 and sorted_fracs:
+                    q = (s_idx + 0.5) / n_sc
+                    frac = sorted_fracs[min(len(sorted_fracs) - 1, int(q * len(sorted_fracs)))]
+                else:
+                    pool = t_bin if t_bin else future_fracs
+                    state, u_pick_t = _lcg(state)
+                    frac = pool[int(u_pick_t * len(pool)) % len(pool)]
+            t_ann = float(frac) * max(horizon, 1e-9)
             if t_ann <= now + 1e-12 or t_ann > hi + 1e-12:
                 continue
+            if mode == "iid":
+                atom_pool = model.train_atoms
+            else:
+                atom_pool = s_bin if s_bin else model.train_atoms
             state, u_atom = _lcg(state)
-            atom = model.train_atoms[int(u_atom * len(model.train_atoms)) % len(model.train_atoms)]
+            atom = atom_pool[int(u_atom * len(atom_pool)) % len(atom_pool)]
             state, u_lead = _lcg(state)
             lead = stats.lead_atoms[int(u_lead * len(stats.lead_atoms)) % len(stats.lead_atoms)]
             state, jx = _lcg(state)
             state, jy = _lcg(state)
-            x = atom.x + (jx - 0.5) * 0.5
-            y = atom.y + (jy - 0.5) * 0.5
+            # Stratified: smaller jitter so scenario centroids stay separated.
+            jitter = 0.15 if mode != "iid" else 0.5
+            x = atom.x + (jx - 0.5) * jitter
+            y = atom.y + (jy - 0.5) * jitter
             ready = float(t_ann) + float(lead.lead_ready)
-            # Keep a usable window after announcement when lead is deeply negative.
             if ready < t_ann:
                 ready = float(t_ann)
             due = ready + max(float(lead.span), 1.0)
@@ -316,7 +439,7 @@ def sample_finite_demand_scenarios(
                     y=y,
                     demand=max(atom.demand, 0.01),
                     service_time=max(atom.service_time, 0.0),
-                    source=f"finite_demand_scenario_{s_idx}",
+                    source=f"finite_demand_scenario_{s_idx}_{mode}",
                     announcement_time=float(t_ann),
                 )
             )
@@ -332,6 +455,7 @@ def sample_finite_demand_scenarios_crn(
     horizon: float,
     n_scenarios: int,
     seed: int,
+    sample_mode: str = "stratified",
 ) -> list[list[ForecastCustomer]]:
     """CRN wrapper (single model) — shared seeds across scenario indices."""
     return sample_finite_demand_scenarios(
@@ -341,6 +465,7 @@ def sample_finite_demand_scenarios_crn(
         horizon=horizon,
         n_scenarios=n_scenarios,
         seed=seed,
+        sample_mode=sample_mode,
     )
 
 

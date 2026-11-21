@@ -11,8 +11,8 @@
   "budget_seconds": 0.35,
   "datasets": {
     "primary": "schneider_evrptw_development_stratified",
-    "confirmatory": "evrp_tw_d_cus5_cus15_freeze",
-    "latency_appendix": "evrptw_homberger_charging"
+    "latency_appendix": "evrptw_homberger_charging_hanif",
+    "retired": ["evrp_tw_d"]
   },
   "commands": [
     "python -m safe_time_evrp.mpc_central.mpc_paper_eval",

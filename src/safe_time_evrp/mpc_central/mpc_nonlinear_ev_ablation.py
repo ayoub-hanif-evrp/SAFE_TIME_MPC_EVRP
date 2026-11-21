@@ -487,7 +487,10 @@ def _write_md(payload: dict) -> None:
         "",
         f"- Protocol: `{payload['protocol']}`",
         f"- Plant: `{payload['plant']}`; ablation planner: `{payload['ablation']}`",
-        f"- Tight-EV: battery×{payload['battery_fraction']}, keep {payload['charger_keep']} charger(s), partial recharge",
+        (
+            f"- Tight-EV: battery×{payload['battery_fraction']}, "
+            f"keep {payload['charger_keep']} charger(s), partial recharge"
+        ),
         f"- Cells: {payload['n_cells']}",
         "",
         "## Physical near-full charge gap",

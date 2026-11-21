@@ -1,58 +1,30 @@
-# Research decision memo — Commitment-Safe Stochastic MPC
+# Research decision memo — Schneider + Hanif (EVRP-TW-D retired)
 
-**Date:** 2026-11-17  
-**Method freeze:** Commitment-safe stochastic MPC with SPI-over-greedy selection (forecast off), nonlinear piecewise charging plant.  
-**Eval protocol:** `mpc_paper_multi_dataset_v1` — **PASS** on Schneider development.
+**Date:** 2026-11-19  
+**Active datasets:** Schneider EVRPTW (primary economics) + Hanif/Homberger charging (latency / large-scale)  
+**Retired:** `evrp_tw_d` — all EVRP-TW-D result artifacts removed from `docs/experiments/`
 
-## Controllers (plain paper names)
+## Identity (frozen)
 
-| Paper name | Role |
+One controller: commitment-safe RH MPC + SPI + M1–M4 + Schneider family-fit forecasts (+ MSA/adaptive packaging in `mpc_top_tier_msa_v1`).
+
+## Headline results (kept)
+
+| Role | Outcome |
 |---|---|
-| Proposed: commitment-safe stochastic MPC (SPI) | Main method |
-| Economic MPC — greedy nominal scoring | Primary economic baseline |
-| Full-validation ALNS–MPC | ALNS baseline |
-| Certificate-carrying ALNS–MPC | Certificate ALNS baseline |
-| Scenario economic MPC (sampled futures) | Predictive baseline |
-| Ablation: proposed + demand forecast | Forecast on/off |
-| Ablation: proposed without SPI | SPI on/off |
+| Schneider recovery-dev / holdout_v2 (`mpc_multi_dataset_recovery_v2_forecast`) | **PASS** NI (holdout CI low ≈ +79) |
+| Schneider under MSA defaults (recovery-dev / holdout_v3) | **FAIL** — sensitivity; do not claim |
+| Homberger/Hanif latency @ budget 2.0s | **PASS** (p50 ≈ 1.71; 0 fails) |
+| EVRP-TW-D | **Retired — results deleted** |
 
-## Dataset roles (same EVRPTW family; not pooled)
+## Publishable stance
 
-| Dataset | Role |
-|---|---|
-| Schneider E-VRPTW | Primary economic table (development; **test sealed**) |
-| EVRP-TW-D | Confirmatory geography (frozen Cus_5 / Cus_15 subset) |
-| Homberger + chargers | Latency appendix only |
+1. **Schneider** = economic core.  
+2. **Hanif/Homberger** = large-scale charging companion (latency appendix unless/until ops KPI freeze is run).  
+3. **No EVRP-TW-D claims.**
 
-Loaders map each archive into a common `Instance`; **one method + one plant**.
+## Artifacts
 
-## Schneider gate (`mpc_paper_multi_dataset_v1`)
-
-| Check | Result |
-|---|---|
-| Proposed − greedy-nominal \(J\) | mean ≈ **+376**, tally **9 better / 0 worse**, AU mean ≈ **−1.28** → **PASS** (non-inferiority) |
-| CI excludes 0? | No → **not** claimed as dominance |
-| vs certificate-carrying ALNS | CI low > 0 (significant) |
-| SPI vs SPI-off ablation | mean \(\Delta J\) ≈ +215, tally 8/1 (SPI helps) |
-| Forecast ablation | Forecast not needed for the proposed claim |
-| Compute | p50 ≈ **0.12s** → **PASS** |
-
-Evidence: `docs/experiments/MPC_PAPER_EVAL_RESULTS.md`.
-
-## EVRP-TW-D confirmatory
-
-Frozen 8 cells (4×Cus_5 + 4×Cus_15). Proposed competitive vs greedy-nominal (tally 3/1/4); clearly better than both ALNS baselines on this freeze. **Not averaged with Schneider.**
-
-## Homberger latency
-
-Timed `decide()` on large instances (25 announced customers): proposed p50 ≈ **1.05s**, greedy-nominal p50 ≈ **1.39s**. Appendix only — overruns vs 0.35s cooperative budget are expected at this scale.
-
-## Nonlinear charging
-
-Mechanism demo **holds** (linear planning certifies a near-full top-up that nonlinear rejects). See `docs/experiments/MPC_NONLINEAR_EV_ABLATION.md`.
-
-## Decision
-
-- Claim **non-inferiority** (and strong secondary baselines) on Schneider development; confirmatory geography on EVRP-TW-D; latency on Homberger.
-- Do **not** claim CI-excluding dominance, demand-prediction value, recursive feasibility, or Homberger economic ranking.
-- Schneider **test split remains sealed** until one final confirmatory run after write-up freeze.
+- `docs/experiments/MPC_MULTI_DATASET_RECOVERY_RESULTS.*` (Schneider)
+- `docs/experiments/MPC_TOP_TIER_MSA_RESULTS.*` (scrubbed)
+- `docs/experiments/MPC_HOMBERGER_LATENCY.*`

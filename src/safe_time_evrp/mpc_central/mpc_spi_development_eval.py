@@ -339,7 +339,16 @@ def run_spi_campaign(
     def aggregate(rs, names_):
         out = {}
         for name in names_:
-            buckets = {k: [] for k in (PRIMARY, "completed_count", "accepted_unfulfilled_count", "rejected_count", "executed_distance")}
+            buckets = {
+                k: []
+                for k in (
+                    PRIMARY,
+                    "completed_count",
+                    "accepted_unfulfilled_count",
+                    "rejected_count",
+                    "executed_distance",
+                )
+            }
             raw_lat: list[float] = []
             overruns = 0
             losses = 0

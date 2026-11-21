@@ -82,20 +82,25 @@ def _integrate_relative(
         if seg_hi <= seg_lo + EPS:
             continue
         p0, p1 = relative_power[i], relative_power[i + 1]
-        # Linear power on [a_e, b_e]: p(E) = p0 + (p1-p0)*(E-a_e)/(b_e-a_e)
-        # ∫ dE/p(E) = ((b_e-a_e)/(p1-p0)) * ln(p) if p1≠p0 else ΔE/p0
-        def p_at(e: float) -> float:
-            if abs(b_e - a_e) <= EPS:
-                return max(EPS, 0.5 * (p0 + p1))
-            t = (e - a_e) / (b_e - a_e)
-            return max(EPS, p0 + (p1 - p0) * t)
+        # Bind loop vars as defaults so the nested function does not close over the loop.
+        def p_at(
+            e: float,
+            *,
+            _a: float = a_e,
+            _b: float = b_e,
+            _p0: float = p0,
+            _p1: float = p1,
+        ) -> float:
+            if abs(_b - _a) <= EPS:
+                return max(EPS, 0.5 * (_p0 + _p1))
+            t = (e - _a) / (_b - _a)
+            return max(EPS, _p0 + (_p1 - _p0) * t)
 
         p_lo = p_at(seg_lo)
         p_hi = p_at(seg_hi)
         if abs(p_hi - p_lo) <= 1e-12:
             total += (seg_hi - seg_lo) / p_lo
         else:
-            # Exact integral for linear p.
             slope = (p1 - p0) / (b_e - a_e) if abs(b_e - a_e) > EPS else 0.0
             if abs(slope) <= EPS:
                 total += (seg_hi - seg_lo) / p_lo

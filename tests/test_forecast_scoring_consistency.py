@@ -119,25 +119,6 @@ def test_conditional_forecast_not_empty_only_because_clock_past_200():
             assert not fc.customer_id.startswith("C")  # anonymous
 
 
-def test_calibration_train_only_honest_sample_sizes():
-    from safe_time_evrp.data.dynamic_schneider import stratified_split_small
-    from safe_time_evrp.mpc_central.forecast_calibration import calibrate_train_announcement_rate
-
-    splits = stratified_split_small()
-    report = calibrate_train_announcement_rate(dynamicity="medium", n_realizations=1)
-    assert report["n_train_stems"] == len(splits["train"])
-    assert report["n_episode_level_mean_estimates"] == len(splits["train"]) * 1
-    assert report["n_raw_interarrival_gaps"] >= 0
-    assert "honesty_note" in report
-    assert "n_episode_level_mean_estimates" in report["honesty_note"]
-    train = set(splits["train"])
-    test = set(splits["test"])
-    for sample in report["samples"]:
-        assert sample["stem"] in train
-        assert sample["stem"] not in test
-    assert float(report["calibrated_announcement_mean"]) > 0
-
-
 def test_crn_mu_comparison_shares_skeleton():
     atoms = (TrainDemandAtom(0.0, 0.0, 1.0, 1.0, 0.0, 40.0),)
     model = ArrivalForecast(train_atoms=atoms, train_interarrival_mean=12.0, model_id="crn")

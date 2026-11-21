@@ -27,6 +27,23 @@ def list_variant_a_instances(*, limit: int | None = None) -> list[Path]:
     return files
 
 
+def list_variant_b_instances(*, limit: int | None = None) -> list[Path]:
+    folder = homberger_root() / "variant_B_relaxed_TW"
+    files = sorted(folder.glob("*.txt"))
+    if limit is not None:
+        files = files[:limit]
+    return files
+
+
+def homberger_family(stem: str) -> str:
+    """Map C1_10_1 / RC2_10_3 → family token C1/R1/RC2/..."""
+    s = stem.upper()
+    for fam in ("RC1", "RC2", "C1", "C2", "R1", "R2"):
+        if s.startswith(fam + "_") or s.startswith(fam):
+            return fam
+    return "UNK"
+
+
 def _euclid(ax: float, ay: float, bx: float, by: float) -> float:
     return math.hypot(ax - bx, ay - by)
 

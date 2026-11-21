@@ -1,0 +1,31 @@
+{
+  "protocol": "mpc_hanif_latency_ab_v1",
+  "dataset": "evrptw_homberger_charging_hanif",
+  "note": "Frozen before run. Latency appendix A+B; not a closed-loop J claim.",
+  "primary": {
+    "announced_cap": 25,
+    "n_decides": 5,
+    "budget_seconds": 2.0,
+    "variant_A": "all 60 under variant_A_original_TW",
+    "variant_B": "all 60 under variant_B_relaxed_TW"
+  },
+  "curve": {
+    "announced_caps": [25, 50, 100, 200],
+    "n_decides": 5,
+    "budget_seconds": 2.0,
+    "selection": "first file per family per variant (C1,C2,R1,R2,RC1,RC2)",
+    "n_files": 12
+  },
+  "method_stack": {
+    "use_forecast": false,
+    "hard_terminal_accepts": true,
+    "accept_slack_gate": true,
+    "accept_score_penalty": 50.0,
+    "charge_first_soc_frac": 0.2,
+    "selection_mode": "mean_score",
+    "scenario_sample_mode": "stratified",
+    "adaptive_compute": true,
+    "n_scenarios": 1,
+    "reason_no_forecast": "No Hanif-fit forecast pack; Schneider prior transfer forbidden."
+  }
+}

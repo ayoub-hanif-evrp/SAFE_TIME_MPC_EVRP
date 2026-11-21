@@ -1,6 +1,10 @@
 # Commitment-Safe Stochastic MPC — formulation
 
-**Proposed method (single controller):** commitment-safe stochastic MPC with SPI-over-greedy selection (`CommitmentSafeStochasticMpc`).
+**Proposed method (single controller):** commitment-safe RH MPC with SPI-over-greedy selection,
+accept discipline (M1–M4), **family-fit** multi-scenario demand, **stratified** finite-demand
+scenarios, **MSA consensus** first-action selection (Bent & Van Hentenryck), and
+**adaptive_compute_v1** (`CommitmentSafeStochasticMpc` + `load_family_forecasts(family)`).
+Same MPC class on all datasets; priors are never silently reused across families.
 
 **Baselines (paper names):**
 
@@ -9,7 +13,7 @@
 - Certificate-carrying ALNS–MPC
 - Scenario economic MPC (sampled futures)
 
-**Ablations:** proposed + demand forecast; proposed without SPI; linear-charge planning vs nonlinear plant.
+**Ablations:** empty-future; mean-score SAA (no MSA); cross-family (wrong) priors; proposed without SPI; linear-charge planning vs nonlinear plant.
 
 Objective weights (fixed):
 
@@ -103,16 +107,16 @@ fallback only — not the economic SPI base.
 |------|------|
 | Stage-0 set | Same Validate survivors as CCE greedy-nominal (matched feasible first-action set) |
 | Base \(u^0\) | \(\arg\max\) `greedy_nominal_value` on stage-0 set (tie-break: more accepts/services; certificate last). May emit with `feasibility_class=stage0` when empty-terminal is absent |
-| Challenger \(\hat u\) | CRN / causal mean maximizer in the terminal / soft-terminal pool |
+| Challenger \(\hat u\) | CRN / causal mean maximizer in the scored pool |
 | Keep | Same first action+accepts, or CRN advantage \(\le \delta_{\mathrm{SPI}}\), or weaker class |
-| Override | Advantage \(> \delta_{\mathrm{SPI}}\) **and** class ⪰ base; **extra accepts require terminal-class challenger** |
+| Override | Advantage \(> \delta_{\mathrm{SPI}}\) **and** class ⪰ base; **extra accepts require hard terminal class** (not soft-glitch) |
 
-**Frozen under `spi_mode=True`:** `forecast_override_margin`, `energy_gated_charge`
-(legacy paths remain only with `spi_mode=False` for ablation). Do not add competing
-selection knobs. **Forecast demoted** (proposed controller uses empty future).
+**Frozen under `spi_mode=True`:** `forecast_override_margin`, `energy_gated_charge`.
+**Forecast demoted** (proposed = empty future).
 
 Feasibility classes (strongest → weakest among selectable): `stochastic_terminal` ≻
-`nominal_terminal` ≻ `unchecked_budget` ≻ `stage0`. Stochastic-failed candidates are never selected.
+`nominal_terminal` ≻ `soft_terminal_glitch` ≻ `unchecked_budget` ≻ `stage0`.  
+Soft plant/replay glitches **must not** be labeled `nominal_terminal`.
 
 **Plant:** nonlinear piecewise charging only (`environment.energy`). Linear
 \(g\cdot(target-soc)\) exists solely as a planning ablation (`LinearChargeEnergy`).
@@ -145,23 +149,32 @@ Certificate store publishes **only** the emitted certified decision.
 
 ---
 
-## 7. Campaigns (frozen) — `mpc_paper_multi_dataset_v1`
+## 7. Campaigns (frozen)
 
-**Architecture:** one method + one nonlinear plant; Schneider / EVRP-TW-D / Homberger
-loaders absorb dataset differences. Results are **role-separated** (not pooled).
+### 7.1 Schneider NI — `mpc_multi_dataset_recovery_v2_forecast`
 
-**Schneider (primary economic):** proposed vs the four baselines + forecast/SPI ablations
-on full stratified development. Primary \(J=100N_{\mathrm{completed}}-250N_{\mathrm{AU}}-D\).
-**PASS:** mean \(\Delta J\approx +376\) vs greedy-nominal, tally **9/0**, p50≈0.12s.
-CI still includes 0 → claim **non-inferiority**, not dominance. Test split sealed.
+**Architecture:** one method + one nonlinear plant; adapters absorb dataset differences.
 
-**EVRP-TW-D (confirmatory geography):** same controllers on a predeclared Cus_5/Cus_15 freeze.
+**Proposed (promoted after S09d):** SPI-over-greedy + accept discipline (M1–M4) +
+**multi-scenario demand forecast** with **Schneider-fit** priors (`n_scenarios=2`, alns=10).
+Empty-future is an ablation.
 
-**Homberger (latency appendix):** timed `decide()` on large instances — not main \(J\).
+**Schneider recovery-dev (18×3):** gate **PASS**, formal NI **PASS** (mean ΔJ≈+170).
 
-**Nonlinear EV:** linear planning vs nonlinear plant; mechanism demo **holds**.
+**Schneider holdout_v2 (9×2):** gate **PASS**, formal NI **PASS** (mean ΔJ≈+748,
+CI low≈+79, tally 7/2). Caveat: same stems as prior empty-future peek; first forecast-stack eval.
 
-See `docs/experiments/MPC_PAPER_EVAL_RESULTS.md`,
-`docs/experiments/MPC_HOMBERGER_LATENCY.md`,
-`docs/experiments/MPC_NONLINEAR_EV_ABLATION.md`, and
+### 7.2 Dataset roles (current)
+
+- **Schneider EVRPTW** — primary economics (§7.1).
+- **Hanif / Homberger charging** — large-scale latency appendix (budget 2.0s; p50≈1.71, 0 fails).
+- **`evrp_tw_d`** — **retired**; result artifacts deleted (do not claim).
+
+### 7.3 Top-tier MSA packaging — `mpc_top_tier_msa_v1`
+
+**Adds:** stratified finite-demand scenarios; MSA consensus first-action; adaptive_compute_v1.
+Schneider recovery-dev / holdout_v3 under MSA defaults **FAIL** — keep §7.1 for Schneider NI.
+
+See `docs/experiments/MPC_TOP_TIER_MSA_RESULTS.md`,
+`docs/experiments/MPC_MULTI_DATASET_RECOVERY_RESULTS.md`, and
 `docs/research/MPC_RESEARCH_DECISION_MEMO.md`.

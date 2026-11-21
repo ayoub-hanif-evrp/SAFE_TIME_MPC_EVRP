@@ -55,6 +55,12 @@ def test_spi_notes_and_prefers_service_on_trivial_announce():
         spi_mode=True,
         spi_advantage_margin=0.0,
         require_terminal_commitment=True,
+        # Disable recovery accept-discipline knobs for this SPI-selection unit test.
+        hard_terminal_accepts=False,
+        accept_slack_gate=False,
+        accept_score_penalty=0.0,
+        charge_first_soc_frac=None,
+        max_new_accepts=None,
     )
     d = ctrl.decide(obs, "request_release")
     joined = " ".join(d.notes)
@@ -82,6 +88,20 @@ def test_legacy_mode_restores_energy_gate_flag():
     )
     assert ctrl.energy_gated_charge is True
     assert ctrl.forecast_override_margin == 5.0
+
+
+def test_soft_terminal_feasibility_class_exists():
+    from safe_time_evrp.mpc_central.commitment_safe_stochastic_mpc import FeasibilityClass
+
+    assert FeasibilityClass.SOFT_TERMINAL.value == "soft_terminal_glitch"
+    # Soft must rank below hard nominal terminal (no silent upgrade).
+    rank = {
+        FeasibilityClass.STOCHASTIC_TERMINAL: 4,
+        FeasibilityClass.NOMINAL_TERMINAL: 3,
+        FeasibilityClass.SOFT_TERMINAL: 2,
+        FeasibilityClass.STAGE0: 0,
+    }
+    assert rank[FeasibilityClass.SOFT_TERMINAL] < rank[FeasibilityClass.NOMINAL_TERMINAL]
 
 
 def test_spi_matches_gn_first_action_when_no_override():

@@ -1,34 +1,20 @@
-"""Commitment-Safe Stochastic Model Predictive Control (proposed method).
+"""Commitment-safe empty-future MPC with SPI-over-greedy (proposed method).
 
 Approximation class (honest)
 ----------------------------
-This controller implements a **restricted candidate-set stochastic MPC** with
-scenario-dependent B1-validated recourse (a rollout / policy-search approximation
-of the extensive-form problem in
-``docs/methodology/COMMITMENT_SAFE_STOCHASTIC_MPC.md``).
+Default paper configuration uses **empty future demand** (``use_forecast=False``,
+``n_scenarios=1``): it is commitment-safe **receding-horizon** control with
+causal rollout scoring and Ulmer-style SPI selection — **not** multi-scenario
+stochastic demand optimization. Forecast/scenarios remain an ablation path.
 
-It does **not** claim to solve the full multi-stage stochastic MIP.
+It does **not** claim to solve the full multi-stage stochastic MIP, nor
+unconditional recursive feasibility.
 
-First-stage (shared / nonanticipative) variables optimized over a discrete set:
-  newly_accepted, rejected, route certificate, first executable legs.
-
-Scenario recourse: ``B1ValidatedRecourse`` inside horizon projection / scoring.
-
-Hard constraints: stage-0 commitment coverage; horizon-end terminal commitment;
-locks; public-information only.
-
-Soft objective: fixed economic weights (service − AU − distance).
-
-Selection law (default): Ulmer-style budgeted SPI over a **stage-0-matched**
-greedy-nominal first action (same Validate survivors as CCE GN) under
-common-random-number scores. Terminal / soft-terminal gates risky overrides
-that add accepts; the GN base may emit as ``feasibility_class=stage0``.
-The certified warm-start is emission fallback only. Legacy forecast-margin /
-energy-gate knobs are frozen off when ``spi_mode=True``.
-
-Transactional emission: certificates and new accepts commit only after
-independent validation; failed candidates never leave speculative accepts in
-the Decision returned to the plant.
+First-stage variables: newly_accepted, rejected, route certificate, first legs.
+Hard: stage-0 Validate; terminal filter (soft plant/replay glitches are labeled
+``soft_terminal_glitch``, never upgraded to ``nominal_terminal``).
+Selection: SPI over stage-0-matched greedy-nominal base under CRN scores.
+Transactional emission after independent validation.
 """
 
 from __future__ import annotations
@@ -44,6 +30,7 @@ from safe_time_evrp.environment.energy import NominalLinearEnergy
 from safe_time_evrp.models.instance import Instance
 from safe_time_evrp.models.state import Decision, Observation, Visit
 from safe_time_evrp.mpc3c.forecast import ArrivalForecast, ForecastCustomer
+from safe_time_evrp.mpc_central.accept_slack import filter_accepts_by_slack
 from safe_time_evrp.mpc_central.causal_plant import DISTANCE_PENALTY, SERVICE_REWARD, UNFULFILLED_PENALTY
 from safe_time_evrp.mpc_central.counterfactual_actions import (
     CounterfactualDiagnostics,
@@ -68,6 +55,8 @@ class FeasibilityClass(str, Enum):
     """Declared terminal-check status — never claim an unchecked condition as satisfied."""
 
     STAGE0 = "stage0"
+    # Terminal filter failed on a plant/replay glitch; stage-0 OK but not a hard X_f proof.
+    SOFT_TERMINAL = "soft_terminal_glitch"
     NOMINAL_TERMINAL = "nominal_terminal"
     STOCHASTIC_TERMINAL = "stochastic_terminal"
     STOCHASTIC_FAILED = "stochastic_failed"
@@ -187,6 +176,24 @@ class CommitmentSafeStochasticMpc:
         spi_mode: bool = True,
         # Override incumbent only if CRN mean advantage exceeds this margin (same units as J).
         spi_advantage_margin: float = 0.0,
+        # M1: soft-terminal candidates may continue routes but cannot emit new accepts.
+        hard_terminal_accepts: bool = True,
+        # M2: strip new accepts with time/energy slack below gamma (recovery stack).
+        accept_slack_gate: bool = True,
+        gamma_time: float = 0.0,
+        gamma_energy: float = 0.0,
+        # M3: subtract this × |newly_accepted| from empty-future score (discourage fragile accepts).
+        accept_score_penalty: float = 50.0,
+        # M4: if min SoC fraction below this, prefer a charge-first candidate after SPI (None=off).
+        charge_first_soc_frac: float | None = 0.2,
+        # Anti-bomb: keep at most this many new accepts per decide (None=unlimited).
+        max_new_accepts: int | None = 1,
+        # Top-tier: MSA consensus vs mean-score SAA; stratified scenarios; adaptive compute.
+        selection_mode: str = "msa_consensus",
+        scenario_sample_mode: str = "stratified",
+        adaptive_compute: bool = True,
+        n_scenarios_max: int = 4,
+        alns_iterations_max: int | None = None,
     ) -> None:
         self._full = instance
         self.horizon = horizon
@@ -217,7 +224,30 @@ class CommitmentSafeStochasticMpc:
         self.max_scenario_expansions = max(1, int(max_scenario_expansions))
         self.spi_mode = bool(spi_mode)
         self.spi_advantage_margin = float(spi_advantage_margin)
+        self.hard_terminal_accepts = bool(hard_terminal_accepts)
+        self.accept_slack_gate = bool(accept_slack_gate)
+        self.gamma_time = float(gamma_time)
+        self.gamma_energy = float(gamma_energy)
+        self.accept_score_penalty = float(accept_score_penalty)
+        self.charge_first_soc_frac = (
+            None if charge_first_soc_frac is None else float(charge_first_soc_frac)
+        )
+        self.max_new_accepts = None if max_new_accepts is None else max(1, int(max_new_accepts))
+        mode = (selection_mode or "msa_consensus").strip().lower()
+        if mode not in {"msa_consensus", "mean_score"}:
+            raise ValueError(f"unknown selection_mode={selection_mode!r}")
+        self.selection_mode = mode
+        self.scenario_sample_mode = (scenario_sample_mode or "stratified").strip().lower()
+        self.adaptive_compute = bool(adaptive_compute)
+        self.n_scenarios_base = max(1, int(n_scenarios))
+        self.n_scenarios_max = max(self.n_scenarios_base, int(n_scenarios_max))
+        self.alns_iterations_base = max(1, int(alns_iterations))
+        self.alns_iterations_max = max(
+            self.alns_iterations_base,
+            int(alns_iterations_max if alns_iterations_max is not None else alns_iterations * 2),
+        )
         # Freeze conflicting knobs when SPI is the selection law.
+        # M4 charge_first_soc_frac remains available under SPI (separate from legacy energy gate).
         if self.spi_mode:
             self.energy_gated_charge = False
             self.charge_advantage_margin = float(charge_advantage_margin)
@@ -252,6 +282,7 @@ class CommitmentSafeStochasticMpc:
                 horizon=self.horizon,
                 n_scenarios=n_sc,
                 seed=self.seed,
+                sample_mode=self.scenario_sample_mode,
             )
         if self.forecast is None:
             return [[]]
@@ -317,6 +348,13 @@ class CommitmentSafeStochasticMpc:
             "objective_weights": dict(self.objective_weights),
             "require_terminal_commitment": self.require_terminal_commitment,
             "n_scenarios": self.n_scenarios,
+            "hard_terminal_accepts": self.hard_terminal_accepts,
+            "accept_slack_gate": self.accept_slack_gate,
+            "gamma_time": self.gamma_time,
+            "gamma_energy": self.gamma_energy,
+            "accept_score_penalty": self.accept_score_penalty,
+            "charge_first_soc_frac": self.charge_first_soc_frac,
+            "max_new_accepts": self.max_new_accepts,
             "first_action_only": True,
             "receding_horizon": True,
             "approximation_class": self.approximation_class,
@@ -341,6 +379,59 @@ class CommitmentSafeStochasticMpc:
             notes=notes,
             audit={"css_mpc": self.last_audit},
         )
+
+    def _discipline_new_accepts(
+        self,
+        observation: Observation,
+        *,
+        routes: dict[str, list[Visit]],
+        newly: list[str],
+        rejected: list[str],
+        best_cls: FeasibilityClass,
+        notes: list[str],
+    ) -> tuple[list[str], list[str]]:
+        """M1/M2 accept discipline: strip unsafe new commitments before emit."""
+        newly = list(newly)
+        rejected = list(rejected)
+        if (
+            self.hard_terminal_accepts
+            and best_cls == FeasibilityClass.SOFT_TERMINAL
+            and newly
+        ):
+            notes.append(f"hard_terminal_accepts_stripped={len(newly)}")
+            for cid in newly:
+                if cid not in rejected:
+                    rejected.append(cid)
+            newly = []
+        if self.accept_slack_gate and newly:
+            kept, stripped, _diag = filter_accepts_by_slack(
+                self._full,
+                observation,
+                routes,
+                newly,
+                gamma_time=self.gamma_time,
+                gamma_energy=self.gamma_energy,
+                energy=self.energy,
+            )
+            if stripped:
+                notes.append(f"accept_slack_stripped={len(stripped)}")
+                notes.append(
+                    "accept_slack_detail="
+                    + ",".join(stripped[:8])
+                )
+            for cid in stripped:
+                if cid not in rejected:
+                    rejected.append(cid)
+            newly = kept
+        if self.max_new_accepts is not None and len(newly) > self.max_new_accepts:
+            # Keep highest-slack accepts when possible; else first-k.
+            overflow = newly[self.max_new_accepts :]
+            newly = newly[: self.max_new_accepts]
+            notes.append(f"max_new_accepts_capped={len(overflow)}")
+            for cid in overflow:
+                if cid not in rejected:
+                    rejected.append(cid)
+        return newly, rejected
 
     def _try_commit(
         self,
@@ -604,6 +695,29 @@ class CommitmentSafeStochasticMpc:
                     fallback_routes = {vid: list(vs) for vid, vs in self._last_certified_routes.items()}
                     notes.append("safety_backup_retained_without_warmstart_init")
 
+        # --- adaptive_compute_v1 (scenarios + ALNS under hard wall) ---
+        rem_frac = max(0.0, (score_deadline - perf_counter()) / max(self.time_limit_seconds, 1e-9))
+        if self.adaptive_compute and self.use_forecast:
+            from safe_time_evrp.mpc_central.adaptive_compute import adaptive_compute_v1
+
+            adapt = adaptive_compute_v1(
+                observation,
+                self._full,
+                horizon=self.horizon,
+                n_scenarios_base=self.n_scenarios_base,
+                n_scenarios_max=self.n_scenarios_max,
+                alns_base=self.alns_iterations_base,
+                alns_max=self.alns_iterations_max,
+                remaining_budget_frac=rem_frac,
+            )
+            n_sc_plan = int(adapt["n_scenarios"])
+            alns_iters = int(adapt["alns_iterations"])
+            notes.append(f"adaptive_compute_v1={adapt}")
+        else:
+            n_sc_plan = self.n_scenarios_base if self.use_forecast else 1
+            alns_iters = self.alns_iterations_base
+            notes.append("adaptive_compute=0")
+
         # --- Candidate generation (ALNS as internal subroutine) ---
         t_gen = perf_counter()
         val_before = self.profile.validation_seconds
@@ -617,7 +731,7 @@ class CommitmentSafeStochasticMpc:
             observation,
             horizon=self.horizon,
             energy=self.energy,
-            alns_iterations=self.alns_iterations,
+            alns_iterations=alns_iters,
             alns_time=alns_time,
             seed=self.seed,
             include_solver_baselines=True,
@@ -692,15 +806,17 @@ class CommitmentSafeStochasticMpc:
             if all(FirstActionKey.from_decision(c) != key for _, c in candidates):
                 candidates = list(candidates) + [("incumbent_certificate", incumb)]
 
-        # Adaptive scenario count under remaining budget (score phase only).
-        n_sc = self.n_scenarios
+        # Scenario set for scoring (count already chosen by adaptive_compute_v1).
+        n_sc = n_sc_plan
         if self.adaptive_scenarios and self.use_forecast:
             rem = score_deadline - perf_counter()
             if rem < 0.20 * self.time_limit_seconds:
                 n_sc = 1
-            notes.append(f"adaptive_n_scenarios={n_sc}")
+                notes.append("adaptive_n_scenarios_late_shrink=1")
         scenario_fcs = self._scenario_forecasts(observation, n=n_sc)
         notes.append(f"n_scenarios_scored={len(scenario_fcs)}")
+        notes.append(f"selection_mode={self.selection_mode}")
+        notes.append(f"scenario_sample_mode={self.scenario_sample_mode}")
 
         def _rank(item: tuple[float, str, Decision, list[str]]):
             value, name, cand, _served = item
@@ -799,9 +915,10 @@ class CommitmentSafeStochasticMpc:
             term_ok, term_detail = self._terminal_filter(
                 observation, cand, [[]], deadline=score_deadline, cache=terminal_cache
             )
+            feas_cls = FeasibilityClass.NOMINAL_TERMINAL
             if not term_ok:
                 # Plant/replay approximation glitches are not commitment infeasibility.
-                # Hard-rejecting them emptied the pool → fallback under-accept or unsafe rescue.
+                # Soft-pass keeps the candidate, but must NOT be labeled nominal_terminal.
                 soft = (
                     "travel_timing" in term_detail
                     or "impossible_charge" in term_detail
@@ -809,6 +926,7 @@ class CommitmentSafeStochasticMpc:
                     or term_detail.startswith("rollout:rollout_failed")
                 )
                 if soft and self.spi_mode:
+                    feas_cls = FeasibilityClass.SOFT_TERMINAL
                     notes.append(f"soft_terminal_pass:{name}:{term_detail}")
                 else:
                     notes.append(f"reject:{name}:{term_detail}")
@@ -830,22 +948,35 @@ class CommitmentSafeStochasticMpc:
             if mean_v <= -1e8:
                 self.profile.rollout_rejects += 1
                 continue
-            empty_checkpoint.append((mean_v, name, cand, served0, FeasibilityClass.NOMINAL_TERMINAL))
+            # M3: penalize new accepts in empty-future ranking score.
+            n_new = len(cand.newly_accepted or ())
+            if self.accept_score_penalty > 0 and n_new > 0:
+                mean_v = float(mean_v) - self.accept_score_penalty * n_new
+            empty_checkpoint.append((mean_v, name, cand, served0, feas_cls))
 
         empty_checkpoint.sort(key=_rank_scored, reverse=True)
         notes.append(f"n_empty_checkpoint={len(empty_checkpoint)}")
         notes.append(f"n_stage0_passed={len(stage0_passed)}")
+        notes.append(
+            "n_soft_terminal="
+            + str(sum(1 for *_rest, cls in empty_checkpoint if cls == FeasibilityClass.SOFT_TERMINAL))
+        )
+        notes.append(
+            "n_nominal_terminal="
+            + str(sum(1 for *_rest, cls in empty_checkpoint if cls == FeasibilityClass.NOMINAL_TERMINAL))
+        )
 
         stochastic_scored: list[Scored] = []
         nominal_backup: list[Scored] = []
         stochastic_failed_names: set[str] = set()
+        per_scenario_values: dict[str, list[float]] = {}
         need_expand = bool(self.use_forecast and scenario_fcs and any(len(s) > 0 for s in scenario_fcs))
 
         if not need_expand:
-            # No stochastic claim: nominal terminal class is the declared guarantee.
-            stochastic_scored = [(v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint]
+            # Preserve declared class (nominal vs soft); do not upgrade soft → nominal.
+            stochastic_scored = list(empty_checkpoint)
             notes.append("no_forecast_expand_skipped")
-            notes.append("declared_guarantee=nominal_terminal")
+            notes.append("declared_guarantee=empty_future_terminal_or_soft")
         else:
             expand_n = min(self.max_scenario_expansions, len(empty_checkpoint))
             to_expand = empty_checkpoint[:expand_n]
@@ -886,13 +1017,26 @@ class CommitmentSafeStochasticMpc:
                     stochastic_failed_names.add(name)
                     notes.append(f"reject_expand_score:{name}:rollout_invalid")
                     continue
-                stochastic_scored.append((mean_v, name, cand, served, FeasibilityClass.STOCHASTIC_TERMINAL))
+                per_scenario_values[name] = [float(s.value) for s in scores]
+                # M3 also on scenario mean before consensus remap.
+                n_new = len(cand.newly_accepted or ())
+                adj = float(mean_v)
+                if self.accept_score_penalty > 0 and n_new > 0:
+                    adj -= self.accept_score_penalty * n_new
+                stochastic_scored.append((adj, name, cand, served, FeasibilityClass.STOCHASTIC_TERMINAL))
             # Untested (not expanded / budget) → nominal backup only; never claim stochastic OK.
             for empty_v, name, cand, served, _cls in empty_checkpoint:
                 if name in checked_names or name in stochastic_failed_names:
                     continue
                 self.profile.dominated_skips += 1
                 nominal_backup.append((empty_v, name, cand, served, FeasibilityClass.UNCHECKED_BUDGET))
+            if self.selection_mode == "msa_consensus" and per_scenario_values and len(stochastic_scored) >= 2:
+                from safe_time_evrp.mpc_central.msa_consensus import apply_consensus_to_scored
+
+                stochastic_scored = apply_consensus_to_scored(stochastic_scored, per_scenario_values)
+                notes.append("msa_consensus=borda_applied")
+            else:
+                notes.append(f"msa_consensus=skipped_mode={self.selection_mode}")
             notes.append(f"n_scenario_expanded={len(checked_names)}")
             notes.append(f"n_stochastic_terminal={len(stochastic_scored)}")
             notes.append(f"n_stochastic_failed={len(stochastic_failed_names)}")
@@ -914,12 +1058,13 @@ class CommitmentSafeStochasticMpc:
             selected_pool = list(stochastic_scored)
             selection_mode = "stochastic_terminal" if need_expand else "nominal_terminal"
         elif empty_checkpoint:
-            selected_pool = [
-                (v, n, c, s, FeasibilityClass.NOMINAL_TERMINAL) for v, n, c, s, _ in empty_checkpoint
-            ]
-            selection_mode = "nominal_terminal" if not need_expand else "nominal_terminal_after_stochastic_empty"
+            # Preserve soft vs nominal classes (do not upgrade soft_terminal → nominal).
+            selected_pool = list(empty_checkpoint)
+            selection_mode = (
+                "empty_future_checkpoint" if not need_expand else "empty_checkpoint_after_stochastic_empty"
+            )
             if need_expand:
-                notes.append("selected_pool=nominal_terminal_after_stochastic_empty")
+                notes.append("selected_pool=empty_checkpoint_after_stochastic_empty")
         elif need_expand and nominal_backup:
             selected_pool = list(nominal_backup)
             selection_mode = "nominal_backup_unchecked"
@@ -942,8 +1087,9 @@ class CommitmentSafeStochasticMpc:
                 # --- Ulmer SPI: GN base = argmax greedy_nominal on stage-0 set (CCE-matched) ---
                 # Terminal / soft-terminal pool is only required to *override* with new accepts.
                 cls_rank = {
-                    FeasibilityClass.STOCHASTIC_TERMINAL: 3,
-                    FeasibilityClass.NOMINAL_TERMINAL: 2,
+                    FeasibilityClass.STOCHASTIC_TERMINAL: 4,
+                    FeasibilityClass.NOMINAL_TERMINAL: 3,
+                    FeasibilityClass.SOFT_TERMINAL: 2,
                     FeasibilityClass.UNCHECKED_BUDGET: 1,
                     FeasibilityClass.STAGE0: 0,
                     FeasibilityClass.STOCHASTIC_FAILED: -1,
@@ -962,8 +1108,6 @@ class CommitmentSafeStochasticMpc:
                         tuple(sorted(item[2].newly_accepted or ())),
                     )
                     scored_by_fork[fork] = item
-
-                terminal_names = {n for _v, n, _c, _s, _cls in selected_pool}
 
                 base_item: Scored | None = None
                 gn_best_v = -1e99
@@ -1039,13 +1183,13 @@ class CommitmentSafeStochasticMpc:
                     # Extra accepts on override require terminal-class challenger.
                     extra_accepts = set(chal_new) - set(base_new)
                     override_needs_terminal = bool(extra_accepts)
+                    # Extra accepts require a hard terminal class (not soft-glitch).
                     terminal_ok_for_override = (not override_needs_terminal) or (
                         challenger[4]
                         in (
                             FeasibilityClass.NOMINAL_TERMINAL,
                             FeasibilityClass.STOCHASTIC_TERMINAL,
                         )
-                        or challenger[1] in terminal_names
                     )
                     if same_first:
                         best_v, best_name, best, served, best_cls = base_item
@@ -1073,6 +1217,35 @@ class CommitmentSafeStochasticMpc:
                 notes.append("selection_law=spi_crn")
                 if best is None:
                     notes.append("spi_selection_failed")
+                # M4: low SoC → prefer charge-first fork if available in the scored pool.
+                if (
+                    best is not None
+                    and self.charge_first_soc_frac is not None
+                    and selected_pool
+                ):
+                    bat = float(self._full.vehicle_type.battery_capacity)
+                    min_frac = min(
+                        (float(v.soc) / bat) for v in observation.vehicles
+                    ) if observation.vehicles and bat > 0 else 1.0
+                    if min_frac < self.charge_first_soc_frac:
+                        best_key = FirstActionKey.from_decision(best)
+                        already_charge = any(leg[2] == "charge" for leg in best_key.first_legs)
+                        if not already_charge:
+                            charge_alts = [
+                                x
+                                for x in selected_pool
+                                if any(
+                                    leg[2] == "charge"
+                                    for leg in FirstActionKey.from_decision(x[2]).first_legs
+                                )
+                            ]
+                            if charge_alts:
+                                best_v, best_name, best, served, best_cls = max(
+                                    charge_alts, key=_rank_scored
+                                )
+                                notes.append(
+                                    f"charge_first_low_soc:min_frac={min_frac:.3f}<{self.charge_first_soc_frac}"
+                                )
             else:
                 # Legacy knobs (frozen off under spi_mode): forecast margin + energy gate.
                 if (
@@ -1135,12 +1308,22 @@ class CommitmentSafeStochasticMpc:
                 newly = sanitize_newly_accepted(
                     observation, [c for c in best.newly_accepted if c in served]
                 )
+                newly, rejected_disc = self._discipline_new_accepts(
+                    observation,
+                    routes=best.routes,
+                    newly=newly,
+                    rejected=list(best.rejected),
+                    best_cls=best_cls,
+                    notes=notes,
+                )
+                # If M1/M2 stripped accepts from a soft/stage0 winner, require stage-0
+                # re-validate without require_new (commit path still validates).
                 committed = self._try_commit(
                     observation,
                     public,
                     routes=best.routes,
                     newly=newly,
-                    rejected=list(best.rejected),
+                    rejected=rejected_disc,
                     deferred=list(best.deferred),
                     notes=notes,
                     started=started,

@@ -1,0 +1,130 @@
+{
+  "protocol": "mpc_multi_dataset_recovery_v1",
+  "note": "Frozen before M1/M2 coding. Old sealed test opened by full-scale; split into recovery type-2 + new holdout.",
+  "train_unchanged": [
+    "c101C5",
+    "c101C10",
+    "c103C15",
+    "r104C5",
+    "r102C10",
+    "r102C15",
+    "rc105C5",
+    "rc102C10",
+    "rc103C15"
+  ],
+  "recovery_dev": {
+    "type1_from_old_development": [
+      "c103C5",
+      "c104C10",
+      "c106C15",
+      "r105C5",
+      "r103C10",
+      "r105C15",
+      "rc108C5",
+      "rc108C10",
+      "rc108C15"
+    ],
+    "type2_for_fitting": [
+      "c206C5",
+      "c208C5",
+      "c202C10",
+      "r202C5",
+      "r203C5",
+      "r201C10",
+      "rc204C5",
+      "rc208C5",
+      "rc201C10"
+    ],
+    "all": [
+      "c103C5",
+      "c104C10",
+      "c106C15",
+      "r105C5",
+      "r103C10",
+      "r105C15",
+      "rc108C5",
+      "rc108C10",
+      "rc108C15",
+      "c206C5",
+      "c208C5",
+      "c202C10",
+      "r202C5",
+      "r203C5",
+      "r201C10",
+      "rc204C5",
+      "rc208C5",
+      "rc201C10"
+    ],
+    "n_stems": 18,
+    "n_realizations_mini_gate": 2,
+    "n_realizations_full": 3
+  },
+  "new_holdout": {
+    "stems": [
+      "c205C10",
+      "c202C15",
+      "c208C15",
+      "r203C10",
+      "r202C15",
+      "r209C15",
+      "rc205C10",
+      "rc202C15",
+      "rc204C15"
+    ],
+    "n_stems": 9,
+    "n_realizations": 2,
+    "note": "Disjoint from recovery_dev. Never use for gamma fit or lever selection."
+  },
+  "retrospective_old_test": {
+    "stems": [
+      "c206C5",
+      "c208C5",
+      "c202C10",
+      "c205C10",
+      "c202C15",
+      "c208C15",
+      "r202C5",
+      "r203C5",
+      "r201C10",
+      "r203C10",
+      "r202C15",
+      "r209C15",
+      "rc204C5",
+      "rc208C5",
+      "rc201C10",
+      "rc205C10",
+      "rc202C15",
+      "rc204C15"
+    ],
+    "note": "Appendix only; not the claim gate."
+  },
+  "overlap_recovery_dev_new_holdout": [],
+  "method_stack_defaults": {
+    "use_forecast": true,
+    "n_scenarios": 2,
+    "n_scenarios_max": 4,
+    "hard_terminal_accepts": true,
+    "accept_slack_gate": true,
+    "gamma_time": 0.0,
+    "gamma_energy": 0.0,
+    "accept_score_penalty": 50.0,
+    "charge_first_soc_frac": 0.2,
+    "max_new_accepts": null,
+    "selection_mode": "msa_consensus",
+    "scenario_sample_mode": "stratified",
+    "adaptive_compute": true,
+    "alns_iterations_max": 20,
+    "selected_config": "msa_consensus_m1_m4_adaptive_v1",
+    "note": "mpc_top_tier_msa_v1: MSA consensus + stratified scenarios + adaptive_compute_v1. Prior S09d forecast promotion retained; fixed n_scen=8/alns=40 abandoned."
+  },
+  "holdout_v2": {
+    "stems": [
+      "c205C10", "c202C15", "c208C15",
+      "r203C10", "r202C15", "r209C15",
+      "rc205C10", "rc202C15", "rc204C15"
+    ],
+    "n_realizations": 2,
+    "caveat": "Same geography as burned S11 list; sealed only w.r.t. forecast stack never evaluated there before."
+  }
+}
+
